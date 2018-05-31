@@ -1,0 +1,88 @@
+** Author: DJ Ludick (dludick@sun.ac.za)
+** Date: 2018.03.28
+** A simple half-wave length strip dipole at f = c0
+
+******************************************
+** General Variables                    **
+******************************************
+#lam = 1
+#freq = #c0/#lam
+
+******************************************
+** Element Variables                    **
+******************************************
+#a = 1*#lam ** square edge length
+
+#L = 0.45*#lam
+#w = 0.02
+
+******************************************
+** Meshing                              **
+******************************************
+** Mesh size
+#t_edge = #lam/30  ** #lam/15 creates 15 basis-functions per element
+                   ** #lam/30 creates 28 basis-functions per element
+#s_rad = 4E-6
+#s_len = #lam/15
+IP                            #s_rad    #t_edge   #s_len
+
+******************************************
+** Construct now the geometry           **
+******************************************
+** Side 1
+DP   A                        0         0         0
+DP   B                        #w        0         0
+DP   C                        #w        #L/2      0
+DP   D                        0         #L/2      0
+LA   1
+BP   A    B    C    D
+
+** Side 2
+DP   E                        0         #L/2      0
+DP   F                        #w        #L/2      0
+DP   G                        #w        #L        0
+DP   H                        0         #L        0
+LA   2
+BP   E    F    G    H
+
+** Some preparation so that we can identify the base element
+CB: 1 : internal_1
+CB: 2 : internal_2
+
+** Important - for the geometry to be processed in FEKO-Connect, we need to write it to the *.out file
+** That is done here at the EG card
+** End of geometry
+EG   0    0    0                                                                                    0
+
+** For FEKO-Connect, we use the 'PS' card to output the *.mat and *.str files
+PS: 0 : 1 : 1 : 0 : 0
+
+** Frequency
+FR   1                        #freq
+
+** Data output
+DA: 1 : 0 : 1 : 0 : 0 : 0 : 0 : 0 : 0 : 0
+
+******************************************
+** The Excitation and requests          **
+******************************************
+
+** Excited by AE source (between elements with labels internal_1 and internal_2)
+AE: 0 : internal_1 : internal_2 : 0 : 1 : 1 : 0
+
+** Request Currents
+OS   1         1
+
+** Calculate now the Electric field at a distance of 1m from the antenna
+#rdist = 100 ** [m]
+** Request E-field (for comparison with MATLAB implementation)
+FE: 1 : 1 : 1 : 91 : 2 : #rdist : 90 : 0 : 0 : 1 : 1
+
+** Calculate far-fields along a theta cut
+FF: 1 : 1 : 91 : 0 : 0 : 90 : 0 : 1 : 1 :  :  : 0
+
+** Note: other requests, e.g. the near-field can also be added here ('FE') card.
+
+** End of file
+EN
+
