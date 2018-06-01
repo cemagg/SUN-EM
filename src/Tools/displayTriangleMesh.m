@@ -1,11 +1,14 @@
-function displayTriangleMesh(Const, triangle_corners, triangle_centres, nodes)
+function displayTriangleMesh(Const, Solver_setup)
     %displayTriangleMesh
     %   Date: 2018.05.18
     %   Usage:
     %       displayTriangleMesh(Const, triangleData)
     %
     %   Input Arguments:
-    %       Const: A global struct containing:
+    %       Const: 
+    %           A global struct with program flow settings
+    %       Solver_setup: 
+    %           The solver setup (basis geometry, basis functions, etc)
     %       triangle_corners:
     %           A (num_triangles x 3) array containing the nodal indices of the 3 corners
     %       triangle_centres:
@@ -28,7 +31,12 @@ function displayTriangleMesh(Const, triangle_corners, triangle_centres, nodes)
     hold on;
     box on;
     grid on;
-
+    
+    % Extract the necessary data
+    triangle_corners = Solver_setup.triangle_vertices;
+    triangle_centres = Solver_setup.triangle_centre_point;
+    nodes = Solver_setup.nodes_xyz;
+    
     number_of_triangles = length(triangle_corners(:,1));
 
     for i = 1:number_of_triangles
@@ -69,3 +77,29 @@ function displayTriangleMesh(Const, triangle_corners, triangle_centres, nodes)
     xlabel('X','FontSize',16);
     ylabel('Y','FontSize',16);
     zlabel('Z','FontSize',16);
+    
+    % Display the basis functions (also distinguish in which domains they
+    % are). Note, currently this is only for domain decomposition. Should
+    % be trivial to extend for general case.
+    plot_domain = 0;
+    
+    % Plot for each of the domains the basis functions. We can also
+    % display only the basis functions of a specific domain if 
+    % domain_id <> -1 as set above
+    for domain_index = 1:Solver_setup.number_of_domains
+        if ((domain_index == plot_domain) || (plot_domain == 0))
+            domain_basis_functions = Solver_setup.rwg_basis_functions_domains{domain_index};
+            for i = 1:length(domain_basis_functions)
+                bf_index = domain_basis_functions(i);
+                % Extract the centrepoint of the shared edge - this is where we
+                % will put the label
+                rwg_pC = Solver_setup.rwg_basis_functions_shared_edge_centre(bf_index,:);
+
+                text(rwg_pC(1),rwg_pC(2),rwg_pC(3),num2str(bf_index),...
+                    'FontSize',16,'EdgeColor','red');
+                
+                % TO-DO: Draw an arrow between the centre-point of triangle + and -
+
+            end
+        end
+    end

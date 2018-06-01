@@ -1,4 +1,4 @@
-function [mom] = runMoMsolver(Const, zMatrices, yVectors, xVectors)
+function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors)
     %runMoMsolver
     %   Usage:
     %       [mom] = runMoMsolver(Const)
@@ -6,6 +6,8 @@ function [mom] = runMoMsolver(Const, zMatrices, yVectors, xVectors)
     %   Input Arguments:
     %       Const
     %           A global struct, containing general data
+    %       Solver_setup
+    %           Solver specific struct, e.g. frequency range, basis function details, geometry details    
     %       zMatrices
     %           The Z-matrices data
     %       yVectors
@@ -23,11 +25,10 @@ function [mom] = runMoMsolver(Const, zMatrices, yVectors, xVectors)
     %
     %   =======================
     %   Written by Danie Ludick on June 21, 2013.
-    %   Last updated on November 30, 2013.
     %   Stellenbosch University
     %   Email: dludick@sun.ac.za
 
-    error(nargchk(4,4,nargin));
+    narginchk(5,5);
 
     message_fc(Const,' ');
     message_fc(Const,'------------------------------------------------------------------------------------');

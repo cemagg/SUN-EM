@@ -18,13 +18,13 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     %   Output Arguments:
     %      Solution
     %           Structs containing solutions and timing data of EM solvers, e.g.
-    %           MoM, HARP
+    %           MoM, CBFM
     %
     %   Description:
     %       Runs various EM solvers based on the data that was read / parsed.
     %       from the FEKO *.out, *.mat, *.str and *.rhs files (for now).
 
-    error(nargchk(5,5,nargin));
+    narginchk(5,5);
 
     % Initialise the return values
     Solution  = [];
@@ -33,14 +33,17 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     % This solver actually extracts the needed parameters from the zMatrices and yVectors structs.
     % TO-DO: We need to think about how to refactor to include also our local GMoM solver
     if (Const.runMoMsolver)        
-        mom = runMoMsolver(Const, zMatrices, yVectors, xVectors);
-        Solution.mom = mom;
+        Solution.mom = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
     end%if
 
-    % -- HARP
-    if (Const.runHARPsolver)
-        harp = runHARPsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
-        Solution.harp = harp;
+    % -- CBFM
+    if (Const.runCBFMsolver)
+        % First generate the MBFs (separate routine, as we might be using
+        % different MBF generation techniques)
+        [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVectors);
+        
+        % No reduced matrix setup + solution
+        Solution.cbfm = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs);
     end%if
 
     message_fc(Const,sprintf('Finished EM Solvers'));

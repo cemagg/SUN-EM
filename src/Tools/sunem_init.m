@@ -107,30 +107,45 @@ function Const = sunem_init(Const, yVectors)
     % ================================    
     try
         set = false;
-        if (Const.runHARPsolver)
+        if (Const.runCBFMsolver)
             % It is set in the driver
             set = true;
         end
     catch
         if (~set)
-            % No HARP solver present
-           Const.runHARPsolver = false;
+            % No CBFM solver present
+           Const.runCBFMsolver = false;
         end
     end
 
     % ================================    
     try
         set = false;
-        if (Const.harps_force_recalculate_harp_model)
+        if (Const.no_mutual_coupling_array)
             % It is set in the driver
             set = true;
         end
     catch
         if (~set)
-            % Do not force the HARP model recalculation (for HARPsolver)
-           Const.harps_force_recalculate_harp_model = false;
+            % Deactivate this option
+           Const.no_mutual_coupling_array = false;
         end
     end
+    
+    % ================================    
+    try
+        set = false;
+        if (Const.useMBFreduction)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Deactivate this option
+           Const.useMBFreduction = false;
+        end
+    end
+    
 
     % =================================
     % Other initialisations:

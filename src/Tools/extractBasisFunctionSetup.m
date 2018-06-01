@@ -31,5 +31,5 @@ function Const = extractBasisFunctionSetup(Const, yVectors)
     % Initialise the total BFs associated with the finite array geometry
     % Note, if the NGF is also used, then we need to discard the static domain
     %Const.numArraybasis = Const.numMoMbasis - Const.numNGFbasis;
-    Const.numArraybasis = Const.numMoMbasis;
-    Const.numMoMbasisPerElement = Const.numArraybasis/Const.numArrayElements;
+    %Const.numArraybasis = Const.numMoMbasis;
+    %Const.numMoMbasisPerElement = Const.numArraybasis/Const.numArrayElements;

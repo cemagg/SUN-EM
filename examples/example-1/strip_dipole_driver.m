@@ -18,7 +18,7 @@ Const = sunem_initialise('dipoles',false);
 % --------------------------------------------------------------------------------------------------
 
 % Choose the solvers that will be executed
-Const.runMoMsolver       = true;
+Const.runMoMsolver              = true;
 
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
@@ -56,6 +56,7 @@ Const.FEKOffefilename          = 'strip_dipole.ffe';
 % --------------------------------------------------------------------------------------------------
 % Postprocess the results, e.g. calculate the Electric field
 % --------------------------------------------------------------------------------------------------
+
 r = 100;%100;
 % Loop over a few theta and phi points and compare the results with that of FEKO
 theta_grid = 90:1:90;

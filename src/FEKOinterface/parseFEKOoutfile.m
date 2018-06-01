@@ -57,6 +57,16 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
 
     % A local debug flag (e.g. to plot geometry)
     LOCAL_DEBUG = false;
+    
+    % Flag to make sure we actually read the geometry
+    geometry_found = false;
+    
+    % Check now whether domain decomposition is active. This is signalled 
+    % by the type of solver used, e.g. DGFM, CBFM, etc.
+    if (Const.runCBFMsolver)
+        message_fc(Const,sprintf('  Domain decomposition active'));
+        Const.domain_decomposition = true;
+    end
 
     while end_flag == 0
         line=fgetl(fid);
@@ -93,9 +103,15 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
         g = strfind(line,'FR ');
         if (g > 0)
             freq_card_info = strsplit(line); % 'CARD NAME',i1,i2,i3,i4,i5,f1,f2,f3,f4,f5
-            num_freq_samples = str2num(freq_card_info{2});
+            num_freq_samples = str2num(freq_card_info{2});            
             freq_start = str2num(freq_card_info{7});
-            freq_end = str2num(freq_card_info{9});
+            if (num_freq_samples == 0)
+                freq_end = freq_start;
+                num_freq_samples = 1;
+            else
+                freq_end = str2num(freq_card_info{9});
+            end
+            
         end% if 'FR' card
 
         % -------------------------------------------------
@@ -122,10 +138,22 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
             array_line_info = strsplit(line);
             FEKO_data.num_finite_array_elements = str2num(array_line_info{6});
         end%if
+        
+        % Check that we actually have the geometry specifified in the 
+        % *.out file (necessary at the moment).        
+        g = strfind(line,'DATA OF THE METALLIC TRIANGLE');
+        if (g > 0)
+            geometry_found = true;
+        end%if
 
     end%while end_flag == 0
     fclose('all');
 
+    if (~geometry_found)
+        message_fc(Const,sprintf('[parseFEKOoutfile]: No geometry found in *.out file'));
+        error(['[parseFEKOoutfile]: No geometry found in *.out file']);
+    end%if
+    
     % ==============================================
     % Some additional processing for frequency data
     % ==============================================
@@ -326,7 +354,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
     % ==============================================
     % Additional processing for the basis functions
     % ==============================================
-
+    
     % Extract the free vertex of Tm+ and Tm- for the RWGs
     % and the nodal indices of the shared edge of the RWG
     FEKO_data = extract_shared_edge_triangle_details(Const, FEKO_data);
@@ -346,16 +374,51 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
     else
         FEKO_data.mom_basis_functions_per_array_element = -1;
     end%if
+    
+    % Setup a vector that shows when an array element is active
+    Const.is_array_element_active = zeros(Const.numArrayElements,yVectors.numRhs);
+    % Loop over all the array elements and check whether any of the RHS
+    % vector elements are zero, if not, then this element is excited
+    % Do this for each of the RHsides, i.e. each of the solution
+    % configurations (see issue FEKDDM-10).
+    for solNum = 1:yVectors.numRhs
+        for el = 1:Const.numArrayElements
+           domain_bot =  Const.arrayElBasisFunctRange(el,1);
+           domain_top =  Const.arrayElBasisFunctRange(el,2);
+           if (~isempty(find(yVectors.values(domain_bot:domain_top,solNum))))
+               Const.isArrayElementActive(el,solNum) = 1;
+           end
+        end
+    end
+    
+    % Check now which of the elements are active:    
+    all_active = true;
+    for sol_num = 1:yVectors.numRhs
+        % Loop over all the elements in each solution configuration and
+        % check that they are active
+        for el = 1:FEKO_data.num_finite_array_elements
+            if (~Const.isArrayElementActive(el,solNum))
+                % Passive element detected
+                all_active = false;
+            end
+        end%for
+    end
 
+    % ==============================================
+    % NGF settings
+    % ==============================================
+    FEKO_data.num_ngf_basis_functions = 0; % TO-DO: Activate once supported again.
+    
     % ==============================================
     % Some local debugging - display the mesh
     % ==============================================
     if (LOCAL_DEBUG)
-        displayTriangleMesh(Const, FEKO_data.triangle_vertices, FEKO_data.triangle_centre_point, FEKO_data.nodes_xyz);
+        displayTriangleMesh(Const, FEKO_data);
     end%if
 
     % ==========================================================================================
-    % DONE : Print a summary
+    % DONE : Print a summary (also useful in other routines to see what can
+    % be used)
     message_fc(Const,sprintf('\n  Number of frequencies: %d',FEKO_data.frequencies.freq_num));    
     message_fc(Const,sprintf('  Number of metallic triangles: %d',FEKO_data.num_metallic_triangles));
     message_fc(Const,sprintf('  Number of metallic edges (RWG basis functions): %d',FEKO_data.num_metallic_edges));
@@ -363,4 +426,15 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
     message_fc(Const,sprintf('  Number of finite array elements: %d',FEKO_data.num_finite_array_elements));
     message_fc(Const,sprintf('  Number of MoM basis functions per array element : %d', ...
         FEKO_data.mom_basis_functions_per_array_element));
+    
+    if (Const.domain_decomposition)
+        message_fc(Const,sprintf('  Number of domains: %d',FEKO_data.number_of_domains));
+        if (FEKO_data.disconnected_domains)
+            message_fc(Const,sprintf('  Interconnectivity: Disconnected domains'));
+        else
+            message_fc(Const,sprintf('  Interconnectivity: Connected domains'));
+        end%if
+    end%if
+    
     message_fc(Const,sprintf('  Finished processing the *.out file: %s',Const.FEKOoutfilename));
+    

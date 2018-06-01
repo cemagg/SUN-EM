@@ -1,4 +1,7 @@
 *.pfs
 *.bak
+*.cfs
 *.m~
 SimOutput.log
+*.lock
+*.sublime*
