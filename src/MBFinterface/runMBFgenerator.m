@@ -60,6 +60,7 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
     message_fc(Const,sprintf('Running MBF generator'));
     if (Const.no_mutual_coupling_array)
         message_fc(Const,sprintf('(*** Mutual coupling between array elements ignored ***)'));
+        message_fc(Const,sprintf('(*** (only calculating primary MBFs)                ***)'));
         % Simple - just switch off calculating secondary MBFs
         Const.calcSecMBFs = false;
     else
@@ -71,11 +72,24 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
     mbfs  = [];    
     Nmom        = Solver_setup.num_mom_basis_functions;    % Total number of basis functions for whole problem
     Nngf        = Solver_setup.num_ngf_basis_functions;    % Number of basis functions for NGF domain
-    Ndom        = Solver_setup.mom_basis_functions_per_array_element;   % Number of basis functions per array element
-    numArrayEls = Solver_setup.num_finite_array_elements;  % The number of array elements
-    
+
+    % 2017.06.03: We need to work on the max number of basis functions (BFs) per element here (as we might have
+    % interconnected) arrays that have different number of BFs / element.
+    Ndom        = Solver_setup.max_mom_basis_functions_per_array_element;   % Number of basis functions per array element        
+    numArrayEls = Solver_setup.num_finite_array_elements;  % The number of array elements    
     numSols     = xVectors.numSols;             % The number of solutions configurations
-    
+        
+    % If we are reducing and orthonormalising the MBFs by using the SVD,
+    % then store these in a differents array than mbfs.PrimIsol and
+    % mbfs.SecIsol
+    if (Const.useMBFreduction)
+        % Note, we are unsure at this stage how many reduced MBFs we will
+        % retain. Just allocated enough space here (numArrayEls should do
+        % the trick).
+        mbfs.RedIsol = complex(zeros(Ndom,numArrayEls,numArrayEls,numSols));
+        mbfs.numRedMBFs = zeros(numArrayEls,numSols); % Number of Red. MBFs / array element / solution config.
+    end%if
+        
     % See FEKDDM-3.1: Store the primary CBFs also in the same structure as
     % the secondary CBFs.
     % Structure to be followed:   (MBF{1:Ndom},PrimIndx,DomainInd)
@@ -103,33 +117,24 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
         mbfs.SecIsol = complex(zeros(Ndom,numArrayEls-1,numArrayEls,numSols));
     end%if
     
-    % If we are reducing and orthonormalising the MBFs by using the SVD,
-    % then store these in a differents array than mbfs.PrimIsol and
-    % mbfs.SecIsol
-    if (Const.useMBFreduction)
-        % Note, we are unsure at this stage how many reduced MBFs we will
-        % retain. Just allocated enough space here (numArrayEls should do
-        % the trick).
-        mbfs.RedIsol = complex(zeros(Ndom,numArrayEls,numArrayEls,numSols));
-        mbfs.numRedMBFs = zeros(numArrayEls,numSols); % Number of Red. MBFs / array element / solution config.
-    end%if
-        
-    % We are working with identical domains. Generate the LU decomposition
-    % of the static interaction matrix of domain 1 beforehand and reuse
-    % this in the following calculations
-    % TO-DO: Danie, save this to the Temp directory and load it here to save time
-    % See issue FEKDDM-6.2: Improved now the basis function numbering for
-    % the array domain (work with bottom and top basis function offsets)
-    % TO-DO: Assumed here are 1-to-1 mapping, i.e. Const.arrayMappingVector
-    %        not yet used.
-    %domain_bot = Const.arrayElBasisFunctRange(1,1);
-    %domain_top = Const.arrayElBasisFunctRange(1,2);
-    %[L,U] = lu(zMatrices.values(domain_bot:domain_top,domain_bot:domain_top));
-    
-    domain_indices = Solver_setup.rwg_basis_functions_domains{1};
-    
-    [L,U] = lu(zMatrices.values(domain_indices, domain_indices) );
-    
+    % 2018.06.03: We also support now interconnected domains. Only therefore 
+    % pre-allocate certain MBF datastructures if we have a disjoint array problem.
+    % Otherwise, these have to be calculated per domain.
+    if (Solver_setup.disconnected_domains)
+
+        % We are working with identical domains. Generate the LU decomposition
+        % of the static interaction matrix of domain 1 beforehand and reuse
+        % this in the following calculations
+        % TO-DO: Danie, save this to the Temp directory and load it here to save time
+        % See issue FEKDDM-6.2: Improved now the basis function numbering for
+        % the array domain (work with bottom and top basis function offsets)
+        % TO-DO: Assumed here are 1-to-1 mapping, i.e. Const.arrayMappingVector
+        %        not yet used.        
+        domain_indices = Solver_setup.rwg_basis_functions_domains{1};    
+        % TO-DO: Actually use the calcZmn function here with the correct frequency index.
+        [L,U] = lu(zMatrices.values(domain_indices, domain_indices));
+    end
+
     % See issue FEKDDM-10: We added now support for multiple solution configurations.
     % Each solution configuration get its own set of primary and secondary MBFs, 
     % depending on the solution excitation configuration.
@@ -144,16 +149,38 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
         
         % Generate the primary MBF: Jprim = (Zself)^(-1) * Vself
         mbfs.numPrimMBFs(:,solNum) = 0;
+        global_PrimIsol = complex(zeros(Nmom)); % Global solution vector
         for m=1:numArrayEls
             % We only generate a primary MBF if the array element is active
             if (Const.is_array_element_active(m,solNum))
+
+                % Back-wards substitution with the part of the excitation vector local to this domain.
+                % Note: if we have an interconnected domain problem, then this represents
+                % the extended domain's solution.
+                domain_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
+
+                % 2018.06.03: We also support now interconnected domains. Calculate
+                % the LU decomposition here for the particular domain (will not be
+                % the same for each element)
+                if (~Solver_setup.disconnected_domains)
+                    % TO-DO: Actually use the calcZmn function here with the correct frequency index.
+                    [L,U] = lu(zMatrices.values(domain_basis_functions, domain_basis_functions));
+                end
+
                 mbfs.numPrimMBFs(m,solNum) = mbfs.numPrimMBFs(m,solNum) + 1;
-                
-                % Back-wards substitution with the part of the excitation vector local to this domain                
-                domain_indices = Solver_setup.rwg_basis_functions_domains{m};
-                
-                b = L\yVectors.values(domain_indices,solNum);
-                mbfs.PrimIsol(:,1,m,solNum) = U\b; % U, already calculated above
+                                                
+                b = L\yVectors.values(domain_basis_functions,solNum);
+                mbfs.PrimIsol(1:length(domain_basis_functions),1,m,solNum) = U\b; % U, already calculated above
+
+                if (~Solver_setup.disconnected_domains)
+                    % For interconnected domain cases, we need to retain also the internal primary MBFs, i.e. the 
+                    % primary solutions that are mapped ONLY to the RWGs that are internal to each domain (e..g)
+                    % as would have been the case if the domains were entirely decoupled. The way in which to do
+                    % this, is to first map the local mbfs.PrimIsol vector for the extended domain solution to the 
+                    % global problem - then afterwards extract only the local (internal) coefficients.
+                    global_PrimIsol_Extended(domain_basis_functions) = mbfs.PrimIsol(1:length(domain_basis_functions),1,m,solNum);                    
+                end%if
+
             end%if
         end%for
         
@@ -170,6 +197,18 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
             % Generate the secondary MBF: Jsec = (Zself)^(-1) * Zcoupl * Jprim
             % for domain m, that is excited by the primary MBF on domain n
             for m=1:numArrayEls
+
+                % Extract basis function indices of domain m.
+                domain_m_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
+
+                % 2018.06.03: We also support now interconnected domains. Calculate
+                % the LU decomposition here for the particular domain (will not be
+                % the same for each element)
+                if (~Solver_setup.disconnected_domains)
+                    % TO-DO: Actually use the calcZmn function here with the correct frequency index.
+                    [L,U] = lu(zMatrices.values(domain_m_basis_functions, domain_m_basis_functions));
+                end
+
                 % Back-wards substitution with the part of the excitation vector
                 % local to this domain
                 count = 0;
@@ -178,26 +217,38 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
                         %ignore self-coupling - primary MBF already calculated
                         continue;
                     end%if
+
                     % Keep track of the number of secondary MBFs on domain
                     % m, if domain n has a primary to excite such a secondary MBF
-                    if (Const.isArrayElementActive(n,solNum))
+                    if (Const.is_array_element_active(n,solNum))
                         count = count + 1;
-                        mbfs.numSecMBFs(m,solNum) = count;
+                        mbfs.numSecMBFs(m,solNum) = count;                                  
+
+                        % Extract basis function indices of domain n. See [1], if we have interconnected domains, 
+                        % then we use the internal RWGs (i.e. not including the unknowns on the interface) for
+                        % the source/basis MBFs.
+                        
+                        % if (~Solver_setup.disconnected_domains)
+                        %     domain_n_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{n};
+                        % else
+                        %     domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+                        % end
+                        domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+
                         % Calculate the coupling matrix
-                        domain_bot_m = Const.arrayElBasisFunctRange(m,1);
-                        domain_top_m = Const.arrayElBasisFunctRange(m,2);
-                        domain_bot_n = Const.arrayElBasisFunctRange(n,1);                
-                        domain_top_n = Const.arrayElBasisFunctRange(n,2);
-                        Zcoupl = zMatrices.values(domain_bot_m:domain_top_m,domain_bot_n:domain_top_n);
+                        % TO-DO: Actually use the calcZmn function here with the correct frequency index.
+                        Zcoupl = zMatrices.values(domain_m_basis_functions,domain_n_basis_functions);
                         % Calculate the field coupling to domain m, using primary MBF from domain n
                         % Note: cf Eq. (4) in [1], the excitation vector resulting from the mutual 
                         % coupling has a negative sign! Be careful here when reusing these secondary 
                         % MBFs in the Jacobi Iterative Solver - then no negative sign is used.
-                        Vcoupl =  - Zcoupl * mbfs.PrimIsol(:,1,n,solNum);
+                        Vcoupl =  - Zcoupl * mbfs.PrimIsol(1:length(domain_n_basis_functions),1,n,solNum);
+                        %Vcoupl =  - Zcoupl * mbfs.PrimIsol(domain_n_basis_functions,1,n,solNum);
+
                         % Solve now for the secondary induced MBF using the previously calculated 
                         % LU-decomposition of Zmm (stored in L and U)
                         b = L\Vcoupl;
-                        mbfs.SecIsol(:,count,m,solNum) = U\b;
+                        mbfs.SecIsol(1:length(domain_m_basis_functions),count,m,solNum) = U\b;
                     end%if
                 end%for
             end        
@@ -213,7 +264,11 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
             message_fc(Const,sprintf('Reduce and orthonormalise MBFs'));
             for m=1:numArrayEls            
                 % Put all the MBFs in a column augmented matrix
-                origMBFs = [mbfs.PrimIsol(:,1,m,solNum) mbfs.SecIsol(:,1:mbfs.numSecMBFs(m,solNum),m,solNum)];
+                if (Const.calcSecMBFs)
+                    origMBFs = [mbfs.PrimIsol(:,1,m,solNum) mbfs.SecIsol(:,1:mbfs.numSecMBFs(m,solNum),m,solNum)];
+                else
+                    origMBFs = mbfs.PrimIsol(:,1,m,solNum);
+                end
                 if (Const.debug)
                     message_fc(Const,['Number of initially generated CBFs: ' num2str(size(origMBFs,2))])
                     message_fc(Const,'Reducing this number based on the user specified threshold...')

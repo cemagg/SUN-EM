@@ -146,10 +146,27 @@ function Const = sunem_init(Const, yVectors)
         end
     end
     
+    % ================================    
+    try
+        set = false;
+        if (Const.MBFthreshold)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Deactivate this option
+           Const.MBFthreshold = 1000;
+        end
+    end
 
     % =================================
     % Other initialisations:
-    Const.useACA = 0; % ACA interface available, but not yet activated. (Requires some refactoring).
+    Const.useACA = false; % ACA interface available, but not yet activated. (Requires some refactoring).
+    Const.ACAalg = 3; % When ACA is activated, we use the efficient algorithm (3).
+    Const.store_to_fcd_file = false; % Store to external *.fcd file - useful when importing into POSTFEKO.
+    Const.useCSCBFM = false;
+    Const.isPhasedArray = false;
 
     % =================================
     % General constants:
@@ -164,7 +181,7 @@ function Const = sunem_init(Const, yVectors)
     % Some file-format version numbers that we support
     % =================================    
     Const.FEKO_efe_file_format = 4; % FEKO *.efe file format
-    % TO-DO: Also check other files, e.g. *.str, *.hfe, *.ffe, *.snp, etc.
+    % TO-DO: Also check other files, e.g. *.str, *.hfe, *.ffe, *.snp, etc.    
 
     % Finished
     message_fc(Const,sprintf('Done'));

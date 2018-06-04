@@ -1,8 +1,8 @@
 function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs)
-    %runCBFMsolver v0.2
+    %runCBFMsolver
     %   Date: 18.08.2015
     %   Usage:
-    %       [cbfm] = runCBFMsolver(Const)
+    %       [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs)
     %
     %   Input Arguments:
     %       Const
@@ -23,11 +23,11 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     %           Structs containing CBFM solution and timing data
     %
     %   Description:
-    %       v0.1:
+    %       [~2013]
     %         Runs the Characteristic Basis Function Method (CBFM) solution based
     %         on the Z and Y data that was read / parsed from the FEKO *.out,
     %         *.mat, *.str and *.rhs filesand also the array data that was setup
-    %       v0.2:
+    %       [~2015]
     %         Also added now the use of the reduced and orthonormalised MBFs (as done via
     %         the SVD approach in the MBF generator routine).
     %
@@ -40,7 +40,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     %       "A Compressed Sensing Technique Applied to the Characteristic Basis Function Method"
     %       2015 [to be published]
     %   =======================
-    %   Written by Danie Ludick on June 21, 2013.
+    %   Written by Danie Ludick on June 21, 2013 and updated in 2015 and 2018, respectively.
     %   Stellenbosch University
     %   Email: dludick@sun.ac.za
 
@@ -72,10 +72,10 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     % Initialisations
     cbfm  = [];
     cbfm.name = 'cbfm';
-    Nmom = Solver_setup.num_mom_basis_functions;                 % Total number of basis functions for whole problem
-    Nngf = Solver_setup.num_ngf_basis_functions;                 % Number of basis functions for NGF domain
-    Ndom = Solver_setup.mom_basis_functions_per_array_element;   % Total number of basis functions for the array
-    numArrayEls = Solver_setup.num_finite_array_elements;        % The number of array elements
+    Nmom = Solver_setup.num_mom_basis_functions;                   % Total number of basis functions for whole problem
+    Nngf = Solver_setup.num_ngf_basis_functions;                   % Number of basis functions for NGF domain
+    Ndom = Solver_setup.max_mom_basis_functions_per_array_element; % Total number of basis functions for the array
+    numArrayEls = Solver_setup.num_finite_array_elements;          % The number of array elements
     
     numSols = xVectors.numSols;                % The number of reference solutions
     cbfm.numSols = numSols;                    % Calculate a solution for each configuration
@@ -109,8 +109,8 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
         % Loop over all the elements in each solution configuration and
         % check whether they are all active
         allActive = true;
-        for el = 1:Const.numArrayElements
-            if (~Const.isArrayElementActive(el,solNum))
+        for el = 1:numArrayEls
+            if (~Const.is_array_element_active(el,solNum))
                 % Passive element detected
                 allActive = false;
             end
@@ -181,70 +181,74 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
 
             % -- Domain P
             for p=1:numArrayEls % Loop over rows
+                
+               % Extract basis function indices associated with domains p
+               domain_p_basis_functions = Solver_setup.rwg_basis_functions_domains{p};
+               Ndom_p = length(domain_p_basis_functions);
 
                 % First create a collumn augmented matrix containing all the MBFs of domain p,
                 % i.e. both primary and secondary MBFs:
                 if (Const.useMBFreduction)
                     % Copy only the reduced MBFs
-                    domainPcbfs = complex(zeros(Ndom,mbfs.numRedMBFs(p,actSol)));
+                    domainPcbfs = complex(zeros(Ndom_p,mbfs.numRedMBFs(p,actSol)));
                     for red_ii=1:mbfs.numRedMBFs(p,actSol)
-                        domainPcbfs(:,red_ii) = mbfs.RedIsol(:,red_ii,p,actSol);
+                        domainPcbfs(:,red_ii) = mbfs.RedIsol(1:Ndom_p,red_ii,p,actSol);
                     end%for mbfs.numRedMBFs(p)
 
                 elseif (Const.useCSCBFM)
                     % Now as explained in [2], for the testing MBFs we use only the primaries
-                    domainPcbfs = complex(zeros(Ndom,mbfs.numPrimMBFs(p,actSol)));
+                    domainPcbfs = complex(zeros(Ndom_p,mbfs.numPrimMBFs(p,actSol)));
                     for prim_ii=1:mbfs.numPrimMBFs(p,actSol)
-                        domainPcbfs(:,prim_ii) = mbfs.PrimIsol(:,prim_ii,p,actSol);
+                        domainPcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_p,prim_ii,p,actSol);
                     end%for mbfs.numPrimMBFs(p)
                 else
                     % Conventional method as explained in [1] - primaries and secondaries
-                    domainPcbfs = complex(zeros(Ndom,mbfs.numPrimMBFs(p,actSol) + mbfs.numSecMBFs(p,actSol)));
+                    domainPcbfs = complex(zeros(Ndom_p,mbfs.numPrimMBFs(p,actSol) + mbfs.numSecMBFs(p,actSol)));
                     for prim_ii=1:mbfs.numPrimMBFs(p,actSol)
-                        domainPcbfs(:,prim_ii) = mbfs.PrimIsol(:,prim_ii,p,actSol);
+                        domainPcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_p,prim_ii,p,actSol);
                     end%for mbfs.numPrimMBFs(p)
                     for sec_ii=1:mbfs.numSecMBFs(p,actSol)
-                        domainPcbfs(:,mbfs.numPrimMBFs(p,actSol) + sec_ii) = mbfs.SecIsol(:,sec_ii,p,actSol);
+                        domainPcbfs(:,mbfs.numPrimMBFs(p,actSol) + sec_ii) = mbfs.SecIsol(1:Ndom_p,sec_ii,p,actSol);
                     end%for mbfs.numPrimMBFs(p)
                 end
 
                 % -- Domain Q
                 for q=1:numArrayEls % Loop over collumns
-
+                                        
                     % Do the same as the above here for domain Q:
-
+                    
+                    % Extract basis function indices associated with domains q
+                    domain_q_basis_functions = Solver_setup.rwg_basis_functions_domains{q};
+                    Ndom_q = length(domain_q_basis_functions);
+                    
                     if (Const.useMBFreduction)
                         % Copy only the reduced MBFs
-                        domainQcbfs = complex(zeros(Ndom,mbfs.numRedMBFs(q,actSol)));
+                        domainQcbfs = complex(zeros(Ndom_q,mbfs.numRedMBFs(q,actSol)));
                         for red_ii=1:mbfs.numRedMBFs(q,actSol)
-                            domainQcbfs(:,red_ii) = mbfs.RedIsol(:,red_ii,q,actSol);
+                            domainQcbfs(:,red_ii) = mbfs.RedIsol(1:Ndom_q,red_ii,q,actSol);
                         end%for mbfs.numRedMBFs(p)
 
                     else % Conventional + CS-CBFM (use both primaries and secondaries)
                         % First create a collumn augmented matrix containing all the MBFs of domain q,
                         % i.e. both primary and secondary MBFs:
-                        domainQcbfs = complex(zeros(Ndom,mbfs.numPrimMBFs(q,actSol) + mbfs.numSecMBFs(q,actSol)));
+                        domainQcbfs = complex(zeros(Ndom_q,mbfs.numPrimMBFs(q,actSol) + mbfs.numSecMBFs(q,actSol)));
                         for prim_ii=1:mbfs.numPrimMBFs(q,actSol)
-                            domainQcbfs(:,prim_ii) = mbfs.PrimIsol(:,prim_ii,q,actSol);
+                            domainQcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_q,prim_ii,q,actSol);
                         end%for
                         for sec_ii=1:mbfs.numSecMBFs(q,actSol)
-                            domainQcbfs(:,mbfs.numPrimMBFs(q,actSol) + sec_ii) = mbfs.SecIsol(:,sec_ii,q,actSol);
+                            domainQcbfs(:,mbfs.numPrimMBFs(q,actSol) + sec_ii) = mbfs.SecIsol(1:Ndom_q,sec_ii,q,actSol);
                         end%for
                     end
-
+                                        
                     % Calculate now Zred = (Jp)^t * Zpq * Jq (where t is the transpose operator)
-                    domain_bot_p = Const.arrayElBasisFunctRange(p,1); % (p-1)*Ndom+1;
-                    domain_top_p = Const.arrayElBasisFunctRange(p,2); %  p*Ndom;
-                    domain_bot_q = Const.arrayElBasisFunctRange(q,1); % (q-1)*Ndom+1;
-                    domain_top_q = Const.arrayElBasisFunctRange(q,2); %  q*Ndom;
                     % See issue FEKDDM-3.2: Add now ACA support for the coupling matrix assebly here (only for off-diagonal terms)
                     freq = 1;
                     if (p~=q)
-                        [Zcoupl, Ucoupl, Vcoupl] = calcZmn(Const,zMatrices,freq,p,q,[domain_bot_p:domain_top_p],[domain_bot_q:domain_top_q]);
+                        [Zcoupl, Ucoupl, Vcoupl] = calcZmn(Const,zMatrices,freq,p,q,domain_p_basis_functions,domain_q_basis_functions);
                     else
                         useACAtmp = Const.useACA;
                         Const.useACA = 0;
-                        [Zcoupl, Ucoupl, Vcoupl] = calcZmn(Const,zMatrices,1,freq,q,[domain_bot_p:domain_top_p],[domain_bot_q:domain_top_q]);
+                        [Zcoupl, Ucoupl, Vcoupl] = calcZmn(Const,zMatrices,freq,p,q,domain_p_basis_functions,domain_q_basis_functions);
                         %Zcoupl = zMatrices.values((p-1)*Ndom+1:p*Ndom,(q-1)*Ndom+1:q*Ndom);
                         Const.useACA = useACAtmp;
                     end
@@ -304,11 +308,18 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
 
                     % ------------------------------------------------------------------------------
                     % Block assignment for submatrix in Zred.
-                    % See issue FEKDDM-3.2 on Basecamp (and also above comment): The ACA can also be used for Zcoupl
-                    if ((Const.ACAalg < 3) || (p==q))
+                    if (~Const.useACA)
+                        % -- Standard (no ACA)
                         cbfm.Zred(PindxStart:PindxEnd,QindxStart:QindxEnd) = (domainPcbfs)' * Zcoupl * domainQcbfs;
-                    elseif (Const.ACAalg == 3) % Use U and V rectangular matrices calculated with ACA
-                        cbfm.Zred(PindxStart:PindxEnd,QindxStart:QindxEnd) = (domainPcbfs)' * Ucoupl * Vcoupl * domainQcbfs;
+                    else
+                        % -- Use ACA - we have U and V matrices for off-diagonal entries
+                        if (p~=q)
+                            % -- Use factored U and V matrices to speed-up the matrix-vector products
+                            cbfm.Zred(PindxStart:PindxEnd,QindxStart:QindxEnd) = (domainPcbfs)' * Ucoupl * Vcoupl * domainQcbfs;  
+                        else
+                            % Diagonal entries calculated using standard approach (Zpq)
+                            cbfm.Zred(PindxStart:PindxEnd,QindxStart:QindxEnd) = (domainPcbfs)' * Zcoupl * domainQcbfs;
+                        end
                     end
 
                 end%for q=1:numArrayEls
@@ -362,6 +373,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                 allocated = false;
             end
         end%if (Zred_not_calculated)
+                
         % ======================================
         % Setup the reduced excitation vector Vred
         % (See FEKDDM-10: This is done for each solution configuration).
@@ -370,34 +382,38 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
         % -- Domain P
         for p=1:numArrayEls % Loop over rows
 
+            % Calculate now Vred = (Jp)^t * Vrwg (where t is the transpose operator)
+            domain_p_basis_functions = Solver_setup.rwg_basis_functions_domains{p};
+            Ndom_p = length(domain_p_basis_functions);
+
             % First create a collumn augmented matrix containing all the MBFs of domain p,
             % i.e. both primary and secondary MBFs:
             if (Const.useMBFreduction)
                 % Copy only the reduced MBFs
-                domainPcbfs = complex(zeros(Ndom,mbfs.numRedMBFs(p,actSol)));
+                domainPcbfs = complex(zeros(Ndom_p,mbfs.numRedMBFs(p,actSol)));
                 for red_ii=1:mbfs.numRedMBFs(p,actSol)
-                    domainPcbfs(:,red_ii) = mbfs.RedIsol(:,red_ii,p,actSol);
+                    domainPcbfs(:,red_ii) = mbfs.RedIsol(1:Ndom_p,red_ii,p,actSol);
                 end%for mbfs.numRedMBFs(p)
 
             elseif (Const.useCSCBFM)
                 % Now as explained in [2], for the testing MBFs we use only the primaries
-                domainPcbfs = complex(zeros(Ndom,mbfs.numPrimMBFs(p,actSol)));
+                domainPcbfs = complex(zeros(Ndom_p,mbfs.numPrimMBFs(p,actSol)));
                 for prim_ii=1:mbfs.numPrimMBFs(p,actSol)
-                    domainPcbfs(:,prim_ii) = mbfs.PrimIsol(:,prim_ii,p,actSol);
+                    domainPcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_p,prim_ii,p,actSol);
                 end%for mbfs.numPrimMBFs(p)
             else
                 % Conventional method as explained in [1] - primaries and secondaries
-                domainPcbfs = complex(zeros(Ndom,mbfs.numPrimMBFs(p,actSol) + mbfs.numSecMBFs(p,actSol)));
+                domainPcbfs = complex(zeros(Ndom_p,mbfs.numPrimMBFs(p,actSol) + mbfs.numSecMBFs(p,actSol)));
                 for prim_ii=1:mbfs.numPrimMBFs(p,actSol)
-                    domainPcbfs(:,prim_ii) = mbfs.PrimIsol(:,prim_ii,p,actSol);
+                    domainPcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_p,prim_ii,p,actSol);
                 end%for mbfs.numPrimMBFs(p)
                 for sec_ii=1:mbfs.numSecMBFs(p,actSol)
-                    domainPcbfs(:,mbfs.numPrimMBFs(p,actSol) + sec_ii) = mbfs.SecIsol(:,sec_ii,p,actSol);
+                    domainPcbfs(:,mbfs.numPrimMBFs(p,actSol) + sec_ii) = mbfs.SecIsol(1:Ndom_p,sec_ii,p,actSol);
                 end%for mbfs.numPrimMBFs(p)
             end
-
-            % Calculate now Vred = (Jp)^t * Vrwg (where t is the transpose operator)
-            Vrwg = yVectors.values((p-1)*Ndom+1:p*Ndom,solNum);
+            
+            % Extract the excition vector entries associated with domain p.
+            Vrwg = yVectors.values(domain_p_basis_functions,solNum);
 
             % ==========
             % Range of P (rows, i.e. testing functions)
@@ -467,8 +483,14 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
             cbfm.Ired = U\b;
         end%if
 
-        % Expand the Ired to Imom for each of the p array elements
+        % Expand the Ired to Imom for each of the p array elements.
+        % TO-DO: For interconnected domains, we need to average the solution
+        % in the overlapping region.
         for p=1:numArrayEls
+
+            % Calculate now Vred = (Jp)^t * Vrwg (where t is the transpose operator)
+            domain_p_basis_functions = Solver_setup.rwg_basis_functions_domains{p};
+            Ndom_p = length(domain_p_basis_functions);
 
             if (Const.useMBFreduction) % We have a reduced set of basis functions on each element
 
@@ -483,7 +505,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                 % Add the contribution of the reduced CBFs
                 for red_ii=1:mbfs.numRedMBFs(p,actSol)
                     fak = cbfm.Ired(offset + red_ii);
-                    cbfm.Isol((p-1)*Ndom+1:p*Ndom,solNum) = cbfm.Isol((p-1)*Ndom+1:p*Ndom,solNum) + fak.*mbfs.RedIsol(:,red_ii,p,actSol);
+                    cbfm.Isol(domain_p_basis_functions,solNum) = cbfm.Isol(domain_p_basis_functions,solNum) + fak.*mbfs.RedIsol(1:Ndom_p,red_ii,p,actSol);
                 end%for n=1:numArrayEls
 
             else % use the conventional CBFM or CS-CBFM where in both cases we have primaries and secondaries
@@ -503,7 +525,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                     % domains only have 1 primary MBF. The last term in the
                     % following assignment has to be changed to: mbfs.PrimIsol(:,m,p)
                     fak = cbfm.Ired(offset + prim_ii);
-                    cbfm.Isol((p-1)*Ndom+1:p*Ndom,solNum) = cbfm.Isol((p-1)*Ndom+1:p*Ndom,solNum) + fak.*mbfs.PrimIsol(:,prim_ii,p,actSol);
+                    cbfm.Isol((p-1)*Ndom_p+1:p*Ndom_p,solNum) = cbfm.Isol((p-1)*Ndom_p+1:p*Ndom_p,solNum) + fak.*mbfs.PrimIsol(:,prim_ii,p,actSol);
                 end%for n=1:numArrayEls
                 if (~Const.calcSecMBFs)
                     % If there are no Secondary MBFs, then continue with the
@@ -517,10 +539,21 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                     % See FEKDDM-4.1 and also comment in runMBFgenerator: The negative sign has already been
                     % accounted for when the secondary MBFs are generated.
                     fak = cbfm.Ired(offset + mbfs.numPrimMBFs(p,actSol) + sec_ii);
-                    cbfm.Isol((p-1)*Ndom+1:p*Ndom,solNum) = cbfm.Isol((p-1)*Ndom+1:p*Ndom,solNum) + fak.*mbfs.SecIsol(:,sec_ii,p,actSol);
+                    cbfm.Isol((p-1)*Ndom_p+1:p*Ndom_p,solNum) = cbfm.Isol((p-1)*Ndom_p+1:p*Ndom_p,solNum) + fak.*mbfs.SecIsol(:,sec_ii,p,actSol);
                 end%for
             end%if
-        end%for
+        end%for p=1:numArrayEls
+
+        if (~Solver_setup.disconnected_domains)
+            % -- Windowing  (only if we have interconnected domains)
+            % If we have an interconnected array, then we need to average the overlapping basis functions (currently all the domains'
+            % controbutions are accounted for on these unknowns). At the moment, we are working with 2D problems, i.e. geometry that is
+            % located on the XY-plane. Only two domains therefore join at an interface and we calculate the average of the BFs by just
+            % dividing the entries by 2. TO-DO: In the future, we will want to consider general 3D geometry that can also have more
+            % than 2 domains interfacing at tbeir boundaries. This part then has to be refactored:
+            %cbfm.Isol(Solver_setup.rwg_basis_functions_on_interface) = 0.5.*cbfm.Isol(Solver_setup.rwg_basis_functions_on_interface);
+            %cbfm.Isol(Solver_setup.rwg_basis_functions_on_interface) = 0.0;
+        end%if
 
     end%for solNum = 1:numSols
 
@@ -533,8 +566,8 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     cbfm.memUsage = byteSize(cbfm.Zred(:,:));
 
     % Write the CBFM solution to a ASCII str file, so that it can be read
-    % again by FEKO (for plotting in POSTFEKO) - only if requested.
-    if (isequal(and([0 0 0 0 0 1 0],Const.FEKDDMwriteFEKOstrfile),[0 0 0 0 0 1 0]))
+    % again by FEKO (for plotting in POSTFEKO) - only if requested (i.e. if the filename is defined)
+    if (~isempty(Const.SUNEMcbfmstrfilename))
         writeSolToFile(Const, cbfm);
     end%if
 
@@ -543,7 +576,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
         cbfm.solTime + mbfs.totTime));
     % Update now the CBFM time:
     cbfm.solTime = cbfm.solTime + mbfs.totTime;
-    message_fc(Const,sprintf('Memory usage of MoM %s',cbfm.memUsage));
+    message_fc(Const,sprintf('Memory usage of CBFM %s',cbfm.memUsage));
 
     for solNum = solStart:solEnd
         % Compare the CBFM solution obtained with MATLAB, with that obtained by FEKO

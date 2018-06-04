@@ -7,7 +7,7 @@ function writeSolToFile(Const, solStruct)
     %   Input Arguments:
     %       Const
     %           A global struct, containging:
-    %       FEKDDMxxxstrfilename
+    %       filename
     %           FEKO *.str filename (e.g. 'cbfm.str') (as output by FEKO)
     %           The expansion coefficients in this file is replaced with
     %           those calculated by FEKDDM's DD solution (e.g. the CBFM,
@@ -64,17 +64,17 @@ function writeSolToFile(Const, solStruct)
     no_output = false;
     switch (upper(solStruct.name))
         case 'CBFM'
-            filename = Const.FEKDDMcbfmstrfilename;
+            filename = Const.SUNEMcbfmstrfilename;
         case 'DGFM'
-            filename = Const.FEKDDMdgfmstrfilename;
+            filename = Const.SUNEMdgfmstrfilename;
         case 'JACK'
-            filename = Const.FEKDDMjackstrfilename;
+            filename = Const.SUNEMjackstrfilename;
         case 'NGFDGFM'
-            filename = Const.FEKDDMngfdgfmstrfilename;
+            filename = Const.SUNEMngfdgfmstrfilename;
         case 'IFBMOM'
-            filename = Const.FEKDDMifbmomstrfilename;
+            filename = Const.SUNEMifbmomstrfilename;
         case 'ITERDGFM'
-            filename = Const.FEKDDMiterdgfmstrfilename;
+            filename = Const.SUNEMiterdgfmstrfilename;
         case 'HARP-MBF-PATTERN'
             filename = Const.harp_single_element_MBF_patterns_FEKOstrfile;
             no_output = true;
@@ -89,44 +89,43 @@ function writeSolToFile(Const, solStruct)
     else
     % First convert the *.str file to a ASCII file (only on Windows, see FEKDDM-08)
         if (ispc)
-            [stat, dosout] = dos(sprintf('%s//str2ascii.exe %s -r > ascii_%s 2>&1',Const.ExecPath, filename, filename));
-            if (stat ~= 0)
-                error(['Error converting FEKO *.str file to ASCII: %s' filename]);
+            [stat, dosout] = dos(sprintf('\"%s//str2ascii.exe\" %s -r > %s 2>&1', ...
+                Const.ExecPath, strfilename, ascii_strfilename));
+            if (stat ~= 0)                
                 message(Const,sprintf('Error converting FEK0 *.str file to ASCII: %s',filename));
                 message(Const, num2str(stat));
+                error(['Error converting FEKO *.str file to ASCII: %s' filename]);
             end%if
 
         elseif (isunix)
-            % Call str2ascii for the str file (TO-DO: Danie, we assume here the str2file binary is in the project directory, 
-            % i.e. the examples directory. I got an error when the str2ascii utility was in the /bin directory)
-            %fprintf('./str2ascii %s -r > ascii_%s 2>&1\n', filename, filename);
-            [stat, sysout] = system(sprintf('./str2ascii %s -r > ascii_%s 2>&1', filename, filename));
+            [stat, sysout] = system(sprintf('\"%s//str2ascii\" %s -r > %s 2>&1', ...
+                Const.ExecPath, filename, ascii_strfilename));
             %sysout
             if (stat ~= 0)
                 sysout % Write the FEKO output to the screen
                 error(['Error running str2ascii for: ' filename]);
-                mesage(Const,sprintf('Error running str2ascii for: %s', filename));
-                message(Const, num2str(stat));
+                message_fc(Const,sprintf('Error running str2ascii for: %s', filename));
+                message_fc(Const, num2str(stat));
             end%if
 
         else
 		% See FEKDDM-08, the str2ascii utility is not working on MAC iOS. We need
-	    % to work there with an already converted *.str file
-			error(['Error: Converting FEKO *.str file to ASCII only possible on Windows']);
-			message(Const,sprintf('Error: Converting FEKO *.str file to ASCII only possible on Windows'));
+	    % to work there with an already converted *.str file			
+			message_fc(Const,sprintf('Error: Converting FEKO *.str file to ASCII only possible on Windows'));
+            error(['Error: Converting FEKO *.str file to ASCII only possible on Windows']);
 	    end%if
     end%if (exist(ascii_strfilename,'file'))
 
     fidIn  = fopen(sprintf('ascii_%s',filename),'r');
     % Overwrite the current *.str file
     fidOut = fopen(sprintf('out_ascii_%s',filename),'w');
-    if ((fidIn == -1) || (fidOut == -1))
+    if ((fidIn == -1) || (fidOut == -1))        
+        message_fc(Const,sprintf('Error writing the *.str file for FEKO'));
         error(['Error writing the *.str file for FEKO']);
-        message(Const,sprintf('Error writing the *.str file for FEKO'));
     end
 
     if (~no_output)
-        message(Const,sprintf('  Writing %s solution to *.str file: %s',upper(solStruct.name), filename));
+        message_fc(Const,sprintf('  Writing %s solution to *.str file: %s',upper(solStruct.name), filename));
     end%if
 
     % Read and write the header information from the input file to the output file
@@ -174,6 +173,6 @@ function writeSolToFile(Const, solStruct)
     fclose(fidOut);
 
     if (~no_output)
-        message(Const,sprintf('  Wrote: %d solutions (number of Xsols.)',numSols));
-        message(Const,sprintf('  Finished processing the *.str file: %s',filename));
+        message_fc(Const,sprintf('  Wrote: %d solutions (number of Xsols.)',numSols));
+        message_fc(Const,sprintf('  Finished processing the *.str file: %s',filename));
     end%if

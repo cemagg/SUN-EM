@@ -1,6 +1,9 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.2 - 2018-06-04
+- Working on interconnected CBFM solver. Promote before biggish refactoring.
+
 ## 1.1 - 2018-06-01
 - Did quite a lot of work on interconnected domains (parsing *.out file for geometry
   and basis function setup).

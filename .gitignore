@@ -1,6 +1,8 @@
 *.pfs
 *.bak
 *.cfs
+*.bof
+*.fek
 *.m~
 SimOutput.log
 *.lock

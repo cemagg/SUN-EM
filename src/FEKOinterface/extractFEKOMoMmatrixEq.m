@@ -27,7 +27,7 @@ function [Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const)
     %   Stellenbosch University
     %   Email: dludick@sun.ac.za
 
-    error(nargchk(1,1,nargin));
+    narginchk(1,1);
 
     % -- Read Z
     [zMatrices] = readFEKOZMatrixFromFile(Const, Const.FEKOmatfilename);
@@ -53,9 +53,4 @@ function [Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const)
     end
 
     % Initialisation of FEKO-Connect based on input parameter settings in Const.
-    Const = fc_init(Const, yVectors);
-
-    % Parse the FEKO out-file data:
-    if (Const.parse_FEKO_out_file)
-        [Const, FEKO_data] = parseFEKOoutfile(Const);
-    end%if
+    Const = sunem_init(Const, yVectors);

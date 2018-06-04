@@ -81,14 +81,20 @@ function displayTriangleMesh(Const, Solver_setup)
     % Display the basis functions (also distinguish in which domains they
     % are). Note, currently this is only for domain decomposition. Should
     % be trivial to extend for general case.
-    plot_domain = 0;
+    plot_domain = 3;
+    % Only plot the internal basis functions associated with the domain
+    internal_bfs_only = true;
     
     % Plot for each of the domains the basis functions. We can also
     % display only the basis functions of a specific domain if 
     % domain_id <> -1 as set above
     for domain_index = 1:Solver_setup.number_of_domains
         if ((domain_index == plot_domain) || (plot_domain == 0))
-            domain_basis_functions = Solver_setup.rwg_basis_functions_domains{domain_index};
+            if (internal_bfs_only)                
+                domain_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{domain_index};
+            else
+                domain_basis_functions = Solver_setup.rwg_basis_functions_domains{domain_index};
+            end
             for i = 1:length(domain_basis_functions)
                 bf_index = domain_basis_functions(i);
                 % Extract the centrepoint of the shared edge - this is where we

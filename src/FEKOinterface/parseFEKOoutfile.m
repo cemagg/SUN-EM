@@ -1,4 +1,4 @@
-function [Const, FEKO_data] = parseFEKOoutfile(Const)
+function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     %parseFEKOoutfile
     %   Date: 2017.07.01
     %   Usage:
@@ -6,9 +6,10 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
     %
     %   Input Arguments:
     %       Const: A global struct containing:
-    %       FEKOoutfilename
+    %       FEKOoutfilenameU
     %           FEKO *.out filename (e.g. 'yagi.out')
-    %
+    %       yVectors
+    %           The Yrhs-vector data
     %   Output Arguments:
     %       FEKO_data:
     %           The struct containing the frequency list data (e.g. number
@@ -28,7 +29,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
     %   on the FEKO website:
     %   http://www.feko.info/
     
-    narginchk(1,1);
+    narginchk(2,2);
 
     fid = fopen(Const.FEKOoutfilename,'r');
 
@@ -56,7 +57,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
     FEKO_data.num_finite_array_elements = -1;
 
     % A local debug flag (e.g. to plot geometry)
-    LOCAL_DEBUG = false;
+    LOCAL_DEBUG = true;
     
     % Flag to make sure we actually read the geometry
     geometry_found = false;
@@ -375,31 +376,44 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const)
         FEKO_data.mom_basis_functions_per_array_element = -1;
     end%if
     
+    if (~FEKO_data.disconnected_domains)
+        % Note: Allocated submatrices later using FEKO_data.mom_basis_functions_per_array_element,
+        % will work for disconnected domains. If we have interconnected array elements, then we need 
+        % to determine the maximum number of basis functions per domain, otherwise we might run into 
+        % array indexing issues later. Loop over the domains and extract a maximum number of BFs:
+        FEKO_data.max_mom_basis_functions_per_array_element = 0;
+        for el = 1:FEKO_data.num_finite_array_elements
+            FEKO_data.max_mom_basis_functions_per_array_element = max(FEKO_data.max_mom_basis_functions_per_array_element, ...
+                length(FEKO_data.rwg_basis_functions_domains{el}));
+        end%for
+    else
+        FEKO_data.max_mom_basis_functions_per_array_element = FEKO_data.mom_basis_functions_per_array_element;
+    end%if
+
     % Setup a vector that shows when an array element is active
-    Const.is_array_element_active = zeros(Const.numArrayElements,yVectors.numRhs);
+    Const.is_array_element_active = zeros(FEKO_data.num_finite_array_elements,yVectors.numRhs);
     % Loop over all the array elements and check whether any of the RHS
     % vector elements are zero, if not, then this element is excited
     % Do this for each of the RHsides, i.e. each of the solution
     % configurations (see issue FEKDDM-10).
     for solNum = 1:yVectors.numRhs
-        for el = 1:Const.numArrayElements
-           domain_bot =  Const.arrayElBasisFunctRange(el,1);
-           domain_top =  Const.arrayElBasisFunctRange(el,2);
-           if (~isempty(find(yVectors.values(domain_bot:domain_top,solNum))))
-               Const.isArrayElementActive(el,solNum) = 1;
+        for el = 1:FEKO_data.num_finite_array_elements                      
+           domain_indices = FEKO_data.rwg_basis_functions_domains{el};    
+           if (~isempty(find(yVectors.values(domain_indices,solNum))))
+               Const.is_array_element_active(el,solNum) = 1;
            end
         end
     end
     
-    % Check now which of the elements are active:    
-    all_active = true;
+    % Set flag for array element excitation status (all or none)
+    Const.all_array_elements_active = true;
     for sol_num = 1:yVectors.numRhs
         % Loop over all the elements in each solution configuration and
         % check that they are active
         for el = 1:FEKO_data.num_finite_array_elements
-            if (~Const.isArrayElementActive(el,solNum))
+            if (~Const.is_array_element_active(el,solNum))
                 % Passive element detected
-                all_active = false;
+                Const.all_array_elements_active = false;
             end
         end%for
     end

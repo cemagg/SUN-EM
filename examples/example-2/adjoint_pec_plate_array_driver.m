@@ -11,7 +11,7 @@
 % --------------------------------------------------------------------------------------------------
 % Project output directory: './dipoles/'
 % Debug: True/False
-Const = sunem_initialise('pec_plate_array',false);
+Const = sunem_initialise('adjoint_pec_plate_array',false);
 
 % --------------------------------------------------------------------------------------------------
 % Program flow settings
@@ -24,17 +24,17 @@ Const.runCBFMsolver      = true;
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.FEKOmatfilename          = 'pec_plate_array.mat';
-Const.FEKOstrfilename          = 'pec_plate_array.str';
-Const.FEKOrhsfilename          = 'pec_plate_array.rhs';
-Const.FEKOoutfilename          = 'pec_plate_array.out';
-Const.FEKOefefilename          = 'pec_plate_array.efe';
-Const.FEKOffefilename          = 'pec_plate_array.ffe';
+Const.FEKOmatfilename          = 'adjoint_pec_plate_array.mat';
+Const.FEKOstrfilename          = 'adjoint_pec_plate_array.str';
+Const.FEKOrhsfilename          = 'adjoint_pec_plate_array.rhs';
+Const.FEKOoutfilename          = 'adjoint_pec_plate_array.out';
+Const.FEKOefefilename          = 'adjoint_pec_plate_array.efe';
+Const.FEKOffefilename          = 'adjoint_pec_plate_array.ffe';
 
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMcbfmstrfilename     = 'cbfm_pec_plate_array.str';
+Const.SUNEMcbfmstrfilename     = 'adjoint_cbfm_pec_plate_array.str';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants

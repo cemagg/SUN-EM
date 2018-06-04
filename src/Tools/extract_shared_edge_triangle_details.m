@@ -40,8 +40,13 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         Solver_setup.domain_labels = unique(Solver_setup.metallic_triangles_labels);
         Solver_setup.number_of_domains = size(Solver_setup.domain_labels,1);
         % Allocate now space to store the basis functions list of each
-        % domain (will be used when extracting e.g. matrix entries)
+        % domain (will be used when extracting e.g. matrix entries). We store two
+        % types of vectors, one for keep track of the unknowns in the extended domain
+        % (Solver_setup.rwg_basis_functions_domains) and the other for tracking only the 
+        % internal RWGs (i.e. not included in the extended domain), 
+        % ssSolver_setup.rwg_basis_functions_internal_domains
         Solver_setup.rwg_basis_functions_domains = cell(Solver_setup.number_of_domains,1);
+        Solver_setup.rwg_basis_functions_internal_domains = cell(Solver_setup.number_of_domains,1);
         
         % Initialise now each of the domain basis function lists
         for domain_index = 1:Solver_setup.number_of_domains
@@ -58,6 +63,9 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
     Solver_setup.rwg_basis_functions_trianglePlusFreeVertex = zeros(Solver_setup.num_metallic_edges,1);
     Solver_setup.rwg_basis_functions_triangleMinusFreeVertex = zeros(Solver_setup.num_metallic_edges,1);
     Solver_setup.rwg_basis_functions_shared_edge_centre = zeros(Solver_setup.num_metallic_edges,3);
+
+    % Allocate an empty list to store the RWGs on the boundaries (just group all of them together)
+    Solver_setup.rwg_basis_functions_on_interface = [];
 
     % Loop over each of the shared edges and extract the additional details mentioned below:
     for edge_index = 1:Solver_setup.num_metallic_edges
@@ -116,7 +124,7 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
             if (domain_index_triangle_plus == domain_index_triangle_minus)
                 % Basis function entirely in domain. Add it to the list.
                 Solver_setup.rwg_basis_functions_domains{domain_index_triangle_plus} = [ ...
-                    Solver_setup.rwg_basis_functions_domains{domain_index_triangle_plus},
+                    Solver_setup.rwg_basis_functions_domains{domain_index_triangle_plus},...
                     edge_index];
             else
                 % Basis function on the boundary - we have detected
@@ -125,12 +133,14 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
                 
                 % Add the basis function to both domains.
                 Solver_setup.rwg_basis_functions_domains{domain_index_triangle_plus} = [ ...
-                    Solver_setup.rwg_basis_functions_domains{domain_index_triangle_plus},
+                    Solver_setup.rwg_basis_functions_domains{domain_index_triangle_plus},...
                     edge_index];
                 
                 Solver_setup.rwg_basis_functions_domains{domain_index_triangle_minus} = [ ...
-                    Solver_setup.rwg_basis_functions_domains{domain_index_triangle_minus},
+                    Solver_setup.rwg_basis_functions_domains{domain_index_triangle_minus},...
                     edge_index];
+
+                Solver_setup.rwg_basis_functions_on_interface = [Solver_setup.rwg_basis_functions_on_interface edge_index];
             end%if
 
             if (LOCAL_DEBUG)
@@ -141,4 +151,15 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         end%if (Const.domain_decomposition)
             
     end%for edge_index = 1:Solver_setup.num_metallic_edges
+
+    % Loop over the domains and calculate the unknowns internal to each domain (i.e. excluding the RWG basis
+    % functions on the interface). This is only necessary if we have interconnected domains:
+    if (Const.domain_decomposition && ~Solver_setup.disconnected_domains)
+        for el = 1:Solver_setup.num_finite_array_elements
+           extended_domain_indices = Solver_setup.rwg_basis_functions_domains{el};    
+           % Determine now this domain's internal unknowns, by just extracting 
+           Solver_setup.rwg_basis_functions_internal_domains{el} = setdiff(extended_domain_indices, ...
+               Solver_setup.rwg_basis_functions_on_interface);
+       end%for
+    end %if
 
