@@ -74,7 +74,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     cbfm.name = 'cbfm';
     Nmom = Solver_setup.num_mom_basis_functions;                   % Total number of basis functions for whole problem
     Nngf = Solver_setup.num_ngf_basis_functions;                   % Number of basis functions for NGF domain
-    Ndom = Solver_setup.max_mom_basis_functions_per_array_element; % Total number of basis functions for the array
+    %Ndom = Solver_setup.max_mom_basis_functions_per_array_element; % Total number of basis functions for the array
     numArrayEls = Solver_setup.num_finite_array_elements;          % The number of array elements
     
     numSols = xVectors.numSols;                % The number of reference solutions
@@ -192,23 +192,23 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                     % Copy only the reduced MBFs
                     domainPcbfs = complex(zeros(Ndom_p,mbfs.numRedMBFs(p,actSol)));
                     for red_ii=1:mbfs.numRedMBFs(p,actSol)
-                        domainPcbfs(:,red_ii) = mbfs.RedIsol(1:Ndom_p,red_ii,p,actSol);
+                        domainPcbfs(:,red_ii) = mbfs.RedIsol(domain_p_basis_functions,red_ii,p,actSol);
                     end%for mbfs.numRedMBFs(p)
 
                 elseif (Const.useCSCBFM)
                     % Now as explained in [2], for the testing MBFs we use only the primaries
                     domainPcbfs = complex(zeros(Ndom_p,mbfs.numPrimMBFs(p,actSol)));
                     for prim_ii=1:mbfs.numPrimMBFs(p,actSol)
-                        domainPcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_p,prim_ii,p,actSol);
+                        domainPcbfs(:,prim_ii) = mbfs.PrimIsol(domain_p_basis_functions,prim_ii,p,actSol);
                     end%for mbfs.numPrimMBFs(p)
                 else
                     % Conventional method as explained in [1] - primaries and secondaries
                     domainPcbfs = complex(zeros(Ndom_p,mbfs.numPrimMBFs(p,actSol) + mbfs.numSecMBFs(p,actSol)));
                     for prim_ii=1:mbfs.numPrimMBFs(p,actSol)
-                        domainPcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_p,prim_ii,p,actSol);
+                        domainPcbfs(:,prim_ii) = mbfs.PrimIsol(domain_p_basis_functions,prim_ii,p,actSol);
                     end%for mbfs.numPrimMBFs(p)
                     for sec_ii=1:mbfs.numSecMBFs(p,actSol)
-                        domainPcbfs(:,mbfs.numPrimMBFs(p,actSol) + sec_ii) = mbfs.SecIsol(1:Ndom_p,sec_ii,p,actSol);
+                        domainPcbfs(:,mbfs.numPrimMBFs(p,actSol) + sec_ii) = mbfs.SecIsol(domain_p_basis_functions,sec_ii,p,actSol);
                     end%for mbfs.numPrimMBFs(p)
                 end
 
@@ -225,7 +225,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                         % Copy only the reduced MBFs
                         domainQcbfs = complex(zeros(Ndom_q,mbfs.numRedMBFs(q,actSol)));
                         for red_ii=1:mbfs.numRedMBFs(q,actSol)
-                            domainQcbfs(:,red_ii) = mbfs.RedIsol(1:Ndom_q,red_ii,q,actSol);
+                            domainQcbfs(:,red_ii) = mbfs.RedIsol(domain_q_basis_functions,red_ii,q,actSol);
                         end%for mbfs.numRedMBFs(p)
 
                     else % Conventional + CS-CBFM (use both primaries and secondaries)
@@ -233,10 +233,10 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                         % i.e. both primary and secondary MBFs:
                         domainQcbfs = complex(zeros(Ndom_q,mbfs.numPrimMBFs(q,actSol) + mbfs.numSecMBFs(q,actSol)));
                         for prim_ii=1:mbfs.numPrimMBFs(q,actSol)
-                            domainQcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_q,prim_ii,q,actSol);
+                            domainQcbfs(:,prim_ii) = mbfs.PrimIsol(domain_q_basis_functions,prim_ii,q,actSol);
                         end%for
                         for sec_ii=1:mbfs.numSecMBFs(q,actSol)
-                            domainQcbfs(:,mbfs.numPrimMBFs(q,actSol) + sec_ii) = mbfs.SecIsol(1:Ndom_q,sec_ii,q,actSol);
+                            domainQcbfs(:,mbfs.numPrimMBFs(q,actSol) + sec_ii) = mbfs.SecIsol(domain_q_basis_functions,sec_ii,q,actSol);
                         end%for
                     end
                                         
@@ -392,23 +392,23 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                 % Copy only the reduced MBFs
                 domainPcbfs = complex(zeros(Ndom_p,mbfs.numRedMBFs(p,actSol)));
                 for red_ii=1:mbfs.numRedMBFs(p,actSol)
-                    domainPcbfs(:,red_ii) = mbfs.RedIsol(1:Ndom_p,red_ii,p,actSol);
+                    domainPcbfs(:,red_ii) = mbfs.RedIsol(domain_p_basis_functions,red_ii,p,actSol);
                 end%for mbfs.numRedMBFs(p)
 
             elseif (Const.useCSCBFM)
                 % Now as explained in [2], for the testing MBFs we use only the primaries
                 domainPcbfs = complex(zeros(Ndom_p,mbfs.numPrimMBFs(p,actSol)));
                 for prim_ii=1:mbfs.numPrimMBFs(p,actSol)
-                    domainPcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_p,prim_ii,p,actSol);
+                    domainPcbfs(:,prim_ii) = mbfs.PrimIsol(domain_p_basis_functions,prim_ii,p,actSol);
                 end%for mbfs.numPrimMBFs(p)
             else
                 % Conventional method as explained in [1] - primaries and secondaries
                 domainPcbfs = complex(zeros(Ndom_p,mbfs.numPrimMBFs(p,actSol) + mbfs.numSecMBFs(p,actSol)));
                 for prim_ii=1:mbfs.numPrimMBFs(p,actSol)
-                    domainPcbfs(:,prim_ii) = mbfs.PrimIsol(1:Ndom_p,prim_ii,p,actSol);
+                    domainPcbfs(:,prim_ii) = mbfs.PrimIsol(domain_p_basis_functions,prim_ii,p,actSol);
                 end%for mbfs.numPrimMBFs(p)
                 for sec_ii=1:mbfs.numSecMBFs(p,actSol)
-                    domainPcbfs(:,mbfs.numPrimMBFs(p,actSol) + sec_ii) = mbfs.SecIsol(1:Ndom_p,sec_ii,p,actSol);
+                    domainPcbfs(:,mbfs.numPrimMBFs(p,actSol) + sec_ii) = mbfs.SecIsol(domain_p_basis_functions,sec_ii,p,actSol);
                 end%for mbfs.numPrimMBFs(p)
             end
             
@@ -505,7 +505,8 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                 % Add the contribution of the reduced CBFs
                 for red_ii=1:mbfs.numRedMBFs(p,actSol)
                     fak = cbfm.Ired(offset + red_ii);
-                    cbfm.Isol(domain_p_basis_functions,solNum) = cbfm.Isol(domain_p_basis_functions,solNum) + fak.*mbfs.RedIsol(1:Ndom_p,red_ii,p,actSol);
+                    cbfm.Isol(domain_p_basis_functions,solNum) = cbfm.Isol(domain_p_basis_functions,solNum) + ...
+                        fak.*mbfs.RedIsol(domain_p_basis_functions,red_ii,p,actSol);
                 end%for n=1:numArrayEls
 
             else % use the conventional CBFM or CS-CBFM where in both cases we have primaries and secondaries
@@ -525,7 +526,8 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                     % domains only have 1 primary MBF. The last term in the
                     % following assignment has to be changed to: mbfs.PrimIsol(:,m,p)
                     fak = cbfm.Ired(offset + prim_ii);
-                    cbfm.Isol((p-1)*Ndom_p+1:p*Ndom_p,solNum) = cbfm.Isol((p-1)*Ndom_p+1:p*Ndom_p,solNum) + fak.*mbfs.PrimIsol(:,prim_ii,p,actSol);
+                    cbfm.Isol(domain_p_basis_functions,solNum) = cbfm.Isol(domain_p_basis_functions,solNum) + ...
+                        fak.*mbfs.PrimIsol(domain_p_basis_functions,prim_ii,p,actSol);
                 end%for n=1:numArrayEls
                 if (~Const.calcSecMBFs)
                     % If there are no Secondary MBFs, then continue with the
@@ -539,7 +541,8 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                     % See FEKDDM-4.1 and also comment in runMBFgenerator: The negative sign has already been
                     % accounted for when the secondary MBFs are generated.
                     fak = cbfm.Ired(offset + mbfs.numPrimMBFs(p,actSol) + sec_ii);
-                    cbfm.Isol((p-1)*Ndom_p+1:p*Ndom_p,solNum) = cbfm.Isol((p-1)*Ndom_p+1:p*Ndom_p,solNum) + fak.*mbfs.SecIsol(:,sec_ii,p,actSol);
+                    cbfm.Isol(domain_p_basis_functions,solNum) = cbfm.Isol(domain_p_basis_functions,solNum) + ...
+                        fak.*mbfs.SecIsol(domain_p_basis_functions,sec_ii,p,actSol);
                 end%for
             end%if
         end%for p=1:numArrayEls
