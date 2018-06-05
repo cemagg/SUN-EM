@@ -1,4 +1,4 @@
-function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
+function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors)
     %runIFBMoMsolver
     %   Usage:
     %       [ifbmom] = runifbMoMsolver(Const)
@@ -45,25 +45,30 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
     %      [8] R. Maaskant, Ludick, D.J, Botha, M.M., D. Davidson, "Analysis of Finite Antennas Arrays
     %          using the CBFM enhanced Jacobi Method,", AWPL submission 2016 (work in progress)
 
-    error(nargchk(4,4,nargin));
+    nargchk(5,5,nargin);
 
-    message(Const,' ');
-    message(Const,'------------------------------------------------------------------------------------');
-    message(Const,sprintf('Running IFB-MoM solver'));
-    message(Const,sprintf('Total basis functions   : %d.',Const.numMoMbasis));
-    message(Const,sprintf('Domain A basis functions: %d.',Const.numIFBbasisDomA));
-    message(Const,sprintf('Domain B basis functions: %d.',Const.numIFBbasisDomB));
-    message(Const,sprintf('Number of array elements: %d.',Const.numArrayElements));
-    message(Const, sprintf('IFB algorithm: %d.',Const.IFBalg));
-    message(Const, sprintf('IFB bounces: %d.',Const.IFB_iterations));
-    message(Const, sprintf('Convergence threshold: %f percent.',Const.IFB_convergence_threshold_percentage));
+    % Some initialisations
+    Nmom = Solver_setup.num_mom_basis_functions;                   % Total number of basis functions for whole problem
+    numArrayElements = Solver_setup.num_finite_array_elements;          % The number of array elements
+
+    message_fc(Const,' ');
+    message_fc(Const,'------------------------------------------------------------------------------------');
+    message_fc(Const,sprintf('Running IFB-MoM solver'));
+    message_fc(Const,sprintf('Total basis functions   : %d.',Nmom));
+    %message_fc(Const,sprintf('Domain A basis functions: %d.',Const.numIFBbasisDomA));
+    %message_fc(Const,sprintf('Domain B basis functions: %d.',Const.numIFBbasisDomB));
+    message_fc(Const,sprintf('Number of array elements: %d.',numArrayElements));
+    message_fc(Const, sprintf('IFB algorithm: %d.',Const.IFBalg));
+    message_fc(Const, sprintf('IFB bounces: %d.',Const.IFB_iterations));
+    %message_fc(Const, sprintf('Convergence threshold: %f percent.',Const.IFB_convergence_threshold_percentage));
     if (Const.useACA)
-        message(Const, sprintf('Using ACA with tolerance %f',Const.useACAtol));
+        message_fc(Const, sprintf('Using ACA with tolerance %f',Const.useACAtol));
     end%if
+
     if ((Const.IFBalg == 12) || (Const.IFBalg == 13)|| (Const.IFBalg == 14))
-        message(Const, sprintf('Number of CBFs to take into account : %d.',Const.IFB_CBFs));
-        message(Const, sprintf('SVD Threshold (-1 means keep all CBFs) : %d.',Const.MBFthreshold));
-        message(Const, sprintf('Use caching : %d.',Const.cache_Z0_V0));
+        message_fc(Const, sprintf('Number of CBFs to take into account : %d.',Const.IFB_CBFs));
+        message_fc(Const, sprintf('SVD Threshold (-1 means keep all CBFs) : %d.',Const.MBFthreshold));
+        message_fc(Const, sprintf('Use caching : %d.',Const.cache_Z0_V0));
 
         % Build here the file-names to reflect the particular solution configuration
         img_fcd_filename = sprintf('ifbalg%d_ifbcbfs_%d_svdthresh_%f_cacheZ0V0_%d_DGFMstart_%d_useACA_%d',...
@@ -74,19 +79,24 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
 
     % Set here a local debug flag on or off
     local_debug_flag = false;
-    calculateRelativeResiduum = true;
+    calculateRelativeResiduum = false;
 
     % Initialisations
     ifbmom  = [];
     ifbmom.name = 'ifbmom';
-    Ntot  = Const.numMoMbasis;
-    NdomA = Const.numIFBbasisDomA;
-    Narr  = Ntot-NdomA;
+
+    Ntot  = Nmom;
+    %NdomA = Const.numIFBbasisDomA;
+    NdomA = 0; % TO-DO: Danie, this is hardcoded to 0.
+
+    %Narr  = Ntot-NdomA;
+    Narr  = Nmom; % TO-DO: We assume all the unknowns are in the array for now.    
     numSols = xVectors.numSols;             % The number of reference solutions
     ifbmom.numSols = numSols;               % Calculate a solution for each configuration
-    numArrayElements = Const.numArrayElements;
-    Ndgfm = Narr/numArrayElements;
-    Nloc = Ndgfm;                           % Local number of basis functions for each array element
+    
+    %Ndgfm = Narr/numArrayElements;
+    %Nloc = Ndgfm;                           % Local number of basis functions for each array element
+
     ifbmom.Isol = complex(zeros(Ntot,1));
 
     % Set a flag here that is used in some cases to specify whether this is a Jacobi method 
@@ -94,7 +104,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
     use_Jacobi = false;
 
     % Set the convergence threshold here (when Const.IFB_iterations = -1)
-    eps_percent = Const.IFB_convergence_threshold_percentage; 
+    eps_percent = Const.IFB_convergence_threshold_percentage;
 
     if (Const.IFB_iterations == -1)
         k_iter = 10000; % Set very large, essentially infinite.
@@ -111,7 +121,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
     end%if
 
     if (ifbmom.numSols > 1)
-        message(Const,'runIFBMoMsolver error: Cannot run IFB-MoM solver with more than 1 sol. config.');
+        message_fc(Const,'runIFBMoMsolver error: Cannot run IFB-MoM solver with more than 1 sol. config.');
         error ('runIFBMoMsolver error: Cannot run IFB-MoM solver with more than 1 sol. config.');
     end
 
@@ -151,99 +161,112 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
     % Extract the 4 submatrices (and factorisations of the self-interaction matrices (ZdomA, ZdomB)
     % ----------------------------------------------------------------------------------------------
     % 2017-06-01: Note: We cannot apply the ACA here to calculate these submatrices. Deactivate it
-    useACAtmp = Const.useACA;
-    Const.useACA = 0;
+    if (NdomA ~= 0)
 
-    ObservRWGs = [1:NdomA];
-    SourceRWGs = [1:NdomA];
-    ZdomA = calcZmn(Const, zMatrices, 1, 1, ObservRWGs, SourceRWGs);
+        useACAtmp = Const.useACA;
+        Const.useACA = 0;
 
-    ObservRWGs = [NdomA+1:Ntot];
-    SourceRWGs = [NdomA+1:Ntot];
-    ZdomB = calcZmn(Const, zMatrices, 1, 1, ObservRWGs, SourceRWGs);
+        ObservRWGs = [1:NdomA];
+        SourceRWGs = [1:NdomA];
+        ZdomA = calcZmn(Const, zMatrices, 1, 1, 1, ObservRWGs, SourceRWGs);            
 
-    % TO-DO: Theoretically the ACA can also be used to calculate the coupling between domains A and B
+        ObservRWGs = [NdomA+1:Ntot];
+        SourceRWGs = [NdomA+1:Ntot];
+        ZdomB = calcZmn(Const, zMatrices, 1, 1, 1, ObservRWGs, SourceRWGs);
 
-    ObservRWGs = [1:NdomA];
-    SourceRWGs = [NdomA+1:Ntot];
-    ZdomAdomB = calcZmn(Const, zMatrices, 1, 1, ObservRWGs, SourceRWGs);
-    %Zsd = zMatrices.values(1:Nngf,Nngf+1:Nmom);
-    %ZdomAdomB = zMatrices.values(1:NdomA,NdomA+1:Ntot);
+        % TO-DO: Theoretically the ACA can also be used to calculate the coupling between domains A and B
 
-    ObservRWGs = [NdomA+1:Ntot];
-    SourceRWGs = [1:NdomA];
-    ZdomBdomA = calcZmn(Const, zMatrices, 1, 1, ObservRWGs, SourceRWGs);
-    %ZdomBdomA = zMatrices.values(NdomA+1:Ntot,1:NdomA);
+        ObservRWGs = [1:NdomA];
+        SourceRWGs = [NdomA+1:Ntot];
+        ZdomAdomB = calcZmn(Const, zMatrices, 1, 1, 1, ObservRWGs, SourceRWGs);
+        %Zsd = zMatrices.values(1:Nngf,Nngf+1:Nmom);
+        %ZdomAdomB = zMatrices.values(1:NdomA,NdomA+1:Ntot);
 
-    Const.useACA = useACAtmp;
+        ObservRWGs = [NdomA+1:Ntot];
+        SourceRWGs = [1:NdomA];
+        ZdomBdomA = calcZmn(Const, zMatrices, 1, 1, 1, ObservRWGs, SourceRWGs);
+        %ZdomBdomA = zMatrices.values(NdomA+1:Ntot,1:NdomA);
 
-    % ------------------------------------
-    % Calculate (ZdomA)^(-1)
-    % ------------------------------------
-    [LdomA,UdomA] = lu(ZdomA);
+        Const.useACA = useACAtmp;
+
+        % ------------------------------------
+        % Calculate (ZdomA)^(-1)
+        % ------------------------------------
+        [LdomA,UdomA] = lu(ZdomA);
+
+    end%if (NdomA ~= 0)
 
     % ------------------------------------
     % Calculate (ZdomB)^(-1)
     % ------------------------------------
-    if ( (Const.IFBalg == 4) || (Const.IFBalg == 5) || (Const.IFBalg == 6) || 
-         (Const.IFBalg == 7) || (Const.IFBalg == 8) || (Const.IFBalg == 9) || 
+    if ( (Const.IFBalg == 4) || (Const.IFBalg == 5) || (Const.IFBalg == 6) || ...
+         (Const.IFBalg == 7) || (Const.IFBalg == 8) || (Const.IFBalg == 9) || ...
          (Const.IFBalg == 10) || (Const.IFBalg == 11) || (Const.IFBalg == 12) || ...
          (Const.IFBalg == 13) || (Const.IFBalg == 14) || (Const.IFBalg == 15))
         % Each element in domain B is considered a domain.
         % For now, we work with identical elements, so just calculate the LU factorisation
         % of the first one (also to be used for the others)
-        domain_bot = Const.arrayElBasisFunctRange(1,1);
-        domain_top = Const.arrayElBasisFunctRange(1,2);
-        % The ACA compression of the self-term here and error in buildMoMblockACA (use therefore the full MoM submatrix)
-        useACAtmp = Const.useACA;
-        Const.useACA = 0;
-        [ZdomB, UacadomB, VacadomB] = ...
-            calcZmn(Const,zMatrices,1,1,[domain_bot:domain_top],[domain_bot:domain_top]);
-        [LdomB,UdomB] = lu(ZdomB);
-        % Reset again the ACA usage:
-        Const.useACA = useACAtmp;
+        
+        % Extract a general submatrix only if we have disconnected domains
+        if (Solver_setup.disconnected_domains)
+            domain_basis_functions = Solver_setup.rwg_basis_functions_domains{1};
+            % The ACA compression of the self-term here and error in buildMoMblockACA 
+            % (use therefore the full MoM submatrix)
+            useACAtmp = Const.useACA;
+            Const.useACA = 0;        
+            [ZdomB, UacadomB, VacadomB] = ...
+                calcZmn(Const,zMatrices,1,1,1,domain_basis_functions,domain_basis_functions);
+            [LdomB,UdomB] = lu(ZdomB);
+            % Reset again the ACA usage:
+            Const.useACA = useACAtmp;
+        end%if
     else
         % We are considering the whole domain B as a single domain
         [LdomB,UdomB] = lu(ZdomB);
     end%if
 
-    % ------------------------------------
-    % Calculate VdomA and VdomB (initial excitation vectors)
-    % ------------------------------------
-    VdomA = yVectors.values(1:NdomA,1);
-    VdomB = yVectors.values(NdomA+1:Ntot,1); % Note: For IFB algorithm 4 or 5, this will be overwritten
+    if (Solver_setup.disconnected_domains)
 
-    % ----------------------------------------------------------------------------------------------
-    % Start now the iterative method for calculating the total current
-    % ----------------------------------------------------------------------------------------------
+        % If the domains are interconnected, then the following will not hold.
 
-    % ------------------------------------
-    % Iteration n_iter=0
-    % ------------------------------------
+        % ------------------------------------
+        % Calculate VdomA and VdomB (initial excitation vectors)
+        % ------------------------------------
+        %VdomA = yVectors.values(1:NdomA,1);
+        VdomB = yVectors.values(domain_basis_functions,1); % Note: For IFB algorithm 4 or 5, this will be overwritten
 
-    % ------------------------------------
-    % Calculate JdomA_0 = (ZdomA)^(-1)*[VdomA] {The zero'th or initial iteration value - primary MBF}
-    % ------------------------------------
-    if (NdomA ~= 0)
-        b = LdomA\VdomA;
-        IdomA_0 = UdomA\b;
-        ifbmom.Isol(1:NdomA,1) = IdomA_0;
-    end%if
+        % ----------------------------------------------------------------------------------------------
+        % Start now the iterative method for calculating the total current
+        % ----------------------------------------------------------------------------------------------
 
-    % ------------------------------------
-    % Calculate JdomB_0 = (ZdomB)^(-1)*[VdomB]
-    % ------------------------------------
-    if ((Const.IFBalg ~= 4) && (Const.IFBalg ~= 5) && (Const.IFBalg ~= 6) && (Const.IFBalg ~= 7) && ...
-        (Const.IFBalg ~= 8) && (Const.IFBalg ~= 9) && (Const.IFBalg ~= 10) && (Const.IFBalg ~= 11)&& ...
-        (Const.IFBalg ~= 12) && (Const.IFBalg ~= 13) && (Const.IFBalg ~= 14) && (Const.IFBalg ~= 15) )
-        % For all algorithms other than 4/5, we can solve for whole domain B at a time
-        % Alg. 4/5/6 is treated below (each array element is a domain and IdomB_0 for each is calculated
-        % in a loop). The same applies to IFBalg = 5 - only then no external domain, as for IFBalg=4
-        % is considdered
-        b = LdomB\VdomB;
-        IdomB_0 = UdomB\b;
-        ifbmom.Isol(NdomA+1:Ntot,1) = IdomB_0;
-    end%if
+        % ------------------------------------
+        % Iteration n_iter=0
+        % ------------------------------------
+
+        % ------------------------------------
+        % Calculate JdomA_0 = (ZdomA)^(-1)*[VdomA] {The zero'th or initial iteration value - primary MBF}
+        % ------------------------------------
+        if (NdomA ~= 0)
+            b = LdomA\VdomA;
+            IdomA_0 = UdomA\b;
+            ifbmom.Isol(1:NdomA,1) = IdomA_0;
+        end%if
+
+        % ------------------------------------
+        % Calculate JdomB_0 = (ZdomB)^(-1)*[VdomB]
+        % ------------------------------------
+        if ((Const.IFBalg ~= 4) && (Const.IFBalg ~= 5) && (Const.IFBalg ~= 6) && (Const.IFBalg ~= 7) && ...
+            (Const.IFBalg ~= 8) && (Const.IFBalg ~= 9) && (Const.IFBalg ~= 10) && (Const.IFBalg ~= 11)&& ...
+            (Const.IFBalg ~= 12) && (Const.IFBalg ~= 13) && (Const.IFBalg ~= 14) && (Const.IFBalg ~= 15) )
+            % For all algorithms other than 4/5, we can solve for whole domain B at a time
+            % Alg. 4/5/6 is treated below (each array element is a domain and IdomB_0 for each is calculated
+            % in a loop). The same applies to IFBalg = 5 - only then no external domain, as for IFBalg=4
+            % is considdered
+            b = LdomB\VdomB;
+            IdomB_0 = UdomB\b;
+            ifbmom.Isol(domain_basis_functions,1) = IdomB_0;
+        end%if
+    end
 
      % Stop pre-computation timing
     ifbmom.solTime = ifbmom.solTime + toc;
@@ -254,7 +277,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
         % Start timing for this algorithm
         tic
 
-        message(Const,'[runIFBMoMsolver] WARNING: IFB Algorithm 1 may lead to inaccurate results');
+        message_fc(Const,'[runIFBMoMsolver] WARNING: IFB Algorithm 1 may lead to inaccurate results');
 
         % ------------------------------------
         % Iterations n_iter =1, ...
@@ -313,7 +336,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
 
         % Make sure (1b) is satisfied (otherwise this is an error):
         if (~(all(IdomA_0(:) == 0)))
-            message(Const,'[runIFBMoMsolver] IFB Algorithm cannot be used if domain A is excited');
+            message_fc(Const,'[runIFBMoMsolver] IFB Algorithm cannot be used if domain A is excited');
             error ('[runIFBMoMsolver] IFB Algorithm cannot be used if domain A is excited');
         end%if
 
@@ -401,7 +424,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
         % Start timing for this algorithm
         tic
 
-        message(Const,'[runIFBMoMsolver] WARNING: IFB Algorithm 4 may lead to inaccurate results');
+        message_fc(Const,'[runIFBMoMsolver] WARNING: IFB Algorithm 4 may lead to inaccurate results');
 
         k_iter = Const.IFB_iterations; % Value > 0 (-1 not yet supported)
 
@@ -606,12 +629,14 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
             end%if
 
             for n=1:numArrayElements
-                domain_bot_n = Const.arrayElBasisFunctRange(n,1);
-                domain_top_n = Const.arrayElBasisFunctRange(n,2);
-                VdomB = yVectors.values(domain_bot_n:domain_top_n,1);
+                %domain_bot_n = Const.arrayElBasisFunctRange(n,1);
+                %domain_top_n = Const.arrayElBasisFunctRange(n,2);
+                domain_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+
+                VdomB = yVectors.values(domain_basis_functions,1);
                 b = LdomB\VdomB;
                 IdomB_0 = UdomB\b;
-                Ik(domain_bot_n:domain_top_n,1) = IdomB_0;  % Domain B (array element) - primary MBF
+                Ik(domain_basis_functions,1) = IdomB_0;  % Domain B (array element) - primary MBF
 
                 % For the CBFM-enh. Jacobi Method (with the precomputation step) precalculate here
                 % the Z0 and V0 terms using the primary CBFs (see Alg.2 in [8])
@@ -674,9 +699,13 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
 
                 for n=1:numArrayElements
                     % Get the correct basis function range for element n:
-                    domain_bot_n = Const.arrayElBasisFunctRange(n,1);
-                    domain_top_n = Const.arrayElBasisFunctRange(n,2);
+                    %domain_bot_n = Const.arrayElBasisFunctRange(n,1);
+                    %domain_top_n = Const.arrayElBasisFunctRange(n,2);
+
+                    domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+
                     % Extract Znn^(-1) = that of array element (with all elements assumed identical).
+                    % Note: This will only work if we have disjoint arrays.
                     Udom_n = UdomB;
                     Ldom_n = LdomB;
 
@@ -684,27 +713,28 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
 
                         % Add the pth coupling term for array element n using the (p-1)th coupling
                         % terms from the other array elements (discarding offcourse m=n)
-                        domain_bot_m = Const.arrayElBasisFunctRange(m,1);
-                        domain_top_m = Const.arrayElBasisFunctRange(m,2);
+                        %domain_bot_m = Const.arrayElBasisFunctRange(m,1);
+                        %domain_top_m = Const.arrayElBasisFunctRange(m,2);
+
+                        domain_m_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
 
                         % Extract first Znm
                         [Znm, Unm, Vnm] = ...
-                            calcZmn(Const,zMatrices,n,m,[domain_bot_n:domain_top_n], ...
-                                                        [domain_bot_m:domain_top_m]);
+                            calcZmn(Const,zMatrices,1,n,m,domain_n_basis_functions,domain_m_basis_functions);
 
                         if ((Const.IFBalg == 7)||(Const.IFBalg == 8)||(Const.IFBalg == 9)||(Const.IFBalg == 11))
 
                             if (m~=n)
                                 if (~Const.useACA)
-                                    b = Ldom_n\(beta_k(m)*Znm*Ik(domain_bot_m:domain_top_m,k-1));
+                                    b = Ldom_n\(beta_k(m)*Znm*Ik(domain_m_basis_functions,k-1));
                                 else
                                     % By using the ACA we can accelerate the matrix-vector product
                                     % By replacing Znm ~ Unm*Vnm
-                                    b = Ldom_n\(beta_k(m)*Unm*Vnm*Ik(domain_bot_m:domain_top_m,k-1));
+                                    b = Ldom_n\(beta_k(m)*Unm*Vnm*Ik(domain_m_basis_functions,k-1));
                                 end%if
 
                                 % Update surface-current at the current iteration.
-                                Ik(domain_bot_n:domain_top_n,k) = Ik(domain_bot_n:domain_top_n,k) + Udom_n\b;
+                                Ik(domain_n_basis_functions,k) = Ik(domain_n_basis_functions,k) + Udom_n\b;
                             end%if (m~=n)
 
                         elseif (Const.IFBalg == 10)
@@ -727,7 +757,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
 
                     end%for m=1:numArrayElements
 
-                    Vdom_n = yVectors.values(domain_bot_n:domain_top_n,1);
+                    Vdom_n = yVectors.values(domain_n_basis_functions,1);
                     % See [7] (Eq. 16) : For the i-DGFM enhanced Jacobi method, we also add another
                     % term here Zpp*J_p^(k-1). Add this to Vp in
                     if (Const.IFBalg == 10)
@@ -737,8 +767,8 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                     Idom_n = Udom_n\b;
 
                     % Add now this pth contribution to the current on element n
-                    ifbmom.Isol(domain_bot_n:domain_top_n,1) = Idom_n - Ik(domain_bot_n:domain_top_n,k);
-                    Ik(domain_bot_n:domain_top_n,k) = ifbmom.Isol(domain_bot_n:domain_top_n,1);
+                    ifbmom.Isol(domain_n_basis_functions,1) = Idom_n - Ik(domain_n_basis_functions,k);
+                    Ik(domain_n_basis_functions,k) = ifbmom.Isol(domain_n_basis_functions,1);
                 end%for n=1:numArrayElements
 
                 % ======================================================================================================
@@ -858,12 +888,12 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
 
         % The above is only valid if K_back == 1 (i.e. we use only the last and latest CBF)
         if (cache_Z0_V0 && K_back ~= 1)
-            message(Const, 'IFB Algorithm 12 with caching of Z0 and V0 can only be used with a single CBF');
+            message_fc(Const, 'IFB Algorithm 12 with caching of Z0 and V0 can only be used with a single CBF');
             error('IFB Algorithm 12 with caching of Z0 and V0 can only be used with a single CBF');
         end%if
 
         if (calculateRelativeResiduum)
-            message(Const, 'NOTE: Calculating relative residuum (execution times might be slow)');
+            message_fc(Const, 'NOTE: Calculating relative residuum (execution times might be slow)');
         end%if
 
         % Start timing for this algorithm
@@ -961,7 +991,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                 % Time now each iteration
                 tic
 
-                message(Const,sprintf('\nIteration k = %d',k));
+                message_fc(Const,sprintf('\nIteration k = %d',k));
 
                 % =====================================================================================================
                 % Calculate the Beta_k values here. - See [8], Alg. 3 - other than Alg. 1 and 2, the Beta coefficients
@@ -1010,12 +1040,12 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                     %             similar approach).
                     if (Const.useMBFreduction && ~(K_back==1))
                         %tic --> Need to time this ... NB!!!
-                        message(Const,sprintf('  Reduce and orthonormalise CBFs'));
+                        message_fc(Const,sprintf('  Reduce and orthonormalise CBFs'));
                         
                         % Put all the (K_back #) CBFs in a column augmented matrix for SVD reduction.
                         % Note: we reduce the "global" CBfs - i.e. not per array element.
                         origCBFs = complex(zeros(Ntot,cbf_end_index));
-                        message(Const,sprintf('    Number of initially generated CBFs  = %d',numCBFsperDomain));
+                        message_fc(Const,sprintf('    Number of initially generated CBFs  = %d',numCBFsperDomain));
                         ind = 0;
                         for cbf_ind = cbf_start_index:cbf_end_index
                             ind = ind+1;                            
@@ -1055,7 +1085,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                         cbf_end_index = numCBFsperDomain;
                         cbf_start_index = 1;
                         
-                        message(Const,sprintf('    Number of retained orthonormal CBFs  = %d',size(redCBFs,2)));
+                        message_fc(Const,sprintf('    Number of retained orthonormal CBFs  = %d',size(redCBFs,2)));
                                         
                         %ifbmom.svdTime(solNum) = toc; % End timing
                     else
@@ -1289,17 +1319,17 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
     elseif (Const.IFBalg == 13)
 
         if (~Const.useMBFreduction)
-            message(Const, 'IFB Algorithm 13 can only be used with SVD reduction');
+            message_fc(Const, 'IFB Algorithm 13 can only be used with SVD reduction');
             error('IFB Algorithm 13 can only be used with SVD reduction');
         end%if
 
         if (Const.IFB_CBFs==1)
-            message(Const, 'IFB Algorithm 13 can only be used when all previous iterations are used as CBFs');
+            message_fc(Const, 'IFB Algorithm 13 can only be used when all previous iterations are used as CBFs');
             error('IFB Algorithm 13 can only be used when all previous iterations are used as CBFs');
         end%if
 
         if (calculateRelativeResiduum)
-            message(Const, 'NOTE: Calculating relative residuum (execution times might be slow)');
+            message_fc(Const, 'NOTE: Calculating relative residuum (execution times might be slow)');
         end%if    
 
         % Start timing for this algorithm
@@ -1367,7 +1397,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                 % Time now each iteration
                 %tic
 
-                message(Const,sprintf('\nIteration k = %d',k));
+                message_fc(Const,sprintf('\nIteration k = %d',k));
 
                 % =====================================================================================================
                 % Calculate the Beta_k values here. - See [8], Alg. 3 - other than Alg. 1 and 2, the Beta coefficients
@@ -1421,7 +1451,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                     domain_bot_p = Const.arrayElBasisFunctRange(p,1);
                     domain_top_p = Const.arrayElBasisFunctRange(p,2);
 
-                    message(Const,sprintf('    Reduce and orthonormalise CBFs for array element %d',p));
+                    message_fc(Const,sprintf('    Reduce and orthonormalise CBFs for array element %d',p));
                     
                     % TO-DO: 2016-11-13: Danie, rechecking this part now again to ensure we orthonormalise the 
                     % CBFs correctly
@@ -1667,17 +1697,17 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
     elseif (Const.IFBalg == 14)
     
         if (Const.useMBFreduction)
-            message(Const, 'IFB Algorithm 14 cannot be used with SVD reduction');
+            message_fc(Const, 'IFB Algorithm 14 cannot be used with SVD reduction');
             error('IFB Algorithm 14 cannot be used with SVD reduction');
         end%if
 
         if (Const.IFB_CBFs==1)
-            message(Const, 'IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
+            message_fc(Const, 'IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
             error('IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
         end%if
 
         if (Const.IFB_CBFs==1)
-            message(Const, 'IFB Algorithm 14 cannot be used for a Jacobi only simulation');
+            message_fc(Const, 'IFB Algorithm 14 cannot be used for a Jacobi only simulation');
             error('IFB Algorithm 14 cannot be used for a Jacobi only simulation');
         end%if
 
@@ -1731,7 +1761,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                 % Time now each iteration
                 tic
 
-                message(Const,sprintf('\nIteration k = %d',k));
+                message_fc(Const,sprintf('\nIteration k = %d',k));
 
                 % =====================================================================================================
                 % Calculate the Beta_k values here. - See [8], Alg. 3 - other than Alg. 1 and 2, the Beta coefficients
@@ -1782,7 +1812,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                     domain_bot_p = Const.arrayElBasisFunctRange(p,1);
                     domain_top_p = Const.arrayElBasisFunctRange(p,2);
 
-                    message(Const,sprintf('    Reduce and orthonormalise CBFs for array element %d',p));
+                    message_fc(Const,sprintf('    Reduce and orthonormalise CBFs for array element %d',p));
                     
                     % TO-DO: 2016-11-13: Danie, rechecking this part now again to ensure we orthonormalise the 
                     % CBFs correctly - i.e. we only orthonormalise the CBFs for each array element 
@@ -2038,22 +2068,22 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
     elseif (Const.IFBalg == 15)
     
         if (Const.useMBFreduction)
-            message(Const, 'IFB Algorithm 15 cannot be used with SVD reduction');
+            message_fc(Const, 'IFB Algorithm 15 cannot be used with SVD reduction');
             error('IFB Algorithm 14 cannot be used with SVD reduction');
         end%if
 
         if (Const.IFB_CBFs==1)
-            message(Const, 'IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
+            message_fc(Const, 'IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
             error('IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
         end%if
 
         if (Const.IFB_CBFs==0)
-            message(Const, 'IFB Algorithm 14 cannot be used for a Jacobi only simulation');
+            message_fc(Const, 'IFB Algorithm 14 cannot be used for a Jacobi only simulation');
             error('IFB Algorithm 14 cannot be used for a Jacobi only simulation');
         end%if
 
         if (calculateRelativeResiduum)
-            message(Const, 'NOTE: Calculating relative residuum (execution times might be slow)');
+            message_fc(Const, 'NOTE: Calculating relative residuum (execution times might be slow)');
         end%if        
 
         % Start timing for this algorithm
@@ -2122,7 +2152,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
                 % orthonormalization and CBFM solution steps in order to obtain where the expensive part lies (see below).
                 % tic
                 
-                message(Const,sprintf('\nIteration k = %d',k));
+                message_fc(Const,sprintf('\nIteration k = %d',k));
 
                 % =====================================================================================================
                 % Calculate the Beta_k values here. - See [8], Alg. 3 - other than Alg. 1 and 2, the Beta coefficients
@@ -2490,30 +2520,32 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
 
     % Write the IFB-MoM solution to a ASCII str file, so that it can be read
     % again by FEKO (for plotting in POSTFEKO) - only if requested
-    if (isequal(and([0 1 0 0 0 0 0],Const.FEKDDMwriteFEKOstrfile),[0 1 0 0 0 0 0]))
-        writeSolToFile(Const, ifbmom);
-    end%if
+    if (false)
+        if (isequal(and([0 1 0 0 0 0 0],Const.FEKDDMwriteFEKOstrfile),[0 1 0 0 0 0 0]))
+            writeSolToFile(Const, ifbmom);
+        end%if
+    end
 
-    message(Const,sprintf('Finished IFB-MoM (total) solver in %f sec.',ifbmom.solTime));
-    %message(Const,sprintf('(Setup time %f sec.)',ifbmom.solTime));
+    message_fc(Const,sprintf('Finished IFB-MoM (total) solver in %f sec.',ifbmom.solTime));
+    %message_fc(Const,sprintf('(Setup time %f sec.)',ifbmom.solTime));
 
-    message(Const,sprintf('Memory usage of IFB-MoM %s',ifbmom.memUsage));
+    message_fc(Const,sprintf('Memory usage of IFB-MoM %s',ifbmom.memUsage));
 
     % 2017-05-16: Also print out here the memory usage for storing Zred (CBFM red. matrix) for algorithms 13 and 15
     if ((Const.IFBalg == 13) || (Const.IFBalg == 15))
-        message(Const,sprintf('Memory usage of IFB-MoM storing Zred %s',ifbmom.memUsageZred));
+        message_fc(Const,sprintf('Memory usage of IFB-MoM storing Zred %s',ifbmom.memUsageZred));
     end%if
 
-    message(Const,sprintf('Rel. error norm. compared to FEKO sol. %f percent:',ifbmom.relError));
+    message_fc(Const,sprintf('Rel. error norm. compared to FEKO sol. %f percent:',ifbmom.relError));
     if ((Const.IFBalg~=5) && (Const.IFBalg~=6) && (Const.IFBalg~=7) && (Const.IFBalg~=8)&&(Const.IFBalg~=9)...
         && (Const.IFBalg~=10) && (Const.IFBalg~=11) && (Const.IFBalg~=12) && (Const.IFBalg~=13) && (Const.IFBalg~=14) ...
         && (Const.IFBalg~=15))
-        message(Const,sprintf('Rel. error norm. compared to FEKO sol. - (dom. A) %f precent:',ifbmom.relErrorDomA));
+        message_fc(Const,sprintf('Rel. error norm. compared to FEKO sol. - (dom. A) %f precent:',ifbmom.relErrorDomA));
     end%if
 
     if ((Const.IFB_iterations == -1) && ((Const.IFBalg==7) || (Const.IFBalg==9) || (Const.IFBalg==11) || ...
         (Const.IFBalg==12) || (Const.IFBalg==13) || (Const.IFBalg==14) || (Const.IFBalg==15)))
-        message(Const,sprintf('Convergence after %d iterations for eps = %f percent', k_converged,eps_percent));
+        message_fc(Const,sprintf('Convergence after %d iterations for eps = %f percent', k_converged,eps_percent));
     end%if
 
     % Some additional post-processing (if IFB-MoM solver >= 1)
@@ -2697,7 +2729,7 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
             % TO-DO: The following is not really valid for (Const.IFBalg == 9)
             if ((Const.IFBalg == 9) || (Const.IFBalg == 10) || (Const.IFBalg == 11) || (Const.IFBalg == 12) || ...
                 (Const.IFBalg == 13) || (Const.IFBalg == 14) || (Const.IFBalg == 15))
-                message(Const,sprintf('ERROR: IFB algorithm 9 not valid here'));
+                message_fc(Const,sprintf('ERROR: IFB algorithm 9 not valid here'));
                 error(['ERROR: IFB algorithm 9 not valid here']);
             end%if
 
@@ -2724,9 +2756,9 @@ function [ifbmom] = runIFBMoMsolver(Const, zMatrices, yVectors, xVectors)
 
             % Spectral radius condition
             ifbmom.rho = max(abs(eig(T)));
-            message(Const,sprintf('Spectral radius for IFB-MoM %f',ifbmom.rho));
+            message_fc(Const,sprintf('Spectral radius for IFB-MoM %f',ifbmom.rho));
             if ifbmom.rho >= 1
-                message(Const,sprintf('WARNING: Convergence issue possible'));
+                message_fc(Const,sprintf('WARNING: Convergence issue possible'));
             end%if
         end%if
 

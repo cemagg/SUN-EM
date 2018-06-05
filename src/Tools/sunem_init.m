@@ -160,6 +160,20 @@ function Const = sunem_init(Const, yVectors)
         end
     end
 
+    % ================================    
+    try
+        set = false;
+        if (Const.JACKITcheckConvergence)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Deactivate this option
+           Const.JACKITcheckConvergence = false;
+        end
+    end
+
     % =================================
     % Other initialisations:
     Const.useACA = false; % ACA interface available, but not yet activated. (Requires some refactoring).
@@ -167,6 +181,9 @@ function Const = sunem_init(Const, yVectors)
     Const.store_to_fcd_file = false; % Store to external *.fcd file - useful when importing into POSTFEKO.
     Const.useCSCBFM = false;
     Const.isPhasedArray = false;
+
+    % Deactivate for now
+    Const.runJACKITfromDGFM = false;
 
     % =================================
     % General constants:

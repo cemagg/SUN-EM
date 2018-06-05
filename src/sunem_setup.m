@@ -22,7 +22,7 @@ function [Const] = sunem_setup(Const)
     % Set the version Major.Minor.Patch (see CHANGELOG.md for details)
     % --------------------------------------------------------------------------------------------------
     Const.MajorVersion = 1;  % Major version
-    Const.MinorVersion = 4;  % Minor version
+    Const.MinorVersion = 5;  % Minor version
 
     Const.Year = 2018;
     Const.Month = 06;
@@ -56,6 +56,9 @@ function [Const] = sunem_setup(Const)
     
     % === DGFM Solver Interface ===
     addpath([MainPath '/src/DGFMinterface']);
+
+    % === DGFM Solver Interface ===
+    addpath([MainPath '/src/IFBinterface']);
     
     % ==  Set the executables path % ==
     if (ispc)
