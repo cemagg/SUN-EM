@@ -90,7 +90,7 @@ function writeSolToFile(Const, solStruct)
     % First convert the *.str file to a ASCII file (only on Windows, see FEKDDM-08)
         if (ispc)
             [stat, dosout] = dos(sprintf('\"%s//str2ascii.exe\" %s -r > %s 2>&1', ...
-                Const.ExecPath, strfilename, ascii_strfilename));
+                Const.ExecPath, filename, ascii_strfilename));
             if (stat ~= 0)                
                 message(Const,sprintf('Error converting FEK0 *.str file to ASCII: %s',filename));
                 message(Const, num2str(stat));

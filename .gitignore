@@ -3,6 +3,7 @@
 *.cfs
 *.bof
 *.fek
+*.out
 *.m~
 SimOutput.log
 *.lock

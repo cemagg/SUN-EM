@@ -174,6 +174,19 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
                 b = L\yVectors.values(domain_basis_functions,solNum);
                 mbfs.PrimIsol(domain_basis_functions,1,m,solNum) = U\b; % U, already calculated above
 
+                % Before we continue, we need to window the primary MBF here, if we are working with interconnected
+                % domains:
+                if (~Solver_setup.disconnected_domains && true)
+                    % -- Windowing  (only if we have interconnected domains)
+                    
+                    % Let's first determine the BFs on the interface esssentially the difference between the 
+                    % unknowns internal to the domain and that on the interface.
+                    interface_basis_functions = setdiff(domain_basis_functions, ...
+                        Solver_setup.rwg_basis_functions_internal_domains{m});
+
+                    % Apply now windowing : Factor of a half.
+                    mbfs.PrimIsol(interface_basis_functions,1,m,solNum) = 0.5.*mbfs.PrimIsol(interface_basis_functions,1,m,solNum);
+                end%if
             end%if
         end%for
         

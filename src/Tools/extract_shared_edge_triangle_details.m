@@ -35,10 +35,43 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
     % We also need to consider the number of domains - if present.
     % (typically if we are running the CBFM, DGFM, or other DD method)
     if (Const.domain_decomposition)
+
+        % Number of domains should correspond to the number of finite array
+        % elements. TO-DO: Needs some refactoring when we allow different 
+        % type of domains.
+        Solver_setup.number_of_domains = Solver_setup.num_finite_array_elements;
+
         % Domains are specified using labels in FEKO. The labels (as read
-        % from the *.out file) also tells us how many domains are active
-        Solver_setup.domain_labels = unique(Solver_setup.metallic_triangles_labels);
-        Solver_setup.number_of_domains = size(Solver_setup.domain_labels,1);
+        % from the *.out file) also tells us how many domains are active. First
+        % read ALL the domain labels. Thereafter, we group all the labels ending
+        % with @1, @2, etc. i.e. the unique way in which labels are prepended when 
+        % geometry is arrayd using the 'FA' card.
+        Solver_setup.all_domain_labels = unique(Solver_setup.metallic_triangles_labels);
+        
+        % There has to be equal number of labels / domain (for now).
+        total_number_labels = size(Solver_setup.all_domain_labels,1);
+        number_labels_per_domain = total_number_labels / Solver_setup.number_of_domains;
+        Solver_setup.domain_labels = cell(Solver_setup.number_of_domains, number_labels_per_domain);
+
+        % Keep track of the number of labels assigned per domain (should correspond with the 
+        % above number)
+        label_count_per_domain = zeros(Solver_setup.number_of_domains,1);
+
+        % Loop now over all the domain labels and sort them correctly
+        for label_index = 1:total_number_labels
+            label = Solver_setup.all_domain_labels{label_index};
+            % Extract the domain index portion, i.e. the @<ID> part, where <ID> is the domain id
+            % to which this label belongs. We assume here we do not have @ in the name.
+            domain_index = strsplit(label,{'@'});
+            domain_index = str2num(domain_index{2});
+            label_count_per_domain(domain_index) = label_count_per_domain(domain_index) + 1;
+            if (label_count_per_domain(domain_index) > number_labels_per_domain)
+                message_fc(Const,sprintf('Total number of labels per domain exceeded'));
+                error(['Total number of labels per domain exceeded']);
+            end%if
+            Solver_setup.domain_labels(domain_index,label_count_per_domain(domain_index)) = cellstr(label);
+        end%for
+        
         % Allocate now space to store the basis functions list of each
         % domain (will be used when extracting e.g. matrix entries). We store two
         % types of vectors, one for keep track of the unknowns in the extended domain
@@ -116,9 +149,17 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         % functions residing in each of the domains
         if (Const.domain_decomposition)
         
-            % Locate now the domain index for triangle plus and minus
-            domain_index_triangle_plus  = find(strcmp(Solver_setup.domain_labels,triangle_plus_label));
-            domain_index_triangle_minus = find(strcmp(Solver_setup.domain_labels,triangle_minus_label));
+            % Locate now the domain index for triangle plus and minus. Note, this is actually already 
+            % given in the triangle label when we use the 'FA' card in FEKO to specify the domains @<ID>
+            % see also comment above when we determine the unique set of labels that are associated with
+            % each domain.
+            % domain_index_triangle_plus  = find(strcmp(Solver_setup.domain_labels,triangle_plus_label));
+            % domain_index_triangle_minus = find(strcmp(Solver_setup.domain_labels,triangle_minus_label));
+            
+            domain_index_triangle_plus = strsplit(triangle_plus_label,{'@'});
+            domain_index_triangle_plus = str2num(domain_index_triangle_plus{2});
+            domain_index_triangle_minus = strsplit(triangle_minus_label,{'@'});
+            domain_index_triangle_minus = str2num(domain_index_triangle_minus{2});
 
             % Add the basis function now to this domain's list
             if (domain_index_triangle_plus == domain_index_triangle_minus)

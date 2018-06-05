@@ -46,4 +46,11 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
         Solution.cbfm = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs);
     end%if
 
+    % -- Jacobi solver
+    if (Const.runJacobisolver)
+        
+
+    end%if
+
+
     message_fc(Const,sprintf('Finished EM Solvers'));

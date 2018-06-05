@@ -1,8 +1,11 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.4 - 2018-06-05
+- Work in progress: Added now example-3 (radiating bow-tie array example).
+
 ## 1.3 - 2018-06-05
-- Working on interconnected CBFM solver. Promote before biggish refactoring.
+- Something not quite right still ...
 
 ## 1.2 - 2018-06-04
 - Working on interconnected CBFM solver. Promote before biggish refactoring.

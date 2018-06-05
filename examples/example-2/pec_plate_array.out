@@ -1,18 +1,18 @@
-FEKO      Version 2017.2.3-538 from 2017-10-27
+FEKO      Version 2017.2.4-545 from 2017-11-20
           PREFEKO Version 2017.2.3-39 from 2017-08-21 [FEK: default 158; used 158] BINARY
           CADFEKO version 2017.2.3-312190 (x64) from 2017-10-25                           
           Copyright (c) 1999-2014 Altair Development S.A. (Pty) Ltd
           Copyright (c) 2014-2017 Altair Engineering, Inc.
-          Intel(R) MKL version 11.3.4 (build 20160823) on Intel(R) Advanced Vector Extensions 2 (Intel(R) AVX2) enabled processors, Intel(R) 64 architecture (1 thread)
-Computer: PC LINUX EM64T MKL -- DLUDICK-W540
-          Linux x86_64 4.4.0-121-generic
-          Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz; GenuineIntel family 6 model 12 stepping 3 brand id 0
-          1 physical CPU with a total of 8 processors found (multi-core CPU with max. 4 cores per physical CPU)
+          Intel(R) MKL version 11.3.4 (build 20160823) on Intel(R) Advanced Vector Extensions (Intel(R) AVX) enabled processors, Intel(R) 64 architecture (1 thread)
+Computer: PC WIN64 EM64T MKL -- DESKTOP-EF1JMGI
+          Microsoft Windows 8.1 Enterprise Edition  (Build 9600), Version 6.3.9600 x64 (SP 0.0)
+          Intel(R) Core(TM) i5-2400 CPU @ 3.10GHz; GenuineIntel family 6 model 10 stepping 7 brand id 0
+          1 physical CPU with a total of 4 processors found (multi-core CPU with max. 4 cores per physical CPU)
 Threads:  OpenMP threading not used
-Date:     2018-05-31 11:32:37                     
+Date:     2018-06-05 08:21:48                     
 File:     pec_plate_array
-Memory:   Unlimited, system allows maximum usage of 15.104 GByte
-          (installed memory 15.299 GByte, thereof free 386.242 MByte)
+Memory:   Unlimited, system allows maximum usage of 7.714 GByte
+          (installed memory 7.910 GByte, thereof free 1.952 GByte)
 MD5 Check:5B2F65D60F8CCB8DAAD11B41C8C73B37
 MD5 Total:61F6808FD60BA9105BB5B47E4894DD38
  Licence:  Altair HyperWorks
@@ -21,7 +21,7 @@ MD5 Total:61F6808FD60BA9105BB5B47E4894DD38
 
 SPICE
   Engine:      NGSPICE
-  Executable:  /home/dludick/altair/2017/altair/feko/bin/ngspice
+  Executable:  C:\Program Files\Altair\2017\feko\bin\vngspicec.exe
 
 
                          CREATING THE FINITE ARRAY GEOMETRY
@@ -473,8 +473,8 @@ index  permittivity permeability   in S/m       (electric)    (magnetic)       i
  For the MoM matrix, a memory of         5520 complex numbers is used (i.e. 86.250 kByte)
  Storing the matrix and solving the linear set of equations in main memory (storage scheme 1)
 
-     A total of 137.350 kByte of memory has been allocated dynamically
-     (peak memory usage of 137.350 kByte so far)
+     A total of 136.764 kByte of memory has been allocated dynamically
+     (peak memory usage of 136.764 kByte so far)
 
 
 
@@ -492,7 +492,7 @@ index  permittivity permeability   in S/m       (electric)    (magnetic)       i
                Floating point performance for LU decomposition:
                     Not determined since computation time too short
 
-     CPU time for solving the linear set of equations:       0.000 seconds
+     CPU time for solving the linear set of equations:       0.005 seconds
 
 
  Current request with name: Currents1
@@ -533,19 +533,19 @@ EN       0    0    0    0    0 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00
                     SUMMARY OF REQUIRED TIMES IN SECONDS
 
                                              CPU-time       runtime
- Reading and constructing the geometry          0.000         0.001
+ Reading and constructing the geometry          0.009         0.009
  Checking the geometry                          0.000         0.000
  Initialisation of the Green's function         0.000         0.000
  Calcul. of coupling for PO/Fock                0.000         0.000
  Transformation to equivalent sources           0.000         0.000
  Ray launching/tracing phase of RL-GO           0.000         0.000
- Calcul. of matrix elements                     0.010         0.013
- Calcul. of right-hand side vector              0.000         0.000
+ Calcul. of matrix elements                     0.016         0.016
+ Calcul. of right-hand side vector              0.002         0.002
  Preconditioning system of linear eqns.         0.000         0.000
- Solution of the system of linear eqns.         0.000         0.001
+ Solution of the system of linear eqns.         0.005         0.005
  Eigensolution for characteristic modes         0.000         0.000
- Determination of surface currents              0.000         0.000
- Calcul. of impedances/powers/losses            0.010         0.001
+ Determination of surface currents              0.003         0.003
+ Calcul. of impedances/powers/losses            0.008         0.008
  Calcul. of averaged SAR values                 0.000         0.000
  Calcul. of power receiving antenna             0.000         0.000
  Calcul. of cable coupling                      0.000         0.000
@@ -553,11 +553,11 @@ EN       0    0    0    0    0 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00
  Calcul. of electric near field                 0.000         0.000
  Calcul. of magnetic near field                 0.000         0.000
  Calcul. of far field                           0.000         0.000
-                            other               0.000         0.005
+                            other               0.094         0.094
                                          ------------  ------------
-                         total times:           0.020         0.022
+                         total times:           0.137         0.137
                (total times in hours:           0.000         0.000)
 
- Peak memory usage during the whole solution: 148.129 kByte
+ Peak memory usage during the whole solution: 147.543 kByte
 
-Finished: 2018-05-31 11:32:37                     
+Finished: 2018-06-05 08:21:48                     

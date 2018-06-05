@@ -133,13 +133,46 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
 
         % -------------------------------------------------
         % -- Parse the number of array elements 
-        % Note: Hopefully this is the only reference of this sort
-        g = strfind(line,'Number of elements'); 
-        if (g > 0)
-            array_line_info = strsplit(line);
-            FEKO_data.num_finite_array_elements = str2num(array_line_info{6});
-        end%if
-        
+        % Put some more parsing work in here: We need to distinguish what
+        % type of array this is. If it is a linear/planar array, then it
+        % has other lines as a Custom array
+        g = strfind(line,'CREATING THE FINITE ARRAY GEOMETRY'); 
+        if (g >0)
+            line=fgetl(fid); % Empty line
+            line=fgetl(fid);
+            g = strfind(line,'Finite array configuration');
+            % Distinguish now below the different types of array
+            % configurations
+            if (g > 0)
+                array_line_info = strsplit(line);
+                if (strcmp(array_line_info{6},'Custom positioning'))
+                    FEKO_data.finite_array_type = 'Custom positioning';
+                    line=fgetl(fid);
+                    g = strfind(line,'Number of elements'); 
+                    if (g > 0)
+                        array_line_info = strsplit(line);
+                        FEKO_data.num_finite_array_elements = str2num(array_line_info{6});
+                    end%if
+                elseif(strcmp(array_line_info{6},'Linear/Planar'))
+                    FEKO_data.finite_array_type = 'Linear/Planar';
+                    line=fgetl(fid);
+                    g = strfind(line,'Number of elements in X-direction'); 
+                    if (g > 0)
+                        array_line_info = strsplit(line);
+                        finite_array_elements_X_direction = str2num(array_line_info{8});
+                    end%if
+                    line=fgetl(fid);
+                    g = strfind(line,'Number of elements in Y-direction'); 
+                    if (g > 0)
+                        array_line_info = strsplit(line);
+                        finite_array_elements_Y_direction = str2num(array_line_info{8});
+                    end%if
+                    FEKO_data.num_finite_array_elements = finite_array_elements_X_direction * ...
+                        finite_array_elements_Y_direction;
+                end
+            end
+        end
+                
         % Check that we actually have the geometry specifified in the 
         % *.out file (necessary at the moment).        
         g = strfind(line,'DATA OF THE METALLIC TRIANGLE');

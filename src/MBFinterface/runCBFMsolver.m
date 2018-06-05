@@ -545,18 +545,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                         fak.*mbfs.SecIsol(domain_p_basis_functions,sec_ii,p,actSol);
                 end%for
             end%if
-        end%for p=1:numArrayEls
-
-        if (~Solver_setup.disconnected_domains)
-            % -- Windowing  (only if we have interconnected domains)
-            % If we have an interconnected array, then we need to average the overlapping basis functions (currently all the domains'
-            % controbutions are accounted for on these unknowns). At the moment, we are working with 2D problems, i.e. geometry that is
-            % located on the XY-plane. Only two domains therefore join at an interface and we calculate the average of the BFs by just
-            % dividing the entries by 2. TO-DO: In the future, we will want to consider general 3D geometry that can also have more
-            % than 2 domains interfacing at tbeir boundaries. This part then has to be refactored:
-            %cbfm.Isol(Solver_setup.rwg_basis_functions_on_interface) = 0.5.*cbfm.Isol(Solver_setup.rwg_basis_functions_on_interface);
-            %cbfm.Isol(Solver_setup.rwg_basis_functions_on_interface) = 0.0;
-        end%if
+        end%for p=1:numArrayEls        
 
     end%for solNum = 1:numSols
 
