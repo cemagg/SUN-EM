@@ -20,6 +20,8 @@ Const = sunem_initialise('disconnected_bow_tie_array',false);
 % Choose the solvers that will be executed
 Const.runMoMsolver       = true;
 Const.runCBFMsolver      = true;
+Const.runJacobisolver    = true;
+Const.runIFBMoMsolver    = true;
 
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
@@ -35,6 +37,7 @@ Const.FEKOffefilename          = 'disconnected_bow_tie_array.ffe';
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
 Const.SUNEMcbfmstrfilename     = 'cbfm_disconnected_bow_tie_array.str';
+Const.SUNEMjackstrfilename     = 'jack_disconnected_bow_tie_array.str';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
@@ -43,7 +46,14 @@ Const.SUNEMcbfmstrfilename     = 'cbfm_disconnected_bow_tie_array.str';
 Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
 Const.calcSecMBFs = true;      % For MBF based solvers
 Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set
-Const.MBFthreshold = 1000;      % Threshold used for the SVD reduction of the MBFs
+Const.MBFthreshold = 1000;     % Threshold used for the SVD reduction of the MBFs
+Const.IFBalg = 7;              % Jacobi iterations (7). Adaptive MBF (14).
+Const.IFB_iterations = 4;      % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
+                               % which then looks at Const.IFB_convergence_threshold_percentage;
+Const.IFB_convergence_threshold_percentage = 1E-3;                                
+Const.IFB_CBFs = -1;           % TO-DO: Recheck this - essentially for the Adaptive MBF the number of MBFs
+                               % to use during each iteration.
+Const.IFB_debug = 1;
 
 % --------------------------------------------------------------------------------------------------
 % Read the MoM matrix equation from the file

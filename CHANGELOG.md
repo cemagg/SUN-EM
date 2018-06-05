@@ -1,6 +1,10 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.5 - 2018-06-05
+- Work in progress: Got now the IFBMoMsolver + JackitSolver going for
+  disconnected domains at least.
+
 ## 1.4 - 2018-06-05
 - Work in progress: Added now example-3 (radiating bow-tie array example).
 

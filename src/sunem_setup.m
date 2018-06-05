@@ -56,6 +56,9 @@ function [Const] = sunem_setup(Const)
     
     % === DGFM Solver Interface ===
     addpath([MainPath '/src/DGFMinterface']);
+
+    % === DGFM Solver Interface ===
+    addpath([MainPath '/src/IFBinterface']);
     
     % ==  Set the executables path % ==
     if (ispc)

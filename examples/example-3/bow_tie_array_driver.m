@@ -36,15 +36,16 @@ Const.FEKOffefilename          = 'bow_tie_array.ffe';
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
 Const.SUNEMcbfmstrfilename     = 'cbfm_bow_tie_array.str';
+Const.SUNEMjackstrfilename     = 'jack_bow_tie_array.str';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
 % --------------------------------------------------------------------------------------------------
 % TO-DO: Setup some documentation for this
 Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
-Const.calcSecMBFs = false;      % For MBF based solvers
+Const.calcSecMBFs = true;      % For MBF based solvers
 Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set
-Const.MBFthreshold = 1000;      % Threshold used for the SVD reduction of the MBFs
+Const.MBFthreshold = 1000;     % Threshold used for the SVD reduction of the MBFs
 
 % --------------------------------------------------------------------------------------------------
 % Read the MoM matrix equation from the file

@@ -48,8 +48,12 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
 
     % -- Jacobi solver
     if (Const.runJacobisolver)
-        
+        Solution.jack = runJACKITsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs);
+    end%if
 
+    % -- IFB MoM solver (similar to Jacobi)
+    if (Const.runIFBMoMsolver)
+        Solution.ifbmom = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
     end%if
 
 

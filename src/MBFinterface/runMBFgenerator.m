@@ -213,6 +213,18 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
                 if (~Solver_setup.disconnected_domains)
                     % TO-DO: Actually use the calcZmn function here with the correct frequency index.
                     [L,U] = lu(zMatrices.values(domain_m_basis_functions, domain_m_basis_functions));
+
+                    % In addition, we will also need to apply a windowing to the secondary MBF - similar to
+                    % what was done for the primary MBF. This will be done below. Calculate here first the
+                    % rwg coefficients on the interface (overlapping region) so that we can apply a windowing
+                    % function.
+                    if (true)
+                        % -- Windowing  (only if we have interconnected domains)                        
+                        % Let's first determine the BFs on the interface esssentially the difference between the 
+                        % unknowns internal to the domain and that on the interface.
+                        interface_basis_functions = setdiff(domain_m_basis_functions, ...
+                            Solver_setup.rwg_basis_functions_internal_domains{m});                        
+                    end%if
                 end
 
                 % Back-wards substitution with the part of the excitation vector
@@ -253,6 +265,12 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
                         % LU-decomposition of Zmm (stored in L and U)
                         b = L\Vcoupl;
                         mbfs.SecIsol(domain_m_basis_functions,count,m,solNum) = U\b;
+
+                        % Window the secondary MBF here, if we are working with interconnected domains:
+                        if (~Solver_setup.disconnected_domains && true)
+                            % Apply now windowing : Factor of a half.
+                            mbfs.SecIsol(interface_basis_functions,count,m,solNum) = 0.5.*mbfs.SecIsol(interface_basis_functions,count,m,solNum);
+                        end%if
                     end%if
                 end%for
             end        
