@@ -1696,23 +1696,28 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
     % 2016-11-13: This is the same as Alg. 12, but with the Orthonormalisation done per element (and not globally)
     elseif (Const.IFBalg == 14)
     
-        if (Const.useMBFreduction)
-            message_fc(Const, 'IFB Algorithm 14 cannot be used with SVD reduction');
-            error('IFB Algorithm 14 cannot be used with SVD reduction');
-        end%if
+        % if (Const.useMBFreduction)
+        %     message_fc(Const, 'IFB Algorithm 14 cannot be used with SVD reduction');
+        %     error('IFB Algorithm 14 cannot be used with SVD reduction');
+        % end%if
 
-        if (Const.IFB_CBFs==1)
-            message_fc(Const, 'IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
-            error('IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
-        end%if
+        % if (Const.IFB_CBFs==1)
+        %     message_fc(Const, 'IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
+        %     error('IFB Algorithm 14 can only be used when all previous iterations are used as CBFs');
+        % end%if
 
-        if (Const.IFB_CBFs==1)
-            message_fc(Const, 'IFB Algorithm 14 cannot be used for a Jacobi only simulation');
-            error('IFB Algorithm 14 cannot be used for a Jacobi only simulation');
-        end%if
+        % if (Const.IFB_CBFs==1)
+        %     message_fc(Const, 'IFB Algorithm 14 cannot be used for a Jacobi only simulation');
+        %     error('IFB Algorithm 14 cannot be used for a Jacobi only simulation');
+        % end%if
 
         % Start timing for this algorithm
         tic
+
+        % Overwrite the SVD threshold locally to retain all the CBFs. This will be reset again later.
+        MBFthresholdtmp = Const.MBFthreshold;
+        Const.MBFthreshold = -1;
+        message_fc(Const,'Resetting MBF threshold to -1 (retain all CBFs)');
 
         % Store all the current values at the various iterations.
         Ik = complex(zeros(Ntot,k_iter));
@@ -1726,12 +1731,15 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
         % Loop now over all the array elements and calculate the primary MBFs (starting vectors, k=1) for each
         for n=1:numArrayElements
-            domain_bot_n = Const.arrayElBasisFunctRange(n,1);
-            domain_top_n = Const.arrayElBasisFunctRange(n,2);
-            VdomB = yVectors.values(domain_bot_n:domain_top_n,1);
+            %domain_bot_n = Const.arrayElBasisFunctRange(n,1);
+            %domain_top_n = Const.arrayElBasisFunctRange(n,2);
+
+            domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+
+            VdomB = yVectors.values(domain_n_basis_functions,1);
             b = LdomB\VdomB;
             IdomB_0 = UdomB\b;
-            Ik(domain_bot_n:domain_top_n,1) = IdomB_0;  % Domain B (array element) - primary MBF
+            Ik(domain_n_basis_functions,1) = IdomB_0;  % Domain B (array element) - primary MBF
         end%for
 
         ifbmom.Isol(:,1) = +Ik(:,1);   % Start with k=1. Strictly speaking we should start at 0,
@@ -1806,11 +1814,13 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 totRedCBFs = 0;
                 % Put all the (K_back #) CBFs in a column augmented matrix for SVD reduction.
                 % Note: we reduce the "global" CBfs - i.e. not per array element.
-                origCBFs = complex(zeros(Nloc,numCBFsperDomain));
+                origCBFs = complex(zeros(Ntot,numCBFsperDomain));
                 for p = 1:numArrayElements
                     % Get the correct basis function range for element p:
-                    domain_bot_p = Const.arrayElBasisFunctRange(p,1);
-                    domain_top_p = Const.arrayElBasisFunctRange(p,2);
+                    %domain_bot_p = Const.arrayElBasisFunctRange(p,1);
+                    %domain_top_p = Const.arrayElBasisFunctRange(p,2);
+
+                    domain_p_basis_functions = Solver_setup.rwg_basis_functions_domains{p};                    
 
                     message_fc(Const,sprintf('    Reduce and orthonormalise CBFs for array element %d',p));
                     
@@ -1824,7 +1834,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                     ind = 0;
                     for cbf_ind = cbf_start_index:cbf_end_index
                         ind = ind+1;                            
-                        origCBFs(:,ind) = Ik(domain_bot_p:domain_top_p,cbf_ind);
+                        origCBFs(domain_p_basis_functions,ind) = Ik(domain_p_basis_functions,cbf_ind);
                     end%for
 
                     % Plot here the SVD spectrum (only for the last, and specified iteration)
@@ -1856,7 +1866,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                     totRedCBFs = totRedCBFs + size(redCBFs,2);
                     
                     % Retain now the orthonormalised CBFs (also update the number of orth. CBFs / element).
-                    Ik_ortho(domain_bot_p:domain_top_p,1:size(redCBFs,2)) = redCBFs;
+                    Ik_ortho(domain_p_basis_functions,1:size(redCBFs,2)) = redCBFs(domain_p_basis_functions,:);
                     %num_orth_CBFs_per_element(p) = size(redCBFs,2);
                     
                     if (true)
@@ -1868,19 +1878,23 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 % Calculate here space for the reduced impedance matrix
                 Zred = complex(zeros(numCBFsperDomain*numArrayElements, numCBFsperDomain*numArrayElements));
                 Vred = complex(zeros(numCBFsperDomain*numArrayElements, 1));
-
-                % Create first a column augmented vector of the primary
-                % CBFs using the surface-current calculated at the current iteration(s).
-                IcbfsP = complex(zeros(Nloc,numCBFsperDomain));
+                
                 for p = 1:numArrayElements
                     % Get the correct basis function range for element p:
-                    domain_bot_p = Const.arrayElBasisFunctRange(p,1);
-                    domain_top_p = Const.arrayElBasisFunctRange(p,2);
+                    %domain_bot_p = Const.arrayElBasisFunctRange(p,1);
+                    %domain_top_p = Const.arrayElBasisFunctRange(p,2);
+                    domain_p_basis_functions = Solver_setup.rwg_basis_functions_domains{p};
+                    Ndom_p = length(domain_p_basis_functions);
+
+                    % Create first a column augmented vector of the primary
+                    % CBFs using the surface-current calculated at the current iteration(s).
+                    IcbfsP = complex(zeros(Ndom_p,numCBFsperDomain));
+
                     ind = 0;
                     for cbf_ind = cbf_start_index:cbf_end_index
                         ind = ind+1;
                         % -- Use orthonormalised CBFs
-                        IcbfsP(:,ind) = Ik_ortho(domain_bot_p:domain_top_p,ind);                            
+                        IcbfsP(:,ind) = Ik_ortho(domain_p_basis_functions,ind);                            
                         % if (Const.useMBFreduction && ~(K_back==1))
                         %     % -- Use post-SVD reduced CBFs
                         %     IcbfsP(:,ind) = Ik_ortho(domain_bot_p:domain_top_p,ind);
@@ -1889,18 +1903,24 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                         %     IcbfsP(:,ind) = Ik(domain_bot_p:domain_top_p,cbf_ind);
                         % end%if
                     end%for
+                    
+                    for q = 1:numArrayElements                         
 
-                    % Get now the CBFs for domain q:
-                    IcbfsQ = complex(zeros(Nloc,numCBFsperDomain));
-                    for q = 1:numArrayElements
-                         % Get the correct basis function range for element q:
-                        domain_bot_q = Const.arrayElBasisFunctRange(q,1);
-                        domain_top_q = Const.arrayElBasisFunctRange(q,2);
+                        % Get the correct basis function range for element p:
+                        %domain_bot_q= Const.arrayElBasisFunctRange(q,1);
+                        %domain_top_q= Const.arrayElBasisFunctRange(q,2);
+                        domain_q_basis_functions = Solver_setup.rwg_basis_functions_domains{q};
+                        Ndom_q = length(domain_q_basis_functions);
+
+                        % Create first a column augmented vector of the primary
+                        % CBFs using the surface-current calculated at the current iteration(s).
+                        IcbfsQ = complex(zeros(Ndom_q,numCBFsperDomain));
+
                         ind = 0;
                         for cbf_ind = cbf_start_index:cbf_end_index
                             ind = ind+1;
                             % -- Use orthonormalised CBFs
-                            IcbfsQ(:,ind) = Ik_ortho(domain_bot_q:domain_top_q,ind);
+                            IcbfsQ(:,ind) = Ik_ortho(domain_q_basis_functions,ind);
                             % if (Const.useMBFreduction&& ~(K_back==1))
                             %     % -- Use post-SVD reduced CBFs
                             %     IcbfsQ(:,ind) = Ik_ortho(domain_bot_q:domain_top_q,ind);
@@ -1932,8 +1952,9 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
                         % -- Use newly calculated CBFs for the testing vectors
                         % Calculate the coupling matrices and Vcoupl
-                        [Zcoupl, Ucoupl, Vcoupl] = calcZmn(Const,zMatrices,p,q,[domain_bot_p:domain_top_p],[domain_bot_q:domain_top_q]);
-                        Ycoupl = yVectors.values([domain_bot_p:domain_top_p],1);
+                        [Zcoupl, Ucoupl, Vcoupl] = calcZmn(Const,zMatrices,1,p,q,domain_p_basis_functions,...
+                            domain_q_basis_functions);
+                        Ycoupl = yVectors.values(domain_p_basis_functions,1);
                         Zred(PindxStart:PindxEnd,QindxStart:QindxEnd) = ((IcbfsP).')*Zcoupl*IcbfsQ;
                         Vred(PindxStart:PindxEnd) = ((IcbfsP).')*Ycoupl;
                     
@@ -1972,8 +1993,11 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 for n=1:numArrayElements % To calculate the current on domain p - as noted in [8] (used "n" here just 
                                          % for consistency witht the above code)
                     % Get the correct basis function range for element n:
-                    domain_bot_n = Const.arrayElBasisFunctRange(n,1);
-                    domain_top_n = Const.arrayElBasisFunctRange(n,2);
+                    %domain_bot_n = Const.arrayElBasisFunctRange(n,1);
+                    %domain_top_n = Const.arrayElBasisFunctRange(n,2);
+
+                    domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+
                     % Extract Znn^(-1) = that of array element (with all elements assumed identical).
                     Udom_n = UdomB;
                     Ldom_n = LdomB;
@@ -1982,13 +2006,14 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
                         % Add the pth coupling term for array element n using the (p-1)th coupling
                         % terms from the other array elements (discarding offcourse m=n)
-                        domain_bot_m = Const.arrayElBasisFunctRange(m,1);
-                        domain_top_m = Const.arrayElBasisFunctRange(m,2);
+                        %domain_bot_m = Const.arrayElBasisFunctRange(m,1);
+                        %domain_top_m = Const.arrayElBasisFunctRange(m,2);
+
+                        domain_m_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
 
                         % Extract first Znm
                         [Znm, Unm, Vnm] = ...
-                            calcZmn(Const,zMatrices,n,m,[domain_bot_n:domain_top_n], ...
-                                                        [domain_bot_m:domain_top_m]);
+                            calcZmn(Const,zMatrices,1,n,m,domain_n_basis_functions, domain_m_basis_functions);
 
                         if (m~=n)
                             % Calculate the correct beta_k_offset for the array element, i.e. where its beta coefficients
@@ -2004,7 +2029,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                             for cbf_ind = cbf_start_index:cbf_end_index
                                 ind = ind+1;
                                 % We use the orthonormalised CBFs
-                                Ik_tmp = Ik_ortho(domain_bot_m:domain_top_m,ind);
+                                Ik_tmp = Ik_ortho(domain_m_basis_functions,ind);
                                 % Calculate now the correct beta index (see also comment above)
                                 beta_k_index = beta_k_offset + cbf_ind;
 
@@ -2025,19 +2050,19 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                                 end%if
 
                                 % Update surface-current at the current iteration.
-                                Ik(domain_bot_n:domain_top_n,k) = Ik(domain_bot_n:domain_top_n,k) + Udom_n\b;
+                                Ik(domain_n_basis_functions,k) = Ik(domain_n_basis_functions,k) + Udom_n\b;
                             end%for cbf_ind = cbf_start_index:cbf_end_index
 
                         end%if (m~=n)
                     end%for m=1:numArrayElements
 
-                    Vdom_n = yVectors.values(domain_bot_n:domain_top_n,1);
+                    Vdom_n = yVectors.values(domain_n_basis_functions,1);
                     b = Ldom_n\Vdom_n;
                     Idom_n = Udom_n\b;
 
                     % Add now this pth contribution to the current on element n
-                    ifbmom.Isol(domain_bot_n:domain_top_n,1) = Idom_n - Ik(domain_bot_n:domain_top_n,k);
-                    Ik(domain_bot_n:domain_top_n,k) = ifbmom.Isol(domain_bot_n:domain_top_n,1);
+                    ifbmom.Isol(domain_n_basis_functions,1) = Idom_n - Ik(domain_n_basis_functions,k);
+                    Ik(domain_n_basis_functions,k) = ifbmom.Isol(domain_n_basis_functions,1);
                 end%for n=1:numArrayElements
 
                 % Stop pre-computation timing
@@ -2060,7 +2085,10 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
             end%for k=2:k_iter
 
-        end%if
+        end%if (k_iter > 1)
+
+        % Overwrite the SVD threshold locally to retain all the CBFs. This will be reset again later.        
+        Const.MBFthreshold = MBFthresholdtmp;
 
     % =================================================================================================================
     % 2016-12-17: This is the same as Alg. 14, but with the Orthonormalisation done per element (and not globally) and
@@ -2639,7 +2667,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
             % Plot the orthonormalisation timing (not for Jacobi method, i.e. Algorithm 12 with number of CBFs = 0)
             % --------------------------
 
-            if (~use_Jacobi) % Only plot the orthonormalisation if the Jacobi method has not been used
+            if (~use_Jacobi && false) % Only plot the orthonormalisation if the Jacobi method has not been used
                 % Account here for the fact that we might have stopped after a certain number of iterations, if the 
                 % threshold was reached.
                 y1=ifbmom.orthonormTiming;
@@ -2704,22 +2732,24 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
             plotData1(Const,x1,y1,xlab,ylab,titleString,imgString,fcdString);
             Const.plotSemiLogY=false;
 
-            % =======================
-            % New addition: 2017-01-08:
-            % -------------------------
-            % Plot now the relative residual as a function of the runtime:
-            x1 = iterTiming;
-            y1=ifbmom.relResError;
-            xlab = 'Total runtime [seconds]';
-            ylab = 'Relative residuum (\epsilon)';
-            % Build the title string here.
-            titleString = sprintf('IFB algorithm : %d, K-back : %d, useMBFreduction : %d',...
-                    Const.IFBalg,K_back, Const.useMBFreduction);
-            imgString = strcat('relresvstime_',img_fcd_filename);
-            fcdString = imgString; % Name the *.fcd name, same as the image file name.
-            Const.plotSemiLogY=true;  
-            plotData1(Const,x1,y1,xlab,ylab,titleString,imgString,fcdString);
-            Const.plotSemiLogY=false;
+            if (calculateRelativeResiduum)
+                % =======================
+                % New addition: 2017-01-08:
+                % -------------------------
+                % Plot now the relative residual as a function of the runtime:
+                x1 = iterTiming;
+                y1=ifbmom.relResError;
+                xlab = 'Total runtime [seconds]';
+                ylab = 'Relative residuum (\epsilon)';
+                % Build the title string here.
+                titleString = sprintf('IFB algorithm : %d, K-back : %d, useMBFreduction : %d',...
+                        Const.IFBalg,K_back, Const.useMBFreduction);
+                imgString = strcat('relresvstime_',img_fcd_filename);
+                fcdString = imgString; % Name the *.fcd name, same as the image file name.
+                Const.plotSemiLogY=true;  
+                plotData1(Const,x1,y1,xlab,ylab,titleString,imgString,fcdString);
+                Const.plotSemiLogY=false;
+            end%if
 
         end%if
 
