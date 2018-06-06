@@ -632,11 +632,40 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 %domain_bot_n = Const.arrayElBasisFunctRange(n,1);
                 %domain_top_n = Const.arrayElBasisFunctRange(n,2);
                 domain_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
-
                 VdomB = yVectors.values(domain_basis_functions,1);
+
+                if (~Solver_setup.disconnected_domains)
+                    
+                    % The ACA compression of the self-term here and error in buildMoMblockACA 
+                    % (use therefore the full MoM submatrix)
+                    useACAtmp = Const.useACA;
+                    Const.useACA = 0;        
+                    [ZdomB, UacadomB, VacadomB] = ...
+                        calcZmn(Const,zMatrices,1,1,1,domain_basis_functions,domain_basis_functions);
+                    [LdomB,UdomB] = lu(ZdomB);
+                    % Reset again the ACA usage:
+                    Const.useACA = useACAtmp;
+                end
+                
+                % The domains are identical, so we can use the precalculated LdomB and UdomB 
+                % factorisations (same for each element)
                 b = LdomB\VdomB;
-                IdomB_0 = UdomB\b;
+                IdomB_0 = UdomB\b;                
+                                
                 Ik(domain_basis_functions,1) = IdomB_0;  % Domain B (array element) - primary MBF
+
+                % If we had an interconnected array, then we need to apply a windowing here for the primary MBF
+                if (~Solver_setup.disconnected_domains)
+                    % -- Windowing  (only if we have interconnected domains)
+                    
+                    % Let's first determine the BFs on the interface esssentially the difference between the 
+                    % unknowns internal to the domain and that on the interface.
+                    interface_basis_functions = setdiff(domain_basis_functions, ...
+                        Solver_setup.rwg_basis_functions_internal_domains{n});
+
+                    % Apply now windowing : Factor of a half.
+                    Ik(interface_basis_functions,1) = 0.5.*Ik(interface_basis_functions,1);
+                end
 
                 % For the CBFM-enh. Jacobi Method (with the precomputation step) precalculate here
                 % the Z0 and V0 terms using the primary CBFs (see Alg.2 in [8])
@@ -702,21 +731,45 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                     %domain_bot_n = Const.arrayElBasisFunctRange(n,1);
                     %domain_top_n = Const.arrayElBasisFunctRange(n,2);
 
-                    domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+                    domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};                    
 
-                    % Extract Znn^(-1) = that of array element (with all elements assumed identical).
-                    % Note: This will only work if we have disjoint arrays.
+                    if (~Solver_setup.disconnected_domains)
+                        % Connected domains - calculate the LU factorisation for domain N
+                        % (discard ACA calculation for now)
+                        useACAtmp = Const.useACA;
+                        Const.useACA = 0;        
+                        [ZdomB, UacadomB, VacadomB] = ...
+                            calcZmn(Const,zMatrices,1,1,1,domain_n_basis_functions,domain_n_basis_functions);
+                        [LdomB,UdomB] = lu(ZdomB);
+                        % Reset again the ACA usage:
+                        Const.useACA = useACAtmp;
+                    end
+
+                    % If we are working with disconnected array elements, then we can use the 
+                    % pre-calculated Znn^(-1) = (LdomB, UdomB)                        
                     Udom_n = UdomB;
                     Ldom_n = LdomB;
 
+                    % Allocate a vector to add the secondary MBF contributions
+                    secMBF = complex(zeros(Ntot,1));
+
                     for m=1:numArrayElements
 
-                        % Add the pth coupling term for array element n using the (p-1)th coupling
+                        % Make sure the secondary MBF vector is properly zerod:
+                        secMBF(:) = 0.0;
+
+                        % Add the mth coupling term for array element n using the (m-1)th coupling
                         % terms from the other array elements (discarding offcourse m=n)
                         %domain_bot_m = Const.arrayElBasisFunctRange(m,1);
                         %domain_top_m = Const.arrayElBasisFunctRange(m,2);
 
-                        domain_m_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
+                        % For connected arrays, we only work with the internal basis functions, i.e.
+                        % we do not account for the source functions on the extended domain m.
+                        if (~Solver_setup.disconnected_domains)
+                            domain_m_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{m};
+                        else
+                            domain_m_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
+                        end
 
                         % Extract first Znm
                         [Znm, Unm, Vnm] = ...
@@ -733,8 +786,24 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                                     b = Ldom_n\(beta_k(m)*Unm*Vnm*Ik(domain_m_basis_functions,k-1));
                                 end%if
 
+                                % The term  Udom_n\b is in effect the secondary MBF contribution.
+                                % if we have a connected array, then this has to be windowed first.
+                                secMBF(domain_n_basis_functions) = Udom_n\b;
+
+                                % Window the secondary MBF here, if we are working with interconnected domains:
+                                if (~Solver_setup.disconnected_domains)
+                                    % Let's first determine the BFs on the interface esssentially the difference between the 
+                                    % unknowns internal to the domain and that on the interface.
+                                    interface_basis_functions = setdiff(domain_n_basis_functions, ...
+                                        Solver_setup.rwg_basis_functions_internal_domains{n});
+
+                                    % Apply now windowing : Factor of a half.
+                                    secMBF(interface_basis_functions) = 0.5.*secMBF(interface_basis_functions);
+                                end%if
+
+
                                 % Update surface-current at the current iteration.
-                                Ik(domain_n_basis_functions,k) = Ik(domain_n_basis_functions,k) + Udom_n\b;
+                                Ik(domain_n_basis_functions,k) = Ik(domain_n_basis_functions,k) + secMBF(domain_n_basis_functions);
                             end%if (m~=n)
 
                         elseif (Const.IFBalg == 10)
@@ -763,11 +832,15 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                     if (Const.IFBalg == 10)
                         Vdom_n = Vdom_n + (ZdomB*Ik(domain_bot_n:domain_top_n,k-1));
                     end%if
-                    b = Ldom_n\Vdom_n;
-                    Idom_n = Udom_n\b;
+
+                    % Note: Is it necessary to recalculate the 0th contribution again here?
+                    % No, I do not think so. Just use Ik(domain_n_basis_functions,1) below.
+                    %b = Ldom_n\Vdom_n;
+                    %Idom_n = Udom_n\b;
 
                     % Add now this pth contribution to the current on element n
-                    ifbmom.Isol(domain_n_basis_functions,1) = Idom_n - Ik(domain_n_basis_functions,k);
+                    %ifbmom.Isol(domain_n_basis_functions,1) = Idom_n - Ik(domain_n_basis_functions,k);
+                    ifbmom.Isol(domain_n_basis_functions,1) = Ik(domain_n_basis_functions,1) - Ik(domain_n_basis_functions,k);                    
                     Ik(domain_n_basis_functions,k) = ifbmom.Isol(domain_n_basis_functions,1);
                 end%for n=1:numArrayElements
 

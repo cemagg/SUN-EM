@@ -42,7 +42,8 @@ Const.SUNEMjackstrfilename     = 'jack_disconnected_bow_tie_array.str';
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
 % --------------------------------------------------------------------------------------------------
-% TO-DO: Setup some documentation for this
+% TO-DO: Setup some documentation for this - also assign default values if they are not
+% defined explicitely here.
 Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
 Const.calcSecMBFs = true;      % For MBF based solvers
 Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set

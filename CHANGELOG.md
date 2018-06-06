@@ -1,8 +1,12 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.7 - 2018-06-06
+- IFBMoMSolver now working with the connected domains (Jacobi - Alg. 7).
+
 ## 1.6 - 2018-06-06
-- IFBMoMSolver now working with the Adaptive MBF solver again (Alg. 14).
+- IFBMoMSolver now working with the Adaptive MBF solver again (Alg. 14)
+  for disconnected array elements.
 
 ## 1.5 - 2018-06-05
 - Work in progress: Got now the IFBMoMsolver + JackitSolver going for
