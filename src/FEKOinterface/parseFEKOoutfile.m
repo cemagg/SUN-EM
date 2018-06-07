@@ -61,13 +61,6 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     
     % Flag to make sure we actually read the geometry
     geometry_found = false;
-    
-    % Check now whether domain decomposition is active. This is signalled 
-    % by the type of solver used, e.g. DGFM, CBFM, etc.
-    if (Const.runCBFMsolver)
-        message_fc(Const,sprintf('  Domain decomposition active'));
-        Const.domain_decomposition = true;
-    end
 
     while end_flag == 0
         line=fgetl(fid);
@@ -145,7 +138,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
             % configurations
             if (g > 0)
                 array_line_info = strsplit(line);
-                if (strcmp(array_line_info{6},'Custom positioning'))
+                if (strcmp(array_line_info{6},'Custom'))
                     FEKO_data.finite_array_type = 'Custom positioning';
                     line=fgetl(fid);
                     g = strfind(line,'Number of elements'); 

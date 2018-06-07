@@ -89,7 +89,10 @@ CB: 2 : s2
 *******************************
 !!print  "FA card construction"
 
-FA: 0 : 3 : #arr_N : #arr_M :  : #arr_Noff : #arr_Moff
+FA: 0 : 3 : #arr_N : #arr_M :  : #arr_Noff : #arr_Moff :  :  :  : -1
+  :  :  :  :  :  :  :  :  : 1 : 0
+  :  :  :  :  :  :  :  :  : 1 : 0
+  :  :  :  :  :  :  :  :  : 1 : 0
 
 **SU   408       0
 

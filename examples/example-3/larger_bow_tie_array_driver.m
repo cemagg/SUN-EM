@@ -11,7 +11,7 @@
 % --------------------------------------------------------------------------------------------------
 % Project output directory: './dipoles/'
 % Debug: True/False
-Const = sunem_initialise('bow_tie_array',false);
+Const = sunem_initialise('larger_bow_tie_array',false);
 
 % --------------------------------------------------------------------------------------------------
 % Program flow settings
@@ -26,19 +26,18 @@ Const.runIFBMoMsolver    = true;
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.FEKOmatfilename          = 'bow_tie_array.mat';
-Const.FEKOstrfilename          = 'bow_tie_array.str';
-Const.FEKOrhsfilename          = 'bow_tie_array.rhs';
-Const.FEKOoutfilename          = 'bow_tie_array.out';
-Const.FEKOefefilename          = 'bow_tie_array.efe';
-Const.FEKOffefilename          = 'bow_tie_array.ffe';
+Const.FEKOmatfilename          = 'larger_bow_tie_array.mat';
+Const.FEKOstrfilename          = 'larger_bow_tie_array.str';
+Const.FEKOrhsfilename          = 'larger_bow_tie_array.rhs';
+Const.FEKOoutfilename          = 'larger_bow_tie_array.out';
+Const.FEKOefefilename          = 'larger_bow_tie_array.efe';
+Const.FEKOffefilename          = 'larger_bow_tie_array.ffe';
 
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMcbfmstrfilename     = 'cbfm_bow_tie_array.str';
-Const.SUNEMjackstrfilename     = 'jack_bow_tie_array.str';
-Const.SUNEMifbmomstrfilename   = 'ifbmom_bow_tie_array.str';
+Const.SUNEMifbmomstrfilename   = 'ifbmom_larger_bow_tie_array.str';
+Const.SUNEMcbfmstrfilename     = 'cbfm_larger_bow_tie_array.str';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
@@ -46,11 +45,11 @@ Const.SUNEMifbmomstrfilename   = 'ifbmom_bow_tie_array.str';
 % TO-DO: Setup some documentation for this - also assign default values if they are not
 % defined explicitely here.
 Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
-Const.calcSecMBFs = false;      % For MBF based solvers
+Const.calcSecMBFs = false;     % For MBF based solvers
 Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set
 Const.MBFthreshold = 1000;     % Threshold used for the SVD reduction of the MBFs
-Const.IFBalg = 7;             % Jacobi iterations (7). Adaptive MBF (14).
-Const.IFB_iterations = 10;      % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
+Const.IFBalg = 7;              % Jacobi iterations (7). Adaptive MBF (14).
+Const.IFB_iterations = 10;     % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
                                % which then looks at Const.IFB_convergence_threshold_percentage;
 Const.IFB_convergence_threshold_percentage = 1E-3;                                
 Const.IFB_CBFs = -1;           % TO-DO: Recheck this - essentially for the Adaptive MBF the number of MBFs
