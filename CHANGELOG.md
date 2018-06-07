@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.13 - 2018-06-07
+- Promoted now another example for the iterative Jacobi method.
+
 ## 1.12 - 2018-06-07
 - WIP: Primary MBFs + windowing is now working correctly. For a 5 x 1 bow-tie array (example-3), 
   I get now a relative error of 0.82%.
