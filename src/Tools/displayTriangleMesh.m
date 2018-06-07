@@ -82,31 +82,67 @@ function displayTriangleMesh(Const, Solver_setup)
     % are). Note, currently this is only for domain decomposition. Should
     % be trivial to extend for general case. To show all basis functions, 
     % set plot_domain = 0;
-    plot_domain = 0;
+    plot_domain = 1;
     % Only plot the internal basis functions associated with the domain
     internal_bfs_only = false;
+
+    % We can also rather plot the generating sub-array RWGs
+    plot_generating_sub_array_basis_functions = true;
+
+    if (Solver_setup.disconnected_domains && plot_generating_sub_array_basis_functions)
+        plot_generating_sub_array_basis_functions = false;        
+    end %if
+
+    if (~plot_generating_sub_array_basis_functions)
     
-    % Plot for each of the domains the basis functions. We can also
-    % display only the basis functions of a specific domain if 
-    % domain_id <> -1 as set above
-    for domain_index = 1:Solver_setup.number_of_domains
-        if ((domain_index == plot_domain) || (plot_domain == 0))
-            if (internal_bfs_only)                
-                domain_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{domain_index};
-            else
-                domain_basis_functions = Solver_setup.rwg_basis_functions_domains{domain_index};
-            end
-            for i = 1:length(domain_basis_functions)
-                bf_index = domain_basis_functions(i);
-                % Extract the centrepoint of the shared edge - this is where we
-                % will put the label
-                rwg_pC = Solver_setup.rwg_basis_functions_shared_edge_centre(bf_index,:);
-
-                text(rwg_pC(1),rwg_pC(2),rwg_pC(3),num2str(bf_index),...
-                    'FontSize',16,'EdgeColor','red');
+        % Plot for each of the domains the basis functions. We can also
+        % display only the basis functions of a specific domain if 
+        % domain_id <> -1 as set above
+        for domain_index = 1:Solver_setup.number_of_domains
+            if ((domain_index == plot_domain) || (plot_domain == 0))
+                if (internal_bfs_only)                
+                    domain_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{domain_index};
+                else
+                    domain_basis_functions = Solver_setup.rwg_basis_functions_domains{domain_index};
+                end
                 
-                % TO-DO: Draw an arrow between the centre-point of triangle + and -
+                for i = 1:length(domain_basis_functions)
+                    bf_index = domain_basis_functions(i);
+                    % Extract the centrepoint of the shared edge - this is where we
+                    % will put the label
+                    rwg_pC = Solver_setup.rwg_basis_functions_shared_edge_centre(bf_index,:);
 
-            end
-        end
-    end
+                    text(rwg_pC(1),rwg_pC(2),rwg_pC(3),num2str(bf_index),...
+                        'FontSize',16,'EdgeColor','red');
+                    % TO-DO: Draw an arrow between the centre-point of triangle + and -
+                end  %for
+            end %if ((domain_index == plot_domain) || (plot_domain == 0))
+        end %for domain_index = 1:Solver_setup.number_of_domains
+
+    else
+        % Plot for each of the generating sub-arrays the basis functions
+        % (only applicable if we have connected domains). We can also
+        % display only the basis functions of a specific domain if 
+        % domain_id <> -1 as set above
+        for ii = 1:Solver_setup.generating_subarrays.number_of_domains
+            if ((ii == plot_domain) || (plot_domain == 0))
+                
+                % Extract the sub-array basis functions
+                subarray_basis_functions = ...
+                    Solver_setup.generating_subarrays.rwg_basis_functions_domains{ii};
+                
+                for jj = 1:length(subarray_basis_functions)
+                    bf_index = subarray_basis_functions(jj);
+                    % Extract the centrepoint of the shared edge - this is where we
+                    % will put the label
+                    rwg_pC = Solver_setup.rwg_basis_functions_shared_edge_centre(bf_index,:);
+
+                    text(rwg_pC(1),rwg_pC(2),rwg_pC(3),num2str(bf_index),...
+                        'FontSize',16,'EdgeColor','green');
+                    % TO-DO: Draw an arrow between the centre-point of triangle + and -
+                end  %for
+            end %if ((domain_index == plot_domain) || (plot_domain == 0))
+        end %for domain_index = 1:Solver_setup.number_of_domains
+                        
+    end%if
+

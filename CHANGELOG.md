@@ -6,6 +6,10 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.10 - 2018-06-07
+- WIP: Interconnected domains - sub-arrays for generating better primary MBFs (plotting for
+  debug purposes now sorted out). Starting work in runMBFgenerator for the sub-arrays.
+
 ## 1.9 - 2018-06-07
 - WIP: Interconnected domains - sub-arrays for generating better primary MBFs
 

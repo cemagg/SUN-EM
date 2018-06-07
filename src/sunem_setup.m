@@ -22,7 +22,7 @@ function [Const] = sunem_setup(Const)
     % Set the version Major.Minor.Patch (see CHANGELOG.md for details)
     % --------------------------------------------------------------------------------------------------
     Const.MajorVersion = 1;  % Major version
-    Const.MinorVersion = 9;  % Minor version
+    Const.MinorVersion = 10;  % Minor version
 
     Const.Year = 2018;
     Const.Month = 06;

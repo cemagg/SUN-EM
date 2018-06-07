@@ -77,7 +77,7 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         % types of vectors, one for keep track of the unknowns in the extended domain
         % (Solver_setup.rwg_basis_functions_domains) and the other for tracking only the 
         % internal RWGs (i.e. not included in the extended domain), 
-        % ssSolver_setup.rwg_basis_functions_internal_domains
+        % Solver_setup.rwg_basis_functions_internal_domains
         Solver_setup.rwg_basis_functions_domains = cell(Solver_setup.number_of_domains,1);
         Solver_setup.rwg_basis_functions_internal_domains = cell(Solver_setup.number_of_domains,1);
         
@@ -216,6 +216,10 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         % Now that we have the interconnectivity, we define some information for the
         % generating sub-arrays that we will use to construct better primary MBFs
         if (Solver_setup.num_finite_array_elements > 3)
+
+            % We have 3 generating sub-arrays for linear connected structures (which we consider at the moment)
+            Solver_setup.generating_subarrays.number_of_domains = 3;            
+
             Solver_setup.generating_subarrays.domains = cell(3,1); % We will have 2 x edge domains and 1 centre domain
             Solver_setup.generating_subarrays.domains{1} = [Solver_setup.domain_connectivity(1), ...
                 Solver_setup.domain_connectivity(2)];
@@ -228,5 +232,22 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
             message_fc(Const,sprintf('Domain decomposition requires more than 3 array elements'));
             error(['Domain decomposition requires more than 3 array elements']);
         end
+
+        % Extract now the edges associated with the sub-array domains:
+        Solver_setup.generating_subarrays.rwg_basis_functions_domains = cell(3,1);
+        for ii = 1:Solver_setup.generating_subarrays.number_of_domains
+            subarray_domains = Solver_setup.generating_subarrays.domains{ii};
+            
+            rwgs = [];
+            % Loop over all the domains in this sub-array and extract the RWG elements.
+            for jj = 1:length(subarray_domains)
+                domain_index = subarray_domains(jj);
+                rwgs = [rwgs Solver_setup.rwg_basis_functions_domains{domain_index}];
+            end%for
+            % Store the RWGs for this generating sub-array. Note: We
+            % discard the RWGs on the interface between the domains, that
+            % will be included in the Solver_setup.rwg_basis_functions_domains{jj} vector
+            Solver_setup.generating_subarrays.rwg_basis_functions_domains{ii} = unique(rwgs);
+        end%for
     end %if
     
