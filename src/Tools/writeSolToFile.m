@@ -72,7 +72,7 @@ function writeSolToFile(Const, solStruct)
         case 'NGFDGFM'
             filename = Const.SUNEMngfdgfmstrfilename;
         case 'IFBMOM'
-            filename = Const.SUNEMifbmomstrfilename;
+            filename = Const.SUNEMifbmomstrfilename;                       
         case 'ITERDGFM'
             filename = Const.SUNEMiterdgfmstrfilename;
         case 'HARP-MBF-PATTERN'

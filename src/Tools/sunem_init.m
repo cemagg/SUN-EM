@@ -200,5 +200,13 @@ function Const = sunem_init(Const, yVectors)
     Const.FEKO_efe_file_format = 4; % FEKO *.efe file format
     % TO-DO: Also check other files, e.g. *.str, *.hfe, *.ffe, *.snp, etc.    
 
+
+    % Check now whether domain decomposition is active. This is signalled 
+    % by the type of solver used, e.g. DGFM, CBFM, etc.
+    if (Const.runCBFMsolver || Const.runJacobisolver || Const.runIFBMoMsolver)
+        message_fc(Const,sprintf('  Domain decomposition active'));
+        Const.domain_decomposition = true;
+    end
+
     % Finished
     message_fc(Const,sprintf('Done'));

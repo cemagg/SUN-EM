@@ -20,6 +20,8 @@ Const = sunem_initialise('pec_plate_array',false);
 % Choose the solvers that will be executed
 Const.runMoMsolver       = true;
 Const.runCBFMsolver      = true;
+Const.runJacobisolver    = false;
+Const.runIFBMoMsolver    = true;
 
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
@@ -35,6 +37,7 @@ Const.FEKOffefilename          = 'pec_plate_array.ffe';
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
 Const.SUNEMcbfmstrfilename     = 'cbfm_pec_plate_array.str';
+Const.SUNEMifbmomstrfilename   = '';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
@@ -44,6 +47,16 @@ Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
 Const.calcSecMBFs = false;      % For MBF based solvers
 Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set
 Const.MBFthreshold = 1000;      % Threshold used for the SVD reduction of the MBFs
+Const.IFBalg = 14;             % Jacobi iterations (7). Adaptive MBF (14).
+Const.IFB_iterations = 10;      % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
+                               % which then looks at Const.IFB_convergence_threshold_percentage;
+Const.IFB_convergence_threshold_percentage = 1E-3;                                
+Const.IFB_CBFs = -1;           % TO-DO: Recheck this - essentially for the Adaptive MBF the number of MBFs
+                               % to use during each iteration
+Const.IFB_debug = 1;
+Const.cache_Z0_V0 = false;     % Precompute the Z0 and V0 terms
+Const.use_DGFM_start = false;  % Use the DGFM to calculate the initial (0th) solution
+
 
 % --------------------------------------------------------------------------------------------------
 % Read the MoM matrix equation from the file

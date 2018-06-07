@@ -1,6 +1,9 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.8 - 2018-06-07
+- Backing up before adding the primary generating sub-arrays for the CBFM.
+
 ## 1.7 - 2018-06-06
 - IFBMoMSolver now working with the connected domains (Jacobi - Alg. 7).
 
