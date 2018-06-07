@@ -57,7 +57,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     FEKO_data.num_finite_array_elements = -1;
 
     % A local debug flag (e.g. to plot geometry)
-    LOCAL_DEBUG = false;
+    LOCAL_DEBUG = true;
     
     % Flag to make sure we actually read the geometry
     geometry_found = false;
@@ -454,6 +454,9 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     % ==============================================
     if (LOCAL_DEBUG)
         displayTriangleMesh(Const, FEKO_data);
+        % DJdbg --> remove:
+        xlim([-0.6,0.6]);
+        ylim([0,2.25]);        
     end%if
 
     % ==========================================================================================

@@ -89,7 +89,7 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         % Let's assume we have disjoint domains (flag will be updated below
         % if we find this is not the case)
         Solver_setup.disconnected_domains = true;
-    end%if
+    end%if if (Const.domain_decomposition)
     
     % Initialise the return values:
     Solver_setup.rwg_basis_functions_shared_edge_nodes = zeros(Solver_setup.num_metallic_edges,2);    
@@ -197,10 +197,36 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
     % functions on the interface). This is only necessary if we have interconnected domains:
     if (Const.domain_decomposition && ~Solver_setup.disconnected_domains)
         for el = 1:Solver_setup.num_finite_array_elements
-           extended_domain_indices = Solver_setup.rwg_basis_functions_domains{el};    
-           % Determine now this domain's internal unknowns, by just extracting 
-           Solver_setup.rwg_basis_functions_internal_domains{el} = setdiff(extended_domain_indices, ...
-               Solver_setup.rwg_basis_functions_on_interface);
-       end%for
-    end %if
+            extended_domain_indices = Solver_setup.rwg_basis_functions_domains{el};    
+            % Determine now this domain's internal unknowns, by just extracting 
+            Solver_setup.rwg_basis_functions_internal_domains{el} = setdiff(extended_domain_indices, ...
+                Solver_setup.rwg_basis_functions_on_interface);
+        end%for
+       
+        % We need to extract now the domain interconnectivity here, so that
+        % we can define the MBF primary generating sub-arrays later. Assume
+        % for now a 1D case. TO-DO: Danie, we need to add an error check
+        % here that makes sure we exit with an error should a 2D array be
+        % detected. For 2D arrays as e.g. generated using the 'FA' card of FEKO, 
+        % the domains are not always numbered 1,2,3,4,etc. for one row and then 
+        % 5,6,7,8 for the next. We need to use e.g. the domain boundary information
+        % to determine the interconnectivity.
+        Solver_setup.domain_connectivity = 1:Solver_setup.num_finite_array_elements;
 
+        % Now that we have the interconnectivity, we define some information for the
+        % generating sub-arrays that we will use to construct better primary MBFs
+        if (Solver_setup.num_finite_array_elements > 3)
+            Solver_setup.generating_subarrays.domains = cell(3,1); % We will have 2 x edge domains and 1 centre domain
+            Solver_setup.generating_subarrays.domains{1} = [Solver_setup.domain_connectivity(1), ...
+                Solver_setup.domain_connectivity(2)];
+            Solver_setup.generating_subarrays.domains{2} = [Solver_setup.domain_connectivity(2), ...
+                Solver_setup.domain_connectivity(3), ...
+                Solver_setup.domain_connectivity(4)];
+            Solver_setup.generating_subarrays.domains{3} = [Solver_setup.domain_connectivity(Solver_setup.num_finite_array_elements-1), ...
+                Solver_setup.domain_connectivity(Solver_setup.num_finite_array_elements)];
+        else
+            message_fc(Const,sprintf('Domain decomposition requires more than 3 array elements'));
+            error(['Domain decomposition requires more than 3 array elements']);
+        end
+    end %if
+    

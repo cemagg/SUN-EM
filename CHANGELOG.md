@@ -1,5 +1,13 @@
 ## Change Log
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file. 
+
+Note the following list of abbreviations:
+	WIP : Work in Progress
+
+===================================================================================================
+
+## 1.9 - 2018-06-07
+- WIP: Interconnected domains - sub-arrays for generating better primary MBFs
 
 ## 1.8 - 2018-06-07
 - Backing up before adding the primary generating sub-arrays for the CBFM.

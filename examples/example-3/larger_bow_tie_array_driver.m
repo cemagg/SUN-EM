@@ -21,7 +21,7 @@ Const = sunem_initialise('larger_bow_tie_array',false);
 Const.runMoMsolver       = true;
 Const.runCBFMsolver      = true;
 Const.runJacobisolver    = false;
-Const.runIFBMoMsolver    = true;
+Const.runIFBMoMsolver    = false;
 
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
@@ -45,9 +45,9 @@ Const.SUNEMcbfmstrfilename     = 'cbfm_larger_bow_tie_array.str';
 % TO-DO: Setup some documentation for this - also assign default values if they are not
 % defined explicitely here.
 Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
-Const.calcSecMBFs = false;     % For MBF based solvers
+Const.calcSecMBFs = true;     % For MBF based solvers
 Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set
-Const.MBFthreshold = 1000;     % Threshold used for the SVD reduction of the MBFs
+Const.MBFthreshold = 10;     % Threshold used for the SVD reduction of the MBFs
 Const.IFBalg = 7;              % Jacobi iterations (7). Adaptive MBF (14).
 Const.IFB_iterations = 10;     % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
                                % which then looks at Const.IFB_convergence_threshold_percentage;
