@@ -236,8 +236,7 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         % Extract now the edges associated with the sub-array domains:
         Solver_setup.generating_subarrays.rwg_basis_functions_domains = cell(3,1);
         for ii = 1:Solver_setup.generating_subarrays.number_of_domains
-            subarray_domains = Solver_setup.generating_subarrays.domains{ii};
-            
+            subarray_domains = Solver_setup.generating_subarrays.domains{ii};            
             rwgs = [];
             % Loop over all the domains in this sub-array and extract the RWG elements.
             for jj = 1:length(subarray_domains)

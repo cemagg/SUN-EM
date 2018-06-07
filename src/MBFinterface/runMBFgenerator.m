@@ -44,6 +44,8 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
     %       A New Technique for Efficient Solution of Method of Moments Matrix Equations," 
     %       in Microwave and Optical Technology Letters, Vol. 36, No. 2
     %       Jan, 2003, pp. 95-100.
+    %   [2] Maaskant, et. al, "Fast Analysis of Large Antenna Arrays Using the Characteristic 
+    %       Basis Function Method and the Adaptive Cross Approximation Algorithm", IEEE TAP
     %
     %   =======================
     %   Written by Danie Ludick on June 24, 2013.    
@@ -75,7 +77,9 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
     % 2017.06.03: We need to work on the max number of basis functions (BFs) per element here (as we might have
     % interconnected) arrays that have different number of BFs / element.
     %Ndom        = Solver_setup.max_mom_basis_functions_per_array_element;   % Number of basis functions per array element        
-    numArrayEls = Solver_setup.num_finite_array_elements;  % The number of array elements    
+    numArrayEls = Solver_setup.num_finite_array_elements;  % The number of array elements
+    numGeneratingSubarrays = Solver_setup.generating_subarrays.number_of_domains; % Number of generating sub-arrays,
+                                                                                  % for connected structures    
     numSols     = xVectors.numSols;             % The number of solutions configurations
         
     % If we are reducing and orthonormalising the MBFs by using the SVD,
@@ -103,7 +107,31 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
     % multiple primary MBFs (as would be the case for multiple ports per
     % base domain) - then change the second dimension.
     % 2018.06.04: Increase now the size of PrimIsol to the global MoM size (not per domain any more).
-    mbfs.PrimIsol = complex(zeros(Nmom,1,numArrayEls,numSols));
+    % 2018.06.07: The number of primaries / domain will not be 1 when we have interconnected domains
+    % with generating sub-arrays (radiating case).
+    max_primaries_per_domain = 1;
+    if (~Solver_setup.disconnected_domains)
+        % Number of primaries / domain - in the case of generating sub-arrays will depend on the location
+        % of the element in the array. As a maximum, just take the maximum number of domains in any 
+        % generating sub-array configuration. Loop over all sub-arrays and extract the max domain size
+        max_subarray_domains = 0;
+        for ii = 1:numGeneratingSubarrays
+            max_subarray_domains = max(max_subarray_domains, ...
+                length(Solver_setup.generating_subarrays.domains{ii}));            
+        end%for ii=1:Solver_setup.generating_subarrays.number_of_domains
+        max_primaries_per_domain = max_subarray_domains;
+
+        % We should also allocate some space to store the Primaries associated with 
+        % the generating sub-arrays. Note: we do not bother with a per Solution configuration
+        % here, as the manner in which we generate these MBFs should make them useful for any
+        % excitation configuration.
+        mbfs.GenSubArrPrimIsol = complex(zeros(Nmom,max_primaries_per_domain,numGeneratingSubarrays,1));
+        % Number of Generating Prim. MBFs / subarray
+        mbfs.numGenSubArrPrimMBFs = zeros(numGeneratingSubarrays,1); 
+    end%if
+
+    mbfs.PrimIsol = complex(zeros(Nmom,max_primaries_per_domain,numArrayEls,numSols));    
+
     mbfs.numPrimMBFs = zeros(numArrayEls,numSols); % Number of Prim. MBFs / solution config.
     mbfs.numSecMBFs = zeros(numArrayEls,numSols);  % Number of Sec.  MBFs / solution config.
     if (Const.calcSecMBFs)
@@ -116,9 +144,12 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
         % multiple solution configurations. Threfore extend the structure
         % as follows:               (Ndom,  SecIndx    ,  DomainInd, # Sol. Configurations)
         % 2018.06.04: Increase now the size of SecIsol to the global MoM size (not per domain any more).
-        mbfs.SecIsol = complex(zeros(Nmom,numArrayEls-1,numArrayEls,numSols));
+        % 2018.06.07: For connected arrays, we follow the same reasoning as above - i.e. the number of 
+        % secondaries depend on the number of primaries that again depend on the number of generating sub-arrays.
+        mbfs.SecIsol = complex(zeros(Nmom,max_primaries_per_domain*(numArrayEls-1),numArrayEls,numSols));
     end%if
     
+
     % 2018.06.03: We also support now interconnected domains. Only therefore 
     % pre-allocate certain MBF datastructures if we have a disjoint array problem.
     % Otherwise, these have to be calculated per domain.
@@ -135,6 +166,105 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
         domain_indices = Solver_setup.rwg_basis_functions_domains{1};    
         % TO-DO: Actually use the calcZmn function here with the correct frequency index.
         [L,U] = lu(zMatrices.values(domain_indices, domain_indices));
+    else
+
+        message_fc(Const,sprintf('Generating sub-array primary MBFs'));
+
+        % We have a generating sub-array here. We need to generate now the correct primaries
+        % for each sub-array following the method as explained in [2].
+        subarray_window = complex(zeros(Nmom, 1));        
+        
+        %  Loop over the number of sub-arrays
+        for ii = 1:numGeneratingSubarrays
+            
+            % Extract the number of domains within this sub-array
+            subarray_domains = Solver_setup.generating_subarrays.domains{ii};
+            num_domains = length(subarray_domains);
+
+            % Extract the unknowns associated with the entire sub-array (will be used below).
+            subarray_basis_functions = ...
+                Solver_setup.generating_subarrays.rwg_basis_functions_domains{ii};
+
+            % Calculate the windowing function for this sub-array. Distinguish between 3 types:
+            %   Sub-array 1 : Left edge sub-array
+            %   Sub-array 2 : Centre sub-array
+            %   Sub-array 3 : Right edge sub-array
+            
+            % Reset the window first.
+            subarray_window(:) = 0.0;
+
+            switch ii
+                case 1
+                    fprintf("  Sub-array (Type 1) : Left edge sub-array\n");
+                    internal_domain = subarray_domains(1);
+                case 2
+                    fprintf("  Sub-array (Type 2) : Centre sub-array\n");
+                    internal_domain = subarray_domains(2);
+                case 3
+                    fprintf("  Sub-array (Type 3) : Right edge sub-array\n");
+                    internal_domain = subarray_domains(2);
+                otherwise
+                    % Error : we can only process 3 types of generating sub-arrays thus far
+                    message_fc(Const,"Subarray type not supported");
+                    error(['Subarray type not supported']);
+            end
+
+            % Extract the internal basis functions for the subarray, i.e. the one to which
+            % the primary MBF will be mapped.
+            domain_basis_functions_internal = ...
+                Solver_setup.rwg_basis_functions_internal_domains{internal_domain};
+
+            % Determine the basis functions on the overlapping region (i.e. on the interface 
+            % of this element the surrounding elements)
+            domain_basis_functions_interface = setdiff(...
+                Solver_setup.rwg_basis_functions_domains{internal_domain}, ...
+                Solver_setup.rwg_basis_functions_internal_domains{internal_domain});
+
+            % Determine the basis functions external to this element (and also not on the interface)
+            domain_basis_functions_external = setdiff(...
+                subarray_basis_functions, ...
+                Solver_setup.rwg_basis_functions_domains{internal_domain});
+
+            subarray_window(domain_basis_functions_internal)  = 1.0;
+            subarray_window(domain_basis_functions_interface) = 0.5;
+            subarray_window(domain_basis_functions_external)  = 0.0;
+            
+            % We will be needing a vector to store the excited array
+            % values
+            yVectors_genPrim = complex(zeros(Nmom,1));
+
+            % For each of the domains, we calculate primary MBFs by looping over the elements
+            % and exciting each individually.
+            count = 0;
+            for m=1:num_domains % within the sub-array
+                % Extract domain index from sub-array list
+                domain_index = subarray_domains(m);
+
+                % Extract the basis functions associated with the element internal to the 
+                % domain (within the generating sub-array). This is needed to ensure that we excite only
+                % this element, and also below to apply the correct windowing. 
+                domain_basis_functions_internal = Solver_setup.rwg_basis_functions_internal_domains{domain_index};
+
+                % Now, if we have a generating sub-array, i.e. for connected domains, then we excite ONLY the current element.                
+                yVectors_genPrim(domain_basis_functions_internal) = yVectors.values(domain_basis_functions_internal,1);
+
+                % Now let's calculate the primary MBF that is a result of exciting this element within the 
+                % sub-array. TO-DO: Replace later with calcZmn.m
+                [L,U] = lu(zMatrices.values(subarray_basis_functions, subarray_basis_functions, 1));
+
+                b = L\yVectors_genPrim(subarray_basis_functions);
+                
+                count = count + 1;
+                mbfs.GenSubArrPrimIsol(subarray_basis_functions,count,ii,1) = U\b; % U, already calculated above
+
+                % Window now this MBF by applying the windowing function that was calculated above
+                mbfs.GenSubArrPrimIsol(:,count,ii,1) = subarray_window.*mbfs.GenSubArrPrimIsol(:,count,ii,1);
+
+            end%for m=1:num_domains        
+            % Store the number of primary MBFs that were generated for this sub-array    
+            mbfs.numGenSubArrPrimMBFs(ii) = count;
+
+        end % ii = 1:numGeneratingSubarrays
     end
 
     % See issue FEKDDM-10: We added now support for multiple solution configurations.
@@ -356,4 +486,3 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
     % We need to store also the MBF total time here - reported at the end of the CBFM solver when results are written
     % to file
     mbfs.totTime = totprimGenTime + totsecGenTime + totsvdTime;
-

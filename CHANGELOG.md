@@ -6,6 +6,13 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.11 - 2018-06-07
+- WIP: Generated now the primary MBFs on the generating sub-arrays (type 1,2 and 3). We need to
+  map them now to the correct array elements. Then we can test at least the primary MBFs for the 
+  CBFM. For the Jacobi, we actually do not need the secondary effects using the individual primaries, 
+  as we only work with a single primary. We can perhaps do a CBFM solution for the 0th current
+  distribution (i.e. to get the starting vector a bit more promising).
+
 ## 1.10 - 2018-06-07
 - WIP: Interconnected domains - sub-arrays for generating better primary MBFs (plotting for
   debug purposes now sorted out). Starting work in runMBFgenerator for the sub-arrays.
