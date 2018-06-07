@@ -213,6 +213,16 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         % to determine the interconnectivity.
         Solver_setup.domain_connectivity = 1:Solver_setup.num_finite_array_elements;
 
+        % Set each of the domain types, i.e. from which generating sub-array to extract 
+        % primary MBFs from (see also runMBFgenerator.m)
+        %   Sub-array 1 : Left edge sub-array
+        %   Sub-array 2 : Centre sub-array
+        %   Sub-array 3 : Right edge sub-array
+        Solver_setup.generating_subarray_parent = zeros(Solver_setup.num_finite_array_elements,1);
+        Solver_setup.generating_subarray_parent(:)=2;   % Set all first to centre type
+        Solver_setup.generating_subarray_parent(1) = 1; % Correct left edge
+        Solver_setup.generating_subarray_parent(Solver_setup.num_finite_array_elements) = 3; % Correct right edge
+
         % Now that we have the interconnectivity, we define some information for the
         % generating sub-arrays that we will use to construct better primary MBFs
         if (Solver_setup.num_finite_array_elements > 3)
@@ -248,5 +258,19 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
             % will be included in the Solver_setup.rwg_basis_functions_domains{jj} vector
             Solver_setup.generating_subarrays.rwg_basis_functions_domains{ii} = unique(rwgs);
         end%for
+
+        % Also specify now the internal domain (in the domain_index list of the subarray) that will
+        % the final (truncated) basis functions.
+        Solver_setup.generating_subarrays.truncation_domain = cell(3,1); % We will have 2 x edge domains (left & right) and 1 centre domain
+        
+        domains = Solver_setup.generating_subarrays.domains{1};
+        Solver_setup.generating_subarrays.truncation_domain{1} = domains(1); % Left edge sub-array (2 elements)
+        
+        domains = Solver_setup.generating_subarrays.domains{2};
+        Solver_setup.generating_subarrays.truncation_domain{2} = domains(2); % Centre sub-array (3 elements)
+        
+        domains = Solver_setup.generating_subarrays.domains{3};
+        Solver_setup.generating_subarrays.truncation_domain{3} = domains(2); % Right sub-array (2 elements)
+
     end %if
     

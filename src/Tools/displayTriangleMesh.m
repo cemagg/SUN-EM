@@ -82,7 +82,7 @@ function displayTriangleMesh(Const, Solver_setup)
     % are). Note, currently this is only for domain decomposition. Should
     % be trivial to extend for general case. To show all basis functions, 
     % set plot_domain = 0;
-    plot_domain = 1;
+    plot_domain = 0;
     % Only plot the internal basis functions associated with the domain
     internal_bfs_only = false;
 

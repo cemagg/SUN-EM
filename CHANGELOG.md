@@ -6,6 +6,11 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.12 - 2018-06-07
+- WIP: Primary MBFs + windowing is now working correctly. For a 5 x 1 bow-tie array (example-3), 
+  I get now a relative error of 0.82%.
+- Continue now first with the Jacobi iterations.
+
 ## 1.11 - 2018-06-07
 - WIP: Generated now the primary MBFs on the generating sub-arrays (type 1,2 and 3). We need to
   map them now to the correct array elements. Then we can test at least the primary MBFs for the 

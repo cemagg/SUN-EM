@@ -193,37 +193,40 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
             % Reset the window first.
             subarray_window(:) = 0.0;
 
-            switch ii
-                case 1
-                    fprintf("  Sub-array (Type 1) : Left edge sub-array\n");
-                    internal_domain = subarray_domains(1);
-                case 2
-                    fprintf("  Sub-array (Type 2) : Centre sub-array\n");
-                    internal_domain = subarray_domains(2);
-                case 3
-                    fprintf("  Sub-array (Type 3) : Right edge sub-array\n");
-                    internal_domain = subarray_domains(2);
-                otherwise
-                    % Error : we can only process 3 types of generating sub-arrays thus far
-                    message_fc(Const,"Subarray type not supported");
-                    error(['Subarray type not supported']);
-            end
+%             switch ii
+%                 case 1
+%                     fprintf("  Sub-array (Type 1) : Left edge sub-array\n");
+%                     internal_domain = subarray_domains(1);
+%                 case 2
+%                     fprintf("  Sub-array (Type 2) : Centre sub-array\n");
+%                     internal_domain = subarray_domains(2);
+%                 case 3
+%                     fprintf("  Sub-array (Type 3) : Right edge sub-array\n");
+%                     internal_domain = subarray_domains(2);
+%                 otherwise
+%                     % Error : we can only process 3 types of generating sub-arrays thus far
+%                     message_fc(Const,sprintf('Subarray type not supported'));
+%                     error(['Subarray type not supported']);
+%             end
+            
+            % Extract domain on which the final (truncated) basis functions will be mapped
+            truncation_domain = Solver_setup.generating_subarrays.truncation_domain{ii};
 
             % Extract the internal basis functions for the subarray, i.e. the one to which
             % the primary MBF will be mapped.
             domain_basis_functions_internal = ...
-                Solver_setup.rwg_basis_functions_internal_domains{internal_domain};
+                Solver_setup.rwg_basis_functions_internal_domains{truncation_domain};
 
             % Determine the basis functions on the overlapping region (i.e. on the interface 
-            % of this element the surrounding elements)
+            % of this element and the surrounding elements)
             domain_basis_functions_interface = setdiff(...
-                Solver_setup.rwg_basis_functions_domains{internal_domain}, ...
-                Solver_setup.rwg_basis_functions_internal_domains{internal_domain});
+                Solver_setup.rwg_basis_functions_domains{truncation_domain}, ...
+                Solver_setup.rwg_basis_functions_internal_domains{truncation_domain});
 
             % Determine the basis functions external to this element (and also not on the interface)
             domain_basis_functions_external = setdiff(...
                 subarray_basis_functions, ...
-                Solver_setup.rwg_basis_functions_domains{internal_domain});
+                Solver_setup.rwg_basis_functions_domains{truncation_domain});
 
             subarray_window(domain_basis_functions_internal)  = 1.0;
             subarray_window(domain_basis_functions_interface) = 0.5;
@@ -237,6 +240,8 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
             % and exciting each individually.
             count = 0;
             for m=1:num_domains % within the sub-array
+                yVectors_genPrim(:) = 0.0; % Make sure the excitation vector is zeroed
+                
                 % Extract domain index from sub-array list
                 domain_index = subarray_domains(m);
 
@@ -270,6 +275,10 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
     % See issue FEKDDM-10: We added now support for multiple solution configurations.
     % Each solution configuration get its own set of primary and secondary MBFs, 
     % depending on the solution excitation configuration.
+    % 2018.06.07: If we have calculated the MBFs using a generating
+    % sub-array (for interconnected arrays), then we just need to read the
+    % correct MBFs below - depending on where the array element is located
+    % in the array.
     for solNum = 1:numSols
     
         % Start timing (per solution)
@@ -282,7 +291,7 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
         % Generate the primary MBF: Jprim = (Zself)^(-1) * Vself
         mbfs.numPrimMBFs(:,solNum) = 0;
         
-        for m=1:numArrayEls
+        for m=1:numArrayEls            
             % We only generate a primary MBF if the array element is active
             if (Const.is_array_element_active(m,solNum))
 
@@ -290,33 +299,49 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
                 % Note: if we have an interconnected domain problem, then this represents
                 % the extended domain's solution.
                 domain_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
-
+                                
                 % 2018.06.03: We also support now interconnected domains. Calculate
                 % the LU decomposition here for the particular domain (will not be
                 % the same for each element)
                 if (~Solver_setup.disconnected_domains)
-                    % TO-DO: Actually use the calcZmn function here with the correct frequency index.
-                    [L,U] = lu(zMatrices.values(domain_basis_functions, domain_basis_functions));
-                end
-
-                mbfs.numPrimMBFs(m,solNum) = mbfs.numPrimMBFs(m,solNum) + 1;
-
-                b = L\yVectors.values(domain_basis_functions,solNum);
-                mbfs.PrimIsol(domain_basis_functions,1,m,solNum) = U\b; % U, already calculated above
-
-                % Before we continue, we need to window the primary MBF here, if we are working with interconnected
-                % domains:
-                if (~Solver_setup.disconnected_domains && true)
-                    % -- Windowing  (only if we have interconnected domains)
                     
-                    % Let's first determine the BFs on the interface esssentially the difference between the 
-                    % unknowns internal to the domain and that on the interface.
-                    interface_basis_functions = setdiff(domain_basis_functions, ...
-                        Solver_setup.rwg_basis_functions_internal_domains{m});
-
-                    % Apply now windowing : Factor of a half.
-                    mbfs.PrimIsol(interface_basis_functions,1,m,solNum) = 0.5.*mbfs.PrimIsol(interface_basis_functions,1,m,solNum);
-                end%if
+                    % We need to extract the type of element that we are
+                    % working with (i.e. from which sub-array to extract
+                    % the solution). This was configured at the onset when
+                    % the geometry was processed.
+                    gen_sub_arr_ind = Solver_setup.generating_subarray_parent(m);
+                                        
+                    % Extract domain in the generating subarray on which the final (truncated) 
+                    % basis functions are mapped
+                    subarray_truncation_domain = Solver_setup.generating_subarrays.truncation_domain{gen_sub_arr_ind};                    
+                    subarray_truncation_domain_basis_functions = ...
+                        Solver_setup.rwg_basis_functions_domains{subarray_truncation_domain};
+                    
+                    % -- Read the primary now from the generating sub-array     
+                    numMBFs = mbfs.numGenSubArrPrimMBFs(gen_sub_arr_ind);
+                    mbfs.numPrimMBFs(m,solNum) = mbfs.numGenSubArrPrimMBFs(gen_sub_arr_ind);
+                    mbfs.PrimIsol(domain_basis_functions,1:numMBFs,m,solNum) = ...
+                        mbfs.GenSubArrPrimIsol(subarray_truncation_domain_basis_functions,1:numMBFs,gen_sub_arr_ind);                    
+                else
+                    mbfs.numPrimMBFs(m,solNum) = mbfs.numPrimMBFs(m,solNum) + 1;
+                    
+                    b = L\yVectors.values(domain_basis_functions,solNum);
+                    mbfs.PrimIsol(domain_basis_functions,1,m,solNum) = U\b; % U, already calculated above
+                end
+                
+%                 % Before we continue, we need to window the primary MBF here, if we are working with interconnected
+%                 % domains:
+%                 if (~Solver_setup.disconnected_domains && false)
+%                     % -- Windowing  (only if we have interconnected domains)
+%                     
+%                     % Let's first determine the BFs on the interface esssentially the difference between the 
+%                     % unknowns internal to the domain and that on the interface.
+%                     interface_basis_functions = setdiff(domain_basis_functions, ...
+%                         Solver_setup.rwg_basis_functions_internal_domains{m});
+% 
+%                     % Apply now windowing : Factor of a half.
+%                     mbfs.PrimIsol(interface_basis_functions,1,m,solNum) = 0.5.*mbfs.PrimIsol(interface_basis_functions,1,m,solNum);
+%                 end%if
             end%if
         end%for
         
@@ -417,9 +442,9 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
             for m=1:numArrayEls            
                 % Put all the MBFs in a column augmented matrix
                 if (Const.calcSecMBFs)
-                    origMBFs = [mbfs.PrimIsol(:,1,m,solNum) mbfs.SecIsol(:,1:mbfs.numSecMBFs(m,solNum),m,solNum)];
+                    origMBFs = [mbfs.PrimIsol(:,1:mbfs.numPrimMBFs(m,solNum),m,solNum) mbfs.SecIsol(:,1:mbfs.numSecMBFs(m,solNum),m,solNum)];
                 else
-                    origMBFs = mbfs.PrimIsol(:,1,m,solNum);
+                    origMBFs =  mbfs.PrimIsol(:,1:mbfs.numPrimMBFs(m,solNum),m,solNum);
                 end
                 if (Const.debug)
                     message_fc(Const,['Number of initially generated CBFs: ' num2str(size(origMBFs,2))]);
