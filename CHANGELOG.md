@@ -6,8 +6,13 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.14 - 2018-06-09
+- Added now the dBMoMinterface, i.e. essentially the 3D MoM implementation by David B. Davidson,
+  detailed in Chapter 6 of his book, Computational Electromagnetics for RF and Microwave Engineering,
+  2nd Edition.
+
 ## 1.13 - 2018-06-07
-- Promoted now another example for the iterative Jacobi method.
+- Promoted now another example for the iterative Jacobi method (example-6, a larger bow-tie array).
 
 ## 1.12 - 2018-06-07
 - WIP: Primary MBFs + windowing is now working correctly. For a 5 x 1 bow-tie array (example-3), 
