@@ -57,7 +57,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     FEKO_data.num_finite_array_elements = -1;
 
     % A local debug flag (e.g. to plot geometry)
-    LOCAL_DEBUG = false;
+    LOCAL_DEBUG = true;
     
     % Flag to make sure we actually read the geometry
     geometry_found = false;
@@ -230,7 +230,6 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     % -- Store only the nodal indices here below. Actual cartesian co-ordinates of the nodes
     % are stored in the nodes_xyz structure.
     FEKO_data.triangle_vertices = zeros(FEKO_data.num_metallic_triangles,3);
-
     FEKO_data.triangle_area_m2 = zeros(FEKO_data.num_metallic_triangles,1);
 
     % -- Initialisations for the RWG basis functions (Type 1 elements as per FEKO convention)
@@ -386,6 +385,44 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     % and the nodal indices of the shared edge of the RWG
     FEKO_data = extract_shared_edge_triangle_details(Const, FEKO_data);
 
+    % We also need now the Rho vectors as defined in [DBD2011], so that we can fill the 
+    % Z matrix internally. This is essentially the vectors \vec\rho_n^c+ and - in [Fig2, RWG82]
+    % and also documented in [Chapter 6, DBD2011] - see the function ComputeRho_c.m. We can do 
+    % this easily now after the RWGs have been determined in the above routine as we know know for each
+    % which is the free vertex
+    FEKO_data.rho_c_pls = zeros(FEKO_data.num_metallic_edges,3); 
+    FEKO_data.rho_c_mns = zeros(FEKO_data.num_metallic_edges,3); 
+    % What follows is an adaption of ComputeRho_c.m [DBD2011]
+    for mm=1:FEKO_data.num_metallic_edges % General code
+
+        % ---------------------
+        % Process rho_c_pls (\vec\rho_n^c+)
+        % ---------------------
+        % Extract the positive triangle for the RWG element
+        pp_pls = FEKO_data.rwg_basis_functions_trianglePlus(mm);
+        % Extract the free vertex (XYZ co-ordinate associated with this vertex)
+        vertex_pls = FEKO_data.rwg_basis_functions_trianglePlusFreeVertex(mm);
+        vertxX = FEKO_data.nodes_xyz(vertex_pls,1);
+        vertxY = FEKO_data.nodes_xyz(vertex_pls,2);
+        vertxZ = FEKO_data.nodes_xyz(vertex_pls,3);
+        vertx = [vertxX, vertxY, vertxZ];
+        FEKO_data.rho_c_pls(mm,:) = FEKO_data.triangle_centre_point(pp_pls,:) - vertx; % Directed from vertex
+
+        % ---------------------
+        % Process rho_c_mns (\vec\rho_n^c-)
+        % ---------------------
+        % Extract the positive triangle for the RWG element
+        pp_mns = FEKO_data.rwg_basis_functions_triangleMinus(mm);
+        % Extract the free vertex (XYZ co-ordinate associated with this vertex)
+        vertex_mns = FEKO_data.rwg_basis_functions_triangleMinusFreeVertex(mm);
+        vertxX = FEKO_data.nodes_xyz(vertex_mns,1);
+        vertxY = FEKO_data.nodes_xyz(vertex_mns,2);
+        vertxZ = FEKO_data.nodes_xyz(vertex_mns,3);
+        vertx = [vertxX, vertxY, vertxZ];
+        FEKO_data.rho_c_mns(mm,:) = vertx - FEKO_data.triangle_centre_point(pp_mns,:); % Directed to vertex        
+
+    end %for mm
+
     % Set the total number of MoM basis functions
     % -- For now, we have RWG elements. Add as more types are included.
     FEKO_data.num_mom_basis_functions = FEKO_data.num_metallic_edges;
@@ -402,48 +439,50 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
         FEKO_data.mom_basis_functions_per_array_element = -1;
     end%if
     
-    if (~FEKO_data.disconnected_domains)
-        % Note: Allocated submatrices later using FEKO_data.mom_basis_functions_per_array_element,
-        % will work for disconnected domains. If we have interconnected array elements, then we need 
-        % to determine the maximum number of basis functions per domain, otherwise we might run into 
-        % array indexing issues later. Loop over the domains and extract a maximum number of BFs:
-        FEKO_data.max_mom_basis_functions_per_array_element = 0;
-        for el = 1:FEKO_data.num_finite_array_elements
-            FEKO_data.max_mom_basis_functions_per_array_element = max(FEKO_data.max_mom_basis_functions_per_array_element, ...
-                length(FEKO_data.rwg_basis_functions_domains{el}));
-        end%for
-    else
-        FEKO_data.max_mom_basis_functions_per_array_element = FEKO_data.mom_basis_functions_per_array_element;
-    end%if
-
-    % Setup a vector that shows when an array element is active
-    Const.is_array_element_active = zeros(FEKO_data.num_finite_array_elements,yVectors.numRhs);
-    % Loop over all the array elements and check whether any of the RHS
-    % vector elements are zero, if not, then this element is excited
-    % Do this for each of the RHsides, i.e. each of the solution
-    % configurations (see issue FEKDDM-10).
-    for solNum = 1:yVectors.numRhs
-        for el = 1:FEKO_data.num_finite_array_elements                      
-           domain_indices = FEKO_data.rwg_basis_functions_domains{el};    
-           if (~isempty(find(yVectors.values(domain_indices,solNum))))
-               Const.is_array_element_active(el,solNum) = 1;
-           end
-        end
-    end
-    
-    % Set flag for array element excitation status (all or none)
-    Const.all_array_elements_active = true;
-    for sol_num = 1:yVectors.numRhs
-        % Loop over all the elements in each solution configuration and
-        % check that they are active
-        for el = 1:FEKO_data.num_finite_array_elements
-            if (~Const.is_array_element_active(el,solNum))
-                % Passive element detected
-                Const.all_array_elements_active = false;
+    if (Const.domain_decomposition)
+        if (~FEKO_data.disconnected_domains)
+            % Note: Allocated submatrices later using FEKO_data.mom_basis_functions_per_array_element,
+            % will work for disconnected domains. If we have interconnected array elements, then we need 
+            % to determine the maximum number of basis functions per domain, otherwise we might run into 
+            % array indexing issues later. Loop over the domains and extract a maximum number of BFs:
+            FEKO_data.max_mom_basis_functions_per_array_element = 0;
+            for el = 1:FEKO_data.num_finite_array_elements
+                FEKO_data.max_mom_basis_functions_per_array_element = max(FEKO_data.max_mom_basis_functions_per_array_element, ...
+                    length(FEKO_data.rwg_basis_functions_domains{el}));
+            end%for
+        else
+            FEKO_data.max_mom_basis_functions_per_array_element = FEKO_data.mom_basis_functions_per_array_element;
+        end%if
+            
+        % Setup a vector that shows when an array element is active
+        Const.is_array_element_active = zeros(FEKO_data.num_finite_array_elements,yVectors.numRhs);
+        % Loop over all the array elements and check whether any of the RHS
+        % vector elements are zero, if not, then this element is excited
+        % Do this for each of the RHsides, i.e. each of the solution
+        % configurations (see issue FEKDDM-10).
+        for solNum = 1:yVectors.numRhs
+            for el = 1:FEKO_data.num_finite_array_elements                      
+               domain_indices = FEKO_data.rwg_basis_functions_domains{el};    
+               if (~isempty(find(yVectors.values(domain_indices,solNum))))
+                   Const.is_array_element_active(el,solNum) = 1;
+               end
             end
-        end%for
-    end
+        end
 
+        % Set flag for array element excitation status (all or none)
+        Const.all_array_elements_active = true;
+        for sol_num = 1:yVectors.numRhs
+            % Loop over all the elements in each solution configuration and
+            % check that they are active
+            for el = 1:FEKO_data.num_finite_array_elements
+                if (~Const.is_array_element_active(el,solNum))
+                    % Passive element detected
+                    Const.all_array_elements_active = false;
+                end
+            end%for
+        end
+    
+    end%if (Const.domain_decomposition)
     % ==============================================
     % NGF settings
     % ==============================================
@@ -454,9 +493,6 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     % ==============================================
     if (LOCAL_DEBUG)
         displayTriangleMesh(Const, FEKO_data);
-        % DJdbg --> remove:
-        xlim([-0.6,0.6]);
-        ylim([0,2.25]);        
     end%if
 
     % ==========================================================================================

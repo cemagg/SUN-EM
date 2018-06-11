@@ -44,7 +44,7 @@ omega = 2*pi*freq;
 lambda = c/freq; % Wavelength in m
 k  = 2*pi/lambda; % Wavenumber in rad/m
 EMag = 10; % Magnitude of incident field in V/m (not set to one to test code)
-theta_0 = 0; % Angle of arrival of plane wav6e [degrees]
+theta_0 = 0; % Angle of arrival of plane wave [degrees]
 phi_0 = 0;
 
 % Caution - do not change following three lines, hard-wired into other
@@ -62,7 +62,9 @@ LOCALVERTEX(3) = 3;
 % Set up geometry - initially, square plate lying in z=0 plane
 
 % Mesh plate
-ProbType = input('Enter problem to run: 5 (Fig 5, [RWG82}); 6 (Fig 6 - default)');
+%ProbType = input('Enter problem to run: 5 (Fig 5, [RWG82}); 6 (Fig 6 - default)');
+% DL : Set the following now the 6
+ProbType = 6;
 if isempty(ProbType)
     ProbType = 6;
 end
@@ -90,12 +92,17 @@ end
 % Xmesh=6*Mult; % 6
 % Ymesh=7*Mult; % 7
 
-sing = input('Use singularity integral scheme (T/F)? [default F]: ');
+% DL: Set the singularity treatment to False for now. (6 point Gausian
+% quadrature integration luckily allows this) 
+sing = 0;
+%sing = input('Use singularity integral scheme (T/F)? [default F]: ');
 if isempty(sing)
     sing = 0;
+    fprintf("DL: No singlarity treatment");
 end
 quad_pts = 6;
 
+% Create now the mesh.
 tstart=tic;
 [x_nodes,y_nodes,z_nodes] = trimesh3D(L,W,Xmesh,Ymesh); % generate triangular mesh
 triplot(ELEMENTS,NODE_COORD(:,1),NODE_COORD(:,2));
@@ -132,9 +139,15 @@ end
 
 % Plot the above vectors (for debugging only).
 hold % This plotting stub assumes z=0
-quiver(x_grid_pls,y_grid_pls,rho_c_pls(:,1),rho_c_pls(:,2))
+
+quiver(x_grid_pls(1),y_grid_pls(1),rho_c_pls(1,1),rho_c_pls(1,2))
+% DL: debug: Plot only 1 of the above vectors to see where it is located:
+
+%N_DL = 1; % The index where the vector should be plotted
+%plot((x_grid_pls,y_grid_pls,rho_c_pls(:,1),rho_c_pls(:,2));
+
 axis([0 L 0 W]);
-quiver(x_grid_mns',y_grid_mns',rho_c_mns(:,1),rho_c_mns(:,2),'r')
+quiver(x_grid_mns(1)',y_grid_mns(1)',rho_c_mns(1,1),rho_c_mns(1,2),'r')
 TimePreProcessing = toc(tstart)
 
 % Fill the impedance matrix

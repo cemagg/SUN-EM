@@ -89,9 +89,14 @@ function displayTriangleMesh(Const, Solver_setup)
     % We can also rather plot the generating sub-array RWGs
     plot_generating_sub_array_basis_functions = true;
 
-    if (Solver_setup.disconnected_domains && plot_generating_sub_array_basis_functions)
-        plot_generating_sub_array_basis_functions = false;        
-    end %if
+    if (Const.domain_decomposition)
+        if (Solver_setup.disconnected_domains && plot_generating_sub_array_basis_functions)
+            plot_generating_sub_array_basis_functions = false;
+        end %if
+    else
+        plot_generating_sub_array_basis_functions = false;
+        plot_domain = 0; % There is only a single domain - show all BFs
+    end%if
 
     if (~plot_generating_sub_array_basis_functions)
     
@@ -100,12 +105,17 @@ function displayTriangleMesh(Const, Solver_setup)
         % domain_id <> -1 as set above
         for domain_index = 1:Solver_setup.number_of_domains
             if ((domain_index == plot_domain) || (plot_domain == 0))
-                if (internal_bfs_only)                
-                    domain_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{domain_index};
-                else
-                    domain_basis_functions = Solver_setup.rwg_basis_functions_domains{domain_index};
-                end
                 
+                if (Const.domain_decomposition)
+                    if (internal_bfs_only)                
+                        domain_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{domain_index};
+                    else
+                        domain_basis_functions = Solver_setup.rwg_basis_functions_domains{domain_index};
+                    end
+                else
+                    domain_basis_functions = 1:Solver_setup.num_metallic_edges;
+                end%if
+                    
                 for i = 1:length(domain_basis_functions)
                     bf_index = domain_basis_functions(i);
                     % Extract the centrepoint of the shared edge - this is where we

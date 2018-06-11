@@ -89,6 +89,9 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         % Let's assume we have disjoint domains (flag will be updated below
         % if we find this is not the case)
         Solver_setup.disconnected_domains = true;
+    else
+        % Only a single domain
+        Solver_setup.number_of_domains = 1;
     end%if if (Const.domain_decomposition)
     
     % Initialise the return values:

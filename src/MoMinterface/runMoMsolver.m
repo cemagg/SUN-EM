@@ -9,7 +9,8 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors
     %       Solver_setup
     %           Solver specific struct, e.g. frequency range, basis function details, geometry details    
     %       zMatrices
-    %           The Z-matrices data
+    %           The Z-matrices data. This can be from FEKO (extracted from the *.mat file, or internally
+    %           calculated).
     %       yVectors
     %           The Yrhs-vector data
     %       xVectors

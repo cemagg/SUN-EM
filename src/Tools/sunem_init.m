@@ -37,6 +37,76 @@ function Const = sunem_init(Const, yVectors)
     % Check here whether this is set and if this is in the correct range, 
     % i.e. corresponds to numSols:
     numSols = yVectors.numRhs;
+
+        % ================================    
+    try
+        set = false;
+        if (Const.runMoMsolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.runMoMsolver = false;
+        end
+    end
+
+    % ================================    
+    try
+        set = false;
+        if (Const.runSUNEMMoMsolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.runSUNEMMoMsolver = false;
+        end
+    end
+
+   % ================================    
+    try
+        set = false;
+        if (Const.runCBFMsolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.runCBFMsolver = false;
+        end
+    end
+
+    % ================================    
+    try
+        set = false;
+        if (Const.runJacobisolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.runJacobisolver = false;
+        end
+    end
+
+    % ================================    
+    try
+        set = false;
+        if (Const.runIFBMoMsolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.runIFBMoMsolver = false;
+        end
+    end
     
     % First check whether the variables exist:
     % -- solStart
@@ -107,20 +177,6 @@ function Const = sunem_init(Const, yVectors)
     % ================================    
     try
         set = false;
-        if (Const.runCBFMsolver)
-            % It is set in the driver
-            set = true;
-        end
-    catch
-        if (~set)
-            % No CBFM solver present
-           Const.runCBFMsolver = false;
-        end
-    end
-
-    % ================================    
-    try
-        set = false;
         if (Const.no_mutual_coupling_array)
             % It is set in the driver
             set = true;
@@ -129,6 +185,21 @@ function Const = sunem_init(Const, yVectors)
         if (~set)
             % Deactivate this option
            Const.no_mutual_coupling_array = false;
+        end
+    end
+
+    % ================================    
+    % Note, the following will be overwritten below
+    try
+        set = false;
+        if (Const.domain_decomposition)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Deactivate this option
+           Const.domain_decomposition = false;
         end
     end
     
@@ -174,6 +245,35 @@ function Const = sunem_init(Const, yVectors)
         end
     end
 
+    % Also do the same with the output files
+    % ================================    
+    try
+        set = false;
+        if (Const.SUNEMcbfmstrfilename)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.SUNEMcbfmstrfilename = '';
+        end
+    end
+
+    % ================================    
+    try
+        set = false;
+        if (Const.SUNEMifbmomstrfilename)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.SUNEMifbmomstrfilename = '';
+        end
+    end
+
     % =================================
     % Other initialisations:
     Const.useACA = false; % ACA interface available, but not yet activated. (Requires some refactoring).
@@ -189,10 +289,21 @@ function Const = sunem_init(Const, yVectors)
     % General constants:
     Const.RAD2DEG = 180/pi;  % For converting between radians and degrees
     Const.DEG2RAD = pi/180;  % For converting between degrees and radians
-
-    Const.ETA = 120*pi;      % Wave-impedance of freespace
-    Const.C0  = 3*10^8;      % Speed of light in free space
     Const.EPS = 10e-6;       % Set the machine precision to be used
+
+    Const.EPS_0 = 8.854e-12; % Permittivity of free space
+    Const.MU_0=4*pi*1e-7;    % Permeability of free space
+    Const.ETA_0 = sqrt(Const.MU_0/Const.EPS_0); % Wave impedance (~ 120*pi)
+    Const.C0  = 1/sqrt(Const.EPS_0*Const.MU_0); % Speed of light in free space (~ 3E8 m/s)
+
+    % For numerical integration over a triangular domain (based on DBD2011)
+    Const.QUAD_PTS = 6;     % Quadrature rule (6 point is a good default)
+    Const.SING = false;     % If set to true, then singularities are treated in the DBD2011 routine for
+                            % filling the Z matrix
+
+    % Note:other parameters like Omega, K, Lambda, is dependent on the wavelenght and 
+    % has to be calculated inside the frequency loops associated with the various routines, 
+    % e.g. impedance matrix filling and is therefore not set here.
 
     % =================================
     % Some file-format version numbers that we support
@@ -206,6 +317,8 @@ function Const = sunem_init(Const, yVectors)
     if (Const.runCBFMsolver || Const.runJacobisolver || Const.runIFBMoMsolver)
         message_fc(Const,sprintf('  Domain decomposition active'));
         Const.domain_decomposition = true;
+    else
+        Const.domain_decomposition = false;
     end
 
     % Finished

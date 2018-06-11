@@ -1,4 +1,4 @@
-function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors)
+function [Solution] = runEMsolvers(Const, Solver_setup, zMatricesFEKO, zMatricesSUNEM, yVectorsFEKO, xVectorsFEKO)
     %runEMsolvers
     %   Usage:
     %       [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors)] = runEMsolvers(Const)

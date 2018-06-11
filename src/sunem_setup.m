@@ -50,6 +50,9 @@ function [Const] = sunem_setup(Const)
 
     % === MoM Solver Interface ===
     addpath([MainPath '/src/MoMinterface']);
+
+    % === MoM Solver Interface as implemented in [DBD2011] ===
+    addpath([MainPath '/src/dBMoMinterface']);
     
     % === MBF Solver Interface ===
     addpath([MainPath '/src/MBFinterface']);

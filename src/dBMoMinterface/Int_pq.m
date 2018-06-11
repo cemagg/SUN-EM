@@ -1,4 +1,4 @@
-function [Ipq,Ipq_xi,Ipq_eta,Ipq_zeta] = Int_pq(p,q,r_cp,k,quad_pts,sing)
+function [Ipq,Ipq_xi,Ipq_eta,Ipq_zeta] = Int_pq(elements,node_coord, p,q,r_cp,k,quad_pts,sing)
 % INT_PQ returns the four integrals for faces (=elements) p and q,
 % corresponding to [eqs.34a-34d,RWG82]. Note that these integrals are
 % evaluated in normalized coordinates, and are not scaled by the area.
@@ -13,12 +13,12 @@ function [Ipq,Ipq_xi,Ipq_eta,Ipq_zeta] = Int_pq(p,q,r_cp,k,quad_pts,sing)
 % Author: D B Davidson, Dec 2009.
 % Corrections for singular intergral evaluation: 1 June 2010 DBD.
 
-global ELEMENTS NODE_COORD
+%global ELEMENTS NODE_COORD
 
-qnodes = ELEMENTS(q,:);
-n1 = NODE_COORD(qnodes(1),:);
-n2 = NODE_COORD(qnodes(2),:);
-n3 = NODE_COORD(qnodes(3),:);
+qnodes = elements(q,:);
+n1 = node_coord(qnodes(1),:);
+n2 = node_coord(qnodes(2),:);
+n3 = node_coord(qnodes(3),:);
 area = tri_area3D(n1,n2,n3);
 
 Ipq=0;
@@ -46,7 +46,7 @@ else
     for nn=1:quad_pts
         r_prime = lambda(nn,1)*n1 + lambda(nn,2)*n2 + lambda(nn,3)*n3; % [eq.30,RWG82]
         R_p = norm(r_cp-r_prime); % [eq.27,RWG82]
-        GF  = exp(-j*k*R_p)/R_p; % Green's function
+        GF  = exp(-1i*k*R_p)/R_p; % Green's function
         %w(nn)
         Ipq     = Ipq+w(nn)*GF;
         %lambda(nn,1)
