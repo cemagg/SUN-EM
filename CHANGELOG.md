@@ -6,6 +6,10 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.15 - 2018-06-11
+- Added some improvements for our internal MoM solver (adapted [DBD2011] implementation to work with 
+the Solver_setup data structures.) Not tested yet.
+
 ## 1.14 - 2018-06-09
 - Added now the dBMoMinterface, i.e. essentially the 3D MoM implementation by David B. Davidson,
   detailed in Chapter 6 of his book, Computational Electromagnetics for RF and Microwave Engineering,
