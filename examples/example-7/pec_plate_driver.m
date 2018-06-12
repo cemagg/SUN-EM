@@ -19,7 +19,6 @@ Const = sunem_initialise('pec_plate',false);
 
 % Choose the solvers that will be executed
 Const.runMoMsolver          = true;
-Const.runSUNEMMoMsolver     = true;
 Const.runCBFMsolver         = false;
 Const.runJacobisolver       = false;
 Const.runIFBMoMsolver       = false;
@@ -37,7 +36,7 @@ Const.FEKOffefilename          = 'pec_plate.ffe';
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMcbfmstrfilename     = '';
+Const.SUNEMmomstrfilename      = 'sunem_mom_pec_plate.str';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
@@ -45,17 +44,17 @@ Const.SUNEMcbfmstrfilename     = '';
 % TO-DO: Setup some documentation for this
 Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
 Const.calcSecMBFs = false;      % For MBF based solvers
-Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set
+Const.useMBFreduction = true;   % SVD applied after the MBFs are generated to retain an orthonormal set
 Const.MBFthreshold = 1000;      % Threshold used for the SVD reduction of the MBFs
-Const.IFBalg = 14;             % Jacobi iterations (7). Adaptive MBF (14).
+Const.IFBalg = 14;              % Jacobi iterations (7). Adaptive MBF (14).
 Const.IFB_iterations = 10;      % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
-                               % which then looks at Const.IFB_convergence_threshold_percentage;
+                                % which then looks at Const.IFB_convergence_threshold_percentage;
 Const.IFB_convergence_threshold_percentage = 1E-3;                                
-Const.IFB_CBFs = -1;           % TO-DO: Recheck this - essentially for the Adaptive MBF the number of MBFs
-                               % to use during each iteration
+Const.IFB_CBFs = -1;            % TO-DO: Recheck this - essentially for the Adaptive MBF the number of MBFs
+                                % to use during each iteration
 Const.IFB_debug = 1;
-Const.cache_Z0_V0 = false;     % Precompute the Z0 and V0 terms
-Const.use_DGFM_start = false;  % Use the DGFM to calculate the initial (0th) solution
+Const.cache_Z0_V0 = false;      % Precompute the Z0 and V0 terms
+Const.use_DGFM_start = false;   % Use the DGFM to calculate the initial (0th) solution
 
 
 % --------------------------------------------------------------------------------------------------
@@ -68,24 +67,40 @@ Const.use_DGFM_start = false;  % Use the DGFM to calculate the initial (0th) sol
 % --------------------------------------------------------------------------------------------------
 % TO-DO: At a later stage we can also add other meshing / geometry
 % preprocessxing, e.g. Gmsh or GiD. For now the solver setup is read from FEKO.
-[Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
+[Const, Solver_setup] = parseFEKOoutfile(Const, yVectorsFEKO);
 
 % 2018.06.10: If we are going to run the SUNEM MoM solver, then we need to extract our own internal
 % MoM matrix equation. Note: we can only do this after the solver data (i.e. geometry, etc. is setup)
-if (Const.runSUNEMMoMsolver)
-    [Const, zMatricesSUNEM, yVectorsSUNEM] = extractSUNEMMoMmatrixEq(Const, Solver_setup);
-    % Compare now the above with that calculated using FEKO
-end%if
+[Const, zMatricesSUNEM, yVectorsSUNEM] = extractSUNEMMoMmatrixEq(Const, Solver_setup);
+
+% DJdbg --> remove
+%Z = zMatricesSUNEM.values;
+Z = zMatricesFEKO.values;
+
+fprintf("Z(%d,%d) = %.5f + %.5f\n", 1,1,real(Z(1,1)), imag(Z(1,1)));
+fprintf("Z(%d,%d) = %.5f + %.5f\n", 1,26,real(Z(1,26)), imag(Z(1,26)));
+fprintf("Z(%d,%d) = %.5f + %.5f\n", 1,4,real(Z(1,4)), imag(Z(1,4)));
+
+error('wag hier');
+
+% Compare now the above with that calculated using FEKO
+compareMatrices(Const,zMatricesSUNEM.values, zMatricesFEKO.values);
+
+% For the RHS vectors, we calculate the rel. error norm % (2-norm)
+yVectorErr = calculateErrorNormPercentage(yVectorsFEKO.values, yVectorsSUNEM.values);
+message_fc(Const,sprintf('Rel. error norm. for V(RHS) compared to FEKO sol. %f percent',yVectorErr));
+
+error('wag hier');
 
 % --------------------------------------------------------------------------------------------------
-% Run the EM solver
+% Run the EM solver 
 % --------------------------------------------------------------------------------------------------
-[Solution] = runEMsolvers(Const, Solver_setup, zMatricesFEKO, zMatricesSUNEM, yVectors, xVectors);
+% (Note: We either pass our own (internal) matrices, or those read from FEKO)
+[Solution] = runEMsolvers(Const, Solver_setup, zMatricesSUNEM, yVectorsSUNEM, xVectorsFEKO);
 
 % --------------------------------------------------------------------------------------------------
 % Postprocess the results, e.g. calculate the Electric field
 % --------------------------------------------------------------------------------------------------
-
 if (false)
 
     r = 100;%100;

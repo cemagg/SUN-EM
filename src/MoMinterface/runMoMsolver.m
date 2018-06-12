@@ -40,6 +40,7 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors
     mom.name = 'mom';
     Nmom = Const.numMoMbasis;              % Total number of basis functions for whole problem
     numSols = xVectors.numSols;            % The number of solutions configurations
+    mom.numSols = numSols;
     numFreq = zMatrices.numFreq;           % The number of frequency points to process
     numRHSperFreq = xVectors.numSols / zMatrices.numFreq;
                                            % The number of solutions per frequency point
@@ -75,7 +76,7 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors
         SourceRWGs = [1:Nmom];
         % Note: Since 2017-06-25, we are also passing a freq. variable here to
         % indicate for which frequency point we are extracting the matrix
-        Zmom = calcZmn(Const, zMatrices, freq, 1, 1, ObservRWGs, SourceRWGs);
+        Zmom = (calcZmn(Const, zMatrices, freq, 1, 1, ObservRWGs, SourceRWGs));
 
         % End timing (calculating the impedance matrix)
         mom.setupTime(freq) = toc;
@@ -132,5 +133,11 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors
                 numRHSperFreq, freq, numFreq, mom.relError(index)));
         end
     end
+    
+    % Write the MoM solution to a ASCII str file, so that it can be read
+    % again by FEKO (for plotting in POSTFEKO) - only if requested (i.e. if the filename is defined)
+    if (~isempty(Const.SUNEMmomstrfilename))
+        writeSolToFile(Const, mom);
+    end%if
 
     

@@ -67,7 +67,7 @@ function [MagVecPot,ScalPot] = Potentials(field_pt,source_pt,k,r_c,quad_pts,sing
 % former for all three possible integrals in [eq.32, RWG82]
 global ELEMENTS NODE_COORD DOFLOCALNUM ELL
 
-[Ipq,Ipq_xi,Ipq_eta,Ipq_zeta] = Int_pq(field_pt,source_pt,r_c(field_pt,:),k,quad_pts,sing);
+[Ipq,Ipq_xi,Ipq_eta,Ipq_zeta] = Int_pq_dB(field_pt,source_pt,r_c(field_pt,:),k,quad_pts,sing);
 qnodes = ELEMENTS(source_pt,:);
 r(1,:) = NODE_COORD(qnodes(1),:);
 r(2,:) = NODE_COORD(qnodes(2),:);

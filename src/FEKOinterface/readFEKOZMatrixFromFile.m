@@ -74,7 +74,7 @@ function [zMatrices] = readFEKOZMatrixFromFile(Const, mat_file_name)
     % PADDING_TYPE = 'int32' % For 32-bit FEKO executables
     % PADDING_TYPE = 'int64' % For 64-bit FEKO executables (6.1.1 and earlier)
 
-    error(nargchk(2,2,nargin));
+    narginchk(2,2);
 
     % After the *.mat file name is set above, open it now.
     fid = fopen(mat_file_name,'r','l');

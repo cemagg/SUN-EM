@@ -1,5 +1,4 @@
-function [Z] = FillZMatrixByEdge(Const,Solver_setup)
-    %function [Z] = FillZMatrixByEdge(omega,eps_0,mu_0,k,r_c,rho_c_pls,rho_c_mns,quad_pts,sing,dof2edge)
+function [Z] = FillZMatrixByEdge(Const,Solver_setup)    
     %FillZMatrixByEdge
     %   Date: 2018.06.10
     %   Usage:
@@ -29,6 +28,8 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
     %   [1] David B. Davidson, Computational Electromagnetics for RF and Microwave Engineering, 
     %       Second Edition, (see Chapter 6)
 
+    message_fc(Const, sprintf('  Calculating Z-matrix '));
+    
     % Populate now the variables as used by [1] - esp. replace the use of
     % global variables.
     num_dofs = Solver_setup.num_metallic_edges;       % Replacing global NUM_DOFS
@@ -46,10 +47,14 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
     rho_c_pls = Solver_setup.rho_c_pls;
     rho_c_mns = Solver_setup.rho_c_mns;
 
+    % Set some general parameters
     number_of_frequencies = Solver_setup.frequencies.freq_num; % Number of frequencies
+    Z.numFreq = number_of_frequencies;
+    Z.mBasis  = num_dofs; % number of rows (testing/field functions)
+    Z.nBasis  = num_dofs; % number of cols (basis/source  functions)
     
     % Allocate some space for our impedance matrix
-    Z = complex(zeros(num_dofs,num_dofs,number_of_frequencies)); % Generalized impedance matrix.
+    Z.values = complex(zeros(num_dofs,num_dofs,number_of_frequencies)); % Generalized impedance matrix.
 
     % We will be calculating the Z matrix at each of the various frequencies:
     for freq_index = 1:number_of_frequencies
@@ -61,44 +66,48 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
         lambda = Const.C0/freq;    % Wavelength in m
         k  = 2*pi/lambda;   % Wavenumber in rad/m
 
-        message_fc(Const, sprintf('  Processing frequency %d of %d (%.2f Hz) ',freq_index,number_of_frequencies,freq))
+        message_fc(Const, sprintf('    Processing frequency %d of %d (%.2f Hz) ',freq_index,number_of_frequencies,freq))
 
         % Assemble by edges - not optimally fast computationally, but easy.
         % These are eqns. 32 and 33.
         for mm = 1:num_dofs
 
+            %pp_pls = EDGECONXELEMS(mm,1);            
+            pp_pls = Solver_setup.rwg_basis_functions_trianglePlus(mm);
+            %pp_mns = EDGECONXELEMS(mm,2);
+            pp_mns = Solver_setup.rwg_basis_functions_triangleMinus(mm);
+           
             for nn = 1:num_dofs
+                %fprintf('Processing element %d,%d\n',mm,nn);
                 % There are four terms to add here;
                 % From integrals over source faces n+ & n- evaluated at centres of field faces m+ and m-.
                 % The n integrals associate with q, the m, with p.
                 % In datastructures EDGECONXELEMS & DOFLOCALNUM, second index 1
                 % associates with +, 2 with -. 
-                
-                %pp_pls = EDGECONXELEMS(mm,1);            
-                pp_pls = Solver_setup.rwg_basis_functions_trianglePlus(mm);
-                %pp_mns = EDGECONXELEMS(mm,2);
-                pp_mns = Solver_setup.rwg_basis_functions_triangleMinus(mm);
 
                 %qq_pls = EDGECONXELEMS(nn,1);
                 qq_pls = Solver_setup.rwg_basis_functions_trianglePlus(nn);
                 %qq_mns = EDGECONXELEMS(nn,2);
                 qq_mns = Solver_setup.rwg_basis_functions_triangleMinus(nn);
             
-                % First, find contribution from n+ and n- faces evaluated at m+
+                triangle_tn_plus_free_vertex = Solver_setup.rwg_basis_functions_trianglePlusFreeVertex(nn);
+                triangle_tn_minus_free_vertex = Solver_setup.rwg_basis_functions_triangleMinusFreeVertex(nn);
                 
+                % First, find contribution from n+ and n- faces evaluated at m+
+                                
                 % --------------------------------------------------------------                
                 % Look at Tm+
                 % --------------------------------------------------------------
                 % -- Contribution from Tn+
-                triangle_tn_plus_free_vertex = Solver_setup.rwg_basis_functions_trianglePlusFreeVertex(qq_pls);
-                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, pp_pls,qq_pls,nn,triangle_tn_plus_free_vertex,...
+                
+                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_pls,qq_pls,mm,nn,triangle_tn_plus_free_vertex,...
                     k,r_c,quad_pts,sing,eps_0,mu_0,omega);
                 Amn_pls_source_pls = MagVecPot;
                 Phi_mn_pls_source_pls = -ScalPot;
                 
                 % -- Contribution from Tn-
-                triangle_tn_minus_free_vertex = Solver_setup.rwg_basis_functions_triangleMinusFreeVertex(qq_mns);
-                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, pp_pls,qq_mns,nn,triangle_tn_minus_free_vertex,...
+                
+                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_pls,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
                     k,r_c,quad_pts,sing,eps_0,mu_0,omega);
                 Amn_pls_source_mns = - MagVecPot;
                 Phi_mn_pls_source_mns = +ScalPot;
@@ -110,14 +119,13 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
                 % Look at Tm-
                 % --------------------------------------------------------------
                 % -- Contribution from Tn+
-                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, pp_mns,qq_pls,nn,triangle_tn_plus_free_vertex,...
+                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_pls,mm,nn,triangle_tn_plus_free_vertex,...
                     k,r_c,quad_pts,sing,eps_0,mu_0,omega);
                 Amn_mns_source_pls = MagVecPot;
                 Phi_mn_mns_source_pls = -ScalPot;
                 
-                % -- Contribution from Tn-
-                triangle_tn_minus_free_vertex = Solver_setup.rwg_basis_functions_triangleMinusFreeVertex(qq_mns);
-                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, pp_mns,qq_mns,nn,triangle_tn_minus_free_vertex,...
+                % -- Contribution from Tn-                
+                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
                     k,r_c,quad_pts,sing,eps_0,mu_0,omega);
                 Amn_mns_source_mns = - MagVecPot;
                 Phi_mn_mns_source_mns = +ScalPot;
@@ -126,12 +134,12 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
                 Phi_mn_mns = Phi_mn_mns_source_pls + Phi_mn_mns_source_mns;
                        
                 % Assemble with eq. 17 in [RWG82]
-                Z(mm,nn) = 1i*omega*...
+                Z.values(mm,nn) = 1i*omega*...
                     (dot(Amn_pls',rho_c_pls(mm,:))/2 + dot(Amn_mns',rho_c_mns(mm,:))/2) + Phi_mn_mns - Phi_mn_pls;
                 
                 %mm
                 %nn
-                Z(mm,nn) = ell(mm)* Z(mm,nn);
+                Z.values(mm,nn) = ell(mm)* Z.values(mm,nn);
             end % for nn = 1:NUM_DOFS
         end %for mm = 1:NUM_DOFS
     end %for freq_index = 1:Solver_setup.frequencies.freq_num    
@@ -140,7 +148,7 @@ end %function FillZMatrixByEdge
 % =================================================================================
 % Local function for evaluating the potential integrals, as done in [1]
 % =================================================================================
-function [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, field_pt,source_pt,source_edge, ii, k,r_c,quad_pts,sing,eps_0,mu_0,omega)
+function [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, field_pt,source_pt,field_edge, source_edge, ii, k,r_c,quad_pts,sing,eps_0,mu_0,omega)
     % This subfunction computes the magnetic vector and scalar potentials for 
     % field point face field_pt and source point face source_pt. 
 
@@ -161,7 +169,10 @@ function [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, field_pt,sour
     rii = zeros(1,3);
     rii(1,1) = node_coord(ii,1);
     rii(1,2) = node_coord(ii,2);
-    rii(1,3) = node_coord(ii,3);    
+    rii(1,3) = node_coord(ii,3);
+    
+    %plot(rii(1,1),rii(1,2),'or','MarkerFaceColor','g','MarkerSize',10);
+    %rii(1,:)
     
     %ii = DOFLOCALNUM(source_edge,source_tri); % This is the free vertex
     %associated with the source_edge - which is now passed here as an
@@ -169,4 +180,13 @@ function [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, field_pt,sour
     MagVecPot = mu_0*ell(source_edge)/(4*pi)*...
         ( r(1,:)*Ipq_xi + r(2,:)*Ipq_eta + r(3,:)*Ipq_zeta - rii(1,:)*Ipq);
     ScalPot = ell(source_edge)/(1i*2*pi*omega*eps_0) * Ipq;
+    
+    if (field_edge == 1 && source_edge == 12)
+        fprintf('Debugging element %d,%d\n',field_edge,source_edge);
+        fprintf('  Ipq(%d,%d) = %.5f\n',field_pt,source_pt,Ipq);
+        fprintf('  length(%d,%d) = %.5f\n',field_pt,source_pt,ell(source_edge));
+        fprintf('  ScalPot(%d,%d) = %.5f\n',field_pt,source_pt,ScalPot);
+        MagVecPot
+    end
 end % function Potentials
+

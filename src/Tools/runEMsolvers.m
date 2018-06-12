@@ -1,4 +1,4 @@
-function [Solution] = runEMsolvers(Const, Solver_setup, zMatricesFEKO, zMatricesSUNEM, yVectorsFEKO, xVectorsFEKO)
+function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors)
     %runEMsolvers
     %   Usage:
     %       [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors)] = runEMsolvers(Const)
@@ -29,9 +29,7 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatricesFEKO, zMatrices
     % Initialise the return values
     Solution  = [];
 
-    % -- MoM (FEKO specific)
-    % This solver actually extracts the needed parameters from the zMatrices and yVectors structs.
-    % TO-DO: We need to think about how to refactor to include also our local GMoM solver
+    % -- MoM    
     if (Const.runMoMsolver)        
         Solution.mom = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
     end%if

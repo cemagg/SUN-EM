@@ -78,8 +78,8 @@ switch ProbType
     case 6
         L=1*lambda;    % [Fig 6, RWG82]
         W=L;
-        Xmesh=6; % 6
-        Ymesh=7; % 7
+        Xmesh=4; % 6
+        Ymesh=4; % 7
     otherwise
         error('Unknown problem.')
 end
@@ -106,7 +106,7 @@ quad_pts = 6;
 tstart=tic;
 [x_nodes,y_nodes,z_nodes] = trimesh3D(L,W,Xmesh,Ymesh); % generate triangular mesh
 triplot(ELEMENTS,NODE_COORD(:,1),NODE_COORD(:,2));
-axis([0 L 0 W]);
+%axis([0 L 0 W]);
 axis square
 for inode = 1:NUM_NODES
     text(NODE_COORD(inode,1),NODE_COORD(inode,2),num2str(inode))
@@ -152,7 +152,7 @@ TimePreProcessing = toc(tstart)
 
 % Fill the impedance matrix
 tstart1=tic;
-[Z] = FillZMatrixByEdge(omega,eps_0,mu_0,k,r_c,rho_c_pls,rho_c_mns,quad_pts,sing,dof2edge);
+[Z] = FillZMatrixByEdge_dB(omega,eps_0,mu_0,k,r_c,rho_c_pls,rho_c_mns,quad_pts,sing,dof2edge);
 TimeMatrixFillByEdge = toc(tstart1)
 
 tstart1a=tic;
@@ -163,7 +163,13 @@ TimeMatrixFillByFace = toc(tstart1a)
 
 
 % Fill the RHS vector
-[V] = FillVVector(rho_c_pls,rho_c_mns,EMag,theta_0,phi_0,dof2edge);
+[V] = FillVVector_dB(rho_c_pls,rho_c_mns,EMag,theta_0,phi_0,dof2edge);
+
+% Print out a few elements that should correspond with our elements
+% (SUN-EM)
+fprintf("Z(%d,%d) = %.5f + %.5f\n", 6,6,real(Z(6,6)), imag(Z(6,6)));
+fprintf("Z(%d,%d) = %.5f + %.5f\n", 6,26,real(Z(6,26)), imag(Z(6,26)));
+fprintf("Z(%d,%d) = %.5f + %.5f\n", 6,4,real(Z(6,4)), imag(Z(6,4)));
 
 tstart2=tic;
 I = Z\V;

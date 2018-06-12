@@ -31,6 +31,16 @@ for jj = 1:(Ny+1)
     end
 end
 
+% DJdbg --> just try the following
+% Mirror and shift the mesh to coincide with that of FEKO
+if (true)
+    % First mirror around y-axis
+    NODE_COORD(:,1) = NODE_COORD(:,1).*(-1.0);
+    % Shit to positive side
+    L = 1.0; % Hardcoded a bit for debugging purposes.
+    NODE_COORD(:,1) = NODE_COORD(:,1) + L;
+end    
+
 % for subsequent use by triplot.
 x_nodes = [0 a/Nx a];
 y_nodes = [0 b/Ny b];

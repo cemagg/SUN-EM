@@ -6,6 +6,11 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.16 - 2018-06-12
+- Some more progress wrt the SUN-EM MoM solver. Very close now. A -1 factor still out. The implementation
+  in [DBD2011] is not correct. This -1 sign issue has to do with the magnetic vector potential calculation
+  most likely.
+
 ## 1.15 - 2018-06-11
 - Added some improvements for our internal MoM solver (adapted [DBD2011] implementation to work with 
 the Solver_setup data structures.) Not tested yet.

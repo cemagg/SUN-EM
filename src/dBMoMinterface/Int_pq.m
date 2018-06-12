@@ -46,6 +46,11 @@ else
     for nn=1:quad_pts
         r_prime = lambda(nn,1)*n1 + lambda(nn,2)*n2 + lambda(nn,3)*n3; % [eq.30,RWG82]
         R_p = norm(r_cp-r_prime); % [eq.27,RWG82]
+        
+        % DJdbg --> plot r_cp and r_prime
+        %plot(r_prime(1,1),r_prime(1,2),'or','MarkerFaceColor','g','MarkerSize',10);        
+        %plot(r_cp(1,1),r_cp(1,2),'or','MarkerFaceColor','k','MarkerSize',10);   
+        
         GF  = exp(-1i*k*R_p)/R_p; % Green's function
         %w(nn)
         Ipq     = Ipq+w(nn)*GF;

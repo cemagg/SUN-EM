@@ -419,7 +419,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
         vertxY = FEKO_data.nodes_xyz(vertex_mns,2);
         vertxZ = FEKO_data.nodes_xyz(vertex_mns,3);
         vertx = [vertxX, vertxY, vertxZ];
-        FEKO_data.rho_c_mns(mm,:) = vertx - FEKO_data.triangle_centre_point(pp_mns,:); % Directed to vertex        
+        FEKO_data.rho_c_mns(mm,:) =  - (FEKO_data.triangle_centre_point(pp_mns,:) - vertx); % Directed to vertex        
 
     end %for mm
 

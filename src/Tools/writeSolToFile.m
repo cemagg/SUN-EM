@@ -58,11 +58,13 @@ function writeSolToFile(Const, solStruct)
     %         - The separation line is only printed to separate the different solutions.
     %           (No separator between MoM and FEM currents!)
 
-    error(nargchk(2,2,nargin));
+    narginchk(2,2);
 
     % Make sure to use the correct filename
     no_output = false;
     switch (upper(solStruct.name))
+        case 'MOM'
+            filename = Const.SUNEMmomstrfilename;
         case 'CBFM'
             filename = Const.SUNEMcbfmstrfilename;
         case 'DGFM'
@@ -77,9 +79,9 @@ function writeSolToFile(Const, solStruct)
             filename = Const.SUNEMiterdgfmstrfilename;
         case 'HARP-MBF-PATTERN'
             filename = Const.harp_single_element_MBF_patterns_FEKOstrfile;
-            no_output = true;
+            no_output = true;        
         otherwise
-            message(Const,sprintf('Unsupported filename: ',solStruct.name));
+            message_fc(Const,sprintf('Unsupported filename: ',solStruct.name));
             error(['Unsupported filename']);
     end
 
@@ -92,8 +94,8 @@ function writeSolToFile(Const, solStruct)
             [stat, dosout] = dos(sprintf('\"%s//str2ascii.exe\" %s -r > %s 2>&1', ...
                 Const.ExecPath, filename, ascii_strfilename));
             if (stat ~= 0)                
-                message(Const,sprintf('Error converting FEK0 *.str file to ASCII: %s',filename));
-                message(Const, num2str(stat));
+                message_fc(Const,sprintf('Error converting FEK0 *.str file to ASCII: %s',filename));
+                message_fc(Const, num2str(stat));
                 error(['Error converting FEKO *.str file to ASCII: %s' filename]);
             end%if
 
@@ -142,9 +144,9 @@ function writeSolToFile(Const, solStruct)
     tline = fgets(fidIn);
     numMoMbasis=sscanf(tline,'%d');
     % Check that this is consistent with the number that was calculated by the FEKODDM DD solver (e.g. the CBFM or the DGFM)
-    if (numMoMbasis ~= length(solStruct.Isol))
+    if (numMoMbasis ~= length(solStruct.Isol))        
+        message_fc(Const,sprintf('Error writing %s *.str file for FEKO - Isol length discrepency', upper(solStruct.name)));
         error(['Error writing %s *.str file for FEKO - Isol length discrepency' upper(solStruct.name)]);
-        message(Const,sprintf('Error writing %s *.str file for FEKO - Isol length discrepency', upper(solStruct.name)));
     end%if
     fprintf(fidOut,tline);
 

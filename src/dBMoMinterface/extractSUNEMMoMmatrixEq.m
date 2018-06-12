@@ -39,9 +39,22 @@ function [Const, zMatrices, yVectors] = extractSUNEMMoMmatrixEq(Const, Solver_se
         '------------------------------------------------------------------------------------');
     message_fc(Const,sprintf('Calculating MoM matrix internally'));
 
-    % -- Calculate the 
-    [zMatrices] = FillZMatrixByEdge(Const, Solver_setup);
+    % -- Calculate the Z-matrix (edge-based fill)
+    zMatfilltime=tic;
+        [zMatrices] = FillZMatrixByEdge(Const, Solver_setup);
+    totMatrixSetupTime = toc(zMatfilltime);
 
+    % Define a normally incident, X-directed plane wave:
+    EMag = 1;
+    theta_0 = 0;
+    phi_0 = 0;
+    
     % -- Calculate the yVectors, i.e. the RHS
-    yVectors = []; % TO-DO: calculate
+    vVecfilltime=tic;        
+        yVectors.values = FillVVector(Const,Solver_setup,EMag,theta_0,phi_0);        
+    totRHSvecSetupTime = toc(vVecfilltime);
+    
+    % Output total time
+    message_fc(Const,sprintf('Time for Z-matrix setup       : %f sec.',totMatrixSetupTime));
+    message_fc(Const,sprintf('Time for V-vector (RHS) setup : %f sec.',totRHSvecSetupTime));
     
