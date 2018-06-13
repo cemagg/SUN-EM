@@ -1,40 +1,46 @@
-function compareMatrices(Const, matA, matB)
+function compareMatrices(Const, refmat, mat)
     %compareMatrices(Const)
     %   Usage:
-    %       compareMatrices(Const, ZmatA, ZmatB)
+    %       compareMatrices(Const, refmat, mat)
     %
     %   Input Arguments:
     %       Const
     %           A global struct, containging settings of which solver to run
-    %       ZmatA, ZmatB
-    %           Two mxn matrices that will be compared
+    %       refmat, mat
+    %           Two mxn matrices that will be compared. The reference matrix is taken
+    %           as refmat.
     %
     %   Output Arguments:
-    %      None    
+    %       None
     %
     %   Description:
-    %       Compares two m x n matrices with each other and displays
-    %       the difference
+    %       Compares two m x n matrices with each other by calculating the Matrix error 
+    %       norm percentage. We also plot the difference between the matrix elements for
+    %       visual comparison.
 
     narginchk(3,3);
-    message_fc(Const,sprintf('  Comparing matrices'));
+    message_fc(Const,sprintf('Comparing matrices'));
     
-    if (size(matA)~=size(matB))
+    if (size(refmat)~=size(mat))
         message(Const,sprintf('Cannot compare matrices of different sizes'));
         error('Cannot compare matrices of different sizes');
     end%if
-        
-    if(true)
-        for mm = 1:1%size(matA,1)
-            for nn = 1:1%size(matA,2)
-                fprintf("matA(%d,%d) = %.5f + %.5f\n", mm,nn,real(matA(mm,nn)), imag(matA(mm,nn)));
-                fprintf("matB(%d,%d) = %.5f + %.5f\n", mm,nn,real(matB(mm,nn)), imag(matB(mm,nn)));
+       
+    % Display a subset of the matrices 
+    if(false)
+        for mm = 1:3%size(matA,1)
+            for nn = 1:3%size(matA,2)
+                fprintf('refmat(%d,%d) = %.5f + %.5f\n', mm,nn,real(refmat(mm,nn)), imag(mat(mm,nn)));
+                fprintf('mat(%d,%d)    = %.5f + %.5f\n', mm,nn,real(mat(mm,nn)), imag(mat(mm,nn)));
+                fprintf('\n');
             end
         end
     end
     
-    %error('wag hier');
-    
-    difference = abs(matA-matB);
+    % Calculate the relative error norm %.
+    Zerr = calculateMatrixErrorNormPercentage(refmat, mat);
+    message_fc(Const,sprintf('  Rel. error norm. for Z compared to FEKO sol. %f percent',Zerr));    
+
+    difference = abs(refmat-mat);
     figure    
     imagesc(difference)

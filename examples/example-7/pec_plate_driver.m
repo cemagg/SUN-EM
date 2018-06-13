@@ -73,47 +73,12 @@ Const.use_DGFM_start = false;   % Use the DGFM to calculate the initial (0th) so
 % MoM matrix equation. Note: we can only do this after the solver data (i.e. geometry, etc. is setup)
 [Const, zMatricesSUNEM, yVectorsSUNEM] = extractSUNEMMoMmatrixEq(Const, Solver_setup);
 
-% DJdbg --> remove
-%Z = zMatricesSUNEM.values;
-Z = zMatricesFEKO.values;
-
-fprintf('Zfeko(%d,%d) = %.5f + j%.5f\n', 1,1,real(Z(1,1)), imag(Z(1,1)));
-fprintf('Zfeko(%d,%d) = %.5f + j%.5f\n', 1,26,real(Z(1,26)), imag(Z(1,26)));
-fprintf('Zfeko(%d,%d) = %.5f + j%.5f\n', 1,4,real(Z(1,4)), imag(Z(1,4)));
-fprintf('\n');
-
-%Z = zMatricesSUNEM.values;
-Z = zMatricesSUNEM.values;
-
-fprintf('Zsunem(%d,%d) = %.5f + j%.5f\n', 1,1,real(Z(1,1)), imag(Z(1,1)));
-fprintf('Zsunem(%d,%d) = %.5f + j%.5f\n', 1,26,real(Z(1,26)), imag(Z(1,26)));
-fprintf('Zsunem(%d,%d) = %.5f + j%.5f\n', 1,4,real(Z(1,4)), imag(Z(1,4)));
-fprintf('\n');
-
-
-%error('wag hier');
-
 % Compare now the above with that calculated using FEKO
-compareMatrices(Const,zMatricesSUNEM.values, zMatricesFEKO.values);
+compareMatrices(Const,zMatricesFEKO.values, zMatricesSUNEM.values);
 
 % For the RHS vectors, we calculate the rel. error norm % (2-norm)
 yVectorErr = calculateErrorNormPercentage(yVectorsFEKO.values, yVectorsSUNEM.values);
 message_fc(Const,sprintf('Rel. error norm. for V(RHS) compared to FEKO sol. %f percent',yVectorErr));
-
-V = yVectorsFEKO.values;
-
-fprintf('Yfeko(%d) = %.5f + j%.5f\n', 1,real(V(1)), imag(V(1)));
-fprintf('Yfeko(%d) = %.5f + j%.5f\n', 26,real(V(26)), imag(V(26)));
-fprintf('Yfeko(%d) = %.5f + j%.5f\n', 4,real(V(4)), imag(V(4)));
-fprintf('\n');
-
-V = yVectorsSUNEM.values;
-
-fprintf('Ysunem(%d) = %.5f + j%.5f\n', 1,real(V(1)), imag(V(1)));
-fprintf('Ysunem(%d) = %.5f + j%.5f\n', 26,real(V(26)), imag(V(26)));
-fprintf('Ysunem(%d) = %.5f + j%.5f\n', 4,real(V(4)), imag(V(4)));
-
-%error('wag hier');
 
 % --------------------------------------------------------------------------------------------------
 % Run the EM solver 

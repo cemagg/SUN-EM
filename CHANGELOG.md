@@ -6,6 +6,10 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.18 - 2018-06-13
+- Removed some debug info and also added a relativeErrorNorm for a matrix (the latter is showing a fairly
+  large error for the PEC plate example ~ 42%, even thought the curernt solution is ~ 10.6%)
+
 ## 1.17 - 2018-06-13
 - I think I fixed the issue now wrt the Z calculation (edge fill) using [DBD2011]. The 180 deg. phase
   shift issue is a result of the Amn+ and Amn- (and Phi_mn+ and Phi_mn-) sign allocation in the routine

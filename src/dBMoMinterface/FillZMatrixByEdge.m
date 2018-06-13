@@ -188,9 +188,7 @@ function [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, field_pt,sour
     rii(1,1) = node_coord(ii,1);
     rii(1,2) = node_coord(ii,2);
     rii(1,3) = node_coord(ii,3);
-    
-    %plot(rii(1,1),rii(1,2),'or','MarkerFaceColor','g','MarkerSize',10);
-    %rii(1,:)
+        
     
     %ii = DOFLOCALNUM(source_edge,source_tri); % This is the free vertex
     %associated with the source_edge - which is now passed here as an
@@ -202,13 +200,6 @@ function [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, field_pt,sour
 
     % [RWG82, Eq. (33) - without sign
     ScalPot = ell(source_edge)/(1i*2*pi*omega*eps_0) * Ipq;
-    
-    if (field_edge == 1 && source_edge == 12)
-        fprintf('Debugging element %d,%d\n',field_edge,source_edge);
-        fprintf('  Ipq(%d,%d) = %.5f\n',field_pt,source_pt,Ipq);
-        fprintf('  length(%d,%d) = %.5f\n',field_pt,source_pt,ell(source_edge));
-        fprintf('  ScalPot(%d,%d) = %.5f\n',field_pt,source_pt,ScalPot);
-        MagVecPot
-    end
+        
 end % function Potentials
 
