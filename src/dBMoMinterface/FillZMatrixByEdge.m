@@ -26,7 +26,7 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
     %   
     %   References: 
     %   [1] David B. Davidson, Computational Electromagnetics for RF and Microwave Engineering, 
-    %       Second Edition, (see Chapter 6)
+    %       Second Edition, (see Chapter 6) - [DBD2011]
 
     message_fc(Const, sprintf('  Calculating Z-matrix '));
     
@@ -102,15 +102,25 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
                 
                 [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_pls,qq_pls,mm,nn,triangle_tn_plus_free_vertex,...
                     k,r_c,quad_pts,sing,eps_0,mu_0,omega);
-                Amn_pls_source_pls = MagVecPot;
-                Phi_mn_pls_source_pls = -ScalPot;
+                
+                % [DBD2011] implementation below. I think there is a sign issue here.
+                %Amn_pls_source_pls = MagVecPot;
+                %Phi_mn_pls_source_pls = -ScalPot;
+                % [DL - 2018] implementation: Swop the signs around
+                Amn_pls_source_pls = -MagVecPot;
+                Phi_mn_pls_source_pls = +ScalPot;
+
                 
                 % -- Contribution from Tn-
                 
                 [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_pls,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
                     k,r_c,quad_pts,sing,eps_0,mu_0,omega);
-                Amn_pls_source_mns = - MagVecPot;
-                Phi_mn_pls_source_mns = +ScalPot;
+                % [DBD2011] implementation below. I think there is a sign issue here.
+                %Amn_pls_source_mns = - MagVecPot;
+                %Phi_mn_pls_source_mns = +ScalPot;
+                % [DL - 2018] implementation: Swop the signs around
+                Amn_pls_source_mns = + MagVecPot;
+                Phi_mn_pls_source_mns = -ScalPot;
                                 
                 Amn_pls = Amn_pls_source_pls + Amn_pls_source_mns;
                 Phi_mn_pls = Phi_mn_pls_source_pls + Phi_mn_pls_source_mns;
@@ -121,14 +131,22 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
                 % -- Contribution from Tn+
                 [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_pls,mm,nn,triangle_tn_plus_free_vertex,...
                     k,r_c,quad_pts,sing,eps_0,mu_0,omega);
-                Amn_mns_source_pls = MagVecPot;
-                Phi_mn_mns_source_pls = -ScalPot;
+                % [DBD2011] implementation below. I think there is a sign issue here.
+                %Amn_mns_source_pls = MagVecPot;
+                %Phi_mn_mns_source_pls = -ScalPot;
+                % [DL - 2018] implementation: Swop the signs around
+                Amn_mns_source_pls = -MagVecPot;
+                Phi_mn_mns_source_pls = +ScalPot;
                 
                 % -- Contribution from Tn-                
                 [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
                     k,r_c,quad_pts,sing,eps_0,mu_0,omega);
-                Amn_mns_source_mns = - MagVecPot;
-                Phi_mn_mns_source_mns = +ScalPot;
+                % [DBD2011] implementation below. I think there is a sign issue here.
+                %Amn_mns_source_mns = - MagVecPot;
+                %Phi_mn_mns_source_mns = +ScalPot;
+                % [DL - 2018] implementation: Swop the signs around
+                Amn_mns_source_mns = +MagVecPot;
+                Phi_mn_mns_source_mns = -ScalPot;
                 
                 Amn_mns = Amn_mns_source_pls + Amn_mns_source_mns;
                 Phi_mn_mns = Phi_mn_mns_source_pls + Phi_mn_mns_source_mns;
@@ -177,8 +195,12 @@ function [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell, field_pt,sour
     %ii = DOFLOCALNUM(source_edge,source_tri); % This is the free vertex
     %associated with the source_edge - which is now passed here as an
     %argument by the calling routine.    
+
+    % [RWG82, Eq. (32) - without sign
     MagVecPot = mu_0*ell(source_edge)/(4*pi)*...
         ( r(1,:)*Ipq_xi + r(2,:)*Ipq_eta + r(3,:)*Ipq_zeta - rii(1,:)*Ipq);
+
+    % [RWG82, Eq. (33) - without sign
     ScalPot = ell(source_edge)/(1i*2*pi*omega*eps_0) * Ipq;
     
     if (field_edge == 1 && source_edge == 12)

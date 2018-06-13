@@ -298,7 +298,7 @@ function Const = sunem_init(Const, yVectors)
 
     % For numerical integration over a triangular domain (based on DBD2011)
     Const.QUAD_PTS = 6;     % Quadrature rule (6 point is a good default)
-    Const.SING = false;      % If set to true, then singularities are treated in the DBD2011 routine for
+    Const.SING = true;      % If set to true, then singularities are treated in the DBD2011 routine for
                             % filling the Z matrix
 
     % Note:other parameters like Omega, K, Lambda, is dependent on the wavelenght and 

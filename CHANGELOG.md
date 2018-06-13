@@ -6,6 +6,14 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.17 - 2018-06-13
+- I think I fixed the issue now wrt the Z calculation (edge fill) using [DBD2011]. The 180 deg. phase
+  shift issue is a result of the Amn+ and Amn- (and Phi_mn+ and Phi_mn-) sign allocation in the routine
+  FillZMatrixByEdge. The reason that I think the signs should be reversed is that the sign convention
+  stemming from [RWG82, Eq. 24] is not interpreted correctly in the former reference. Results are 
+  promising - for example-7/ the rectangular PEC plate mesh results in a rel. error norm % of about
+  10.64% (with SING=true) and about 12% with SING=false (i.e. without singularity treatment).
+
 ## 1.16 - 2018-06-12
 - Some more progress wrt the SUN-EM MoM solver. Very close now. A -1 factor still out. The implementation
   in [DBD2011] is not correct. This -1 sign issue has to do with the magnetic vector potential calculation
