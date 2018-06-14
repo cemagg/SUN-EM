@@ -20,6 +20,11 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     %       Reads in a FEKO *.out file and extracts the FEKO data (frequencies, triangle info, 
     %       basis function setup).
     %
+    %   References:
+    %   -----------
+    %   [1] Xinlei Chen, Changqing Gu, Zhenyi Niu, and Zhuo L, "Fast Dipole Method for Electromagnetic Scattering From Perfect 
+    %       Electric Conducting Targets", IEEE TRANSACTIONS ON ANTENNAS AND PROPAGATION, VOL. 60, NO. 2, FEBRUARY 2012
+    %
     %   =======================
     %   Written by Danie Ludick on June 13, 2013
     %   Stellenbosch University
@@ -57,7 +62,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     FEKO_data.num_finite_array_elements = -1;
 
     % A local debug flag (e.g. to plot geometry)
-    LOCAL_DEBUG = true;
+    LOCAL_DEBUG = false;
     
     % Flag to make sure we actually read the geometry
     geometry_found = false;
@@ -422,6 +427,45 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
         FEKO_data.rho_c_mns(mm,:) =  - (FEKO_data.triangle_centre_point(pp_mns,:) - vertx); % Directed to vertex        
 
     end %for mm
+
+    % --------------------------------------------------------
+    % Equivalent Dipole Specific (EDM) specific pre-processing
+    % --------------------------------------------------------
+    if (Const.useEDM)
+        % 2018.06.13: If we are to use the Equivalent Dipole Method (EDM), as explained in [1], then we have to do a bit of preprocessing here
+        % Log the time however
+        edm_setup_time_tmp=tic;
+
+        % Some initialisations
+        FEKO_data.rwg_basis_functions_equivalent_dipole_moment = zeros(FEKO_data.num_metallic_edges,3); % X, Y and Z component
+        FEKO_data.rwg_basis_functions_equivalent_dipole_centre = zeros(FEKO_data.num_metallic_edges,3); % X, Y and Z co-ordinate
+
+        % Loop over each of the shared edges and extract the additional details mentioned below:
+        for edge_index = 1:FEKO_data.num_metallic_edges
+
+            % Extract the positive and negative triangles for the RWG element
+            triangle_plus = FEKO_data.rwg_basis_functions_trianglePlus(edge_index);
+            triangle_minus = FEKO_data.rwg_basis_functions_triangleMinus(edge_index);
+
+            % Extracts the preprocessed centre-points of each of the above triangles
+            rn_c_pls = FEKO_data.triangle_centre_point(triangle_plus,:);
+            rn_c_mns = FEKO_data.triangle_centre_point(triangle_minus,:);
+
+            % Extract the length of this shared edge
+            ln = FEKO_data.rwg_basis_functions_length_m(edge_index);
+
+            % Calculate and store the equivalent dipole moment [1, eq. 5]
+            FEKO_data.rwg_basis_functions_equivalent_dipole_moment(edge_index,:) = ln.*(rn_c_mns - rn_c_pls);
+
+            % We can also calculate the centre-point of the equivalent dipoles
+            FEKO_data.rwg_basis_functions_equivalent_dipole_centre(edge_index,:) = 0.5.*(rn_c_pls + rn_c_mns);
+
+        end%for edge_index = 1:FEKO_data.num_metallic_edges
+
+        edm_setup_time = toc(edm_setup_time_tmp);
+        % Display the time.
+        message_fc(Const,sprintf('Preprocessing time for the EDM: %f sec. ',edm_setup_time));
+    end%if
 
     % Set the total number of MoM basis functions
     % -- For now, we have RWG elements. Add as more types are included.

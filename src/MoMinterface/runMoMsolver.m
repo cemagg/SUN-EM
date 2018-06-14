@@ -1,4 +1,4 @@
-function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors)
+function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
     %runMoMsolver
     %   Usage:
     %       [mom] = runMoMsolver(Const)
@@ -13,8 +13,8 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors
     %           calculated).
     %       yVectors
     %           The Yrhs-vector data
-    %       xVectors
-    %           The Xsol-vector data (i.e. MoM solution of FEKO)
+    %       refIsol
+    %           The reference solution-vector data (e.g. MoM solution of FEKO or SUN-EM)
     %
     %   Output Arguments:
     %       mom
@@ -38,19 +38,20 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors
     % Initialise the return values
     mom  = [];
     mom.name = 'mom';
-    Nmom = Const.numMoMbasis;              % Total number of basis functions for whole problem
-    numSols = xVectors.numSols;            % The number of solutions configurations
-    mom.numSols = numSols;
-    numFreq = zMatrices.numFreq;           % The number of frequency points to process
-    numRHSperFreq = xVectors.numSols / zMatrices.numFreq;
-                                           % The number of solutions per frequency point
+    Nmom = Solver_setup.num_mom_basis_functions;   % Total number of basis functions for whole problem
+    %numSols = xVectors.numSols;                   % The number of solutions configurations
+    mom.numSols = 1; %numSols;                     % For now, set to 1. (TO-DO: Update)
+    numFreq = Solver_setup.frequencies.freq_num;   % The number of frequency points to process
+    numRHSperFreq = mom.numSols / numFreq;         % The number of solutions per frequency point.
+                                                   % For now, should be 1 (TO-DO: Update)
+                                                   
     % Some info about the solution configurations
-    message_fc(Const,sprintf('  numSols : %d', numSols));
+    message_fc(Const,sprintf('  numSols : %d', mom.numSols));
     message_fc(Const,sprintf('  numFreq : %d', numFreq));
     message_fc(Const,sprintf('  numRHSperFreq : %d', numRHSperFreq));
 
     % Calculate the solution vector (all frequency points, all RHSes)
-    mom.Isol = complex(zeros(Nmom,numSols));
+    mom.Isol = complex(zeros(Nmom,mom.numSols));
 
     % The timing calculations also need to take into account that there is a
     % frequency loop
@@ -124,12 +125,12 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors
     % Compare the MoM solution obtained with MATLAB, with that obtained by FEKO
     % that was stored in xVectors.values (for each frequency iteration (and each solution within the frequency iteration)
     % Calculate also space for the relative error here
-    mom.relError = zeros(1,numSols);
+    mom.relError = zeros(1,mom.numSols);
     for freq=1:numFreq
         for solNum=1:numRHSperFreq
             index = solNum + (freq-1)*numRHSperFreq;
-            mom.relError(index) = calculateErrorNormPercentage(xVectors.values(:,index), mom.Isol(:,index));
-            message_fc(Const,sprintf('Rel. error norm. for Sol. %d of %d of freq. %d of %d compared to FEKO sol. %f percent',solNum, ...
+            mom.relError(index) = calculateErrorNormPercentage(refIsol.Isol(:,index), mom.Isol(:,index));
+            message_fc(Const,sprintf('Rel. error norm. for Sol. %d of %d of freq. %d of %d compared to reference sol. %f percent',solNum, ...
                 numRHSperFreq, freq, numFreq, mom.relError(index)));
         end
     end

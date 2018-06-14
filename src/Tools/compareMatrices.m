@@ -28,8 +28,8 @@ function compareMatrices(Const, refmat, mat)
        
     % Display a subset of the matrices 
     if(false)
-        for mm = 1:3%size(matA,1)
-            for nn = 1:3%size(matA,2)
+        for mm = 1:100%size(matA,1)
+            for nn = 1:100%size(matA,2)
                 fprintf('refmat(%d,%d) = %.5f + %.5f\n', mm,nn,real(refmat(mm,nn)), imag(mat(mm,nn)));
                 fprintf('mat(%d,%d)    = %.5f + %.5f\n', mm,nn,real(mat(mm,nn)), imag(mat(mm,nn)));
                 fprintf('\n');
@@ -41,6 +41,10 @@ function compareMatrices(Const, refmat, mat)
     Zerr = calculateMatrixErrorNormPercentage(refmat, mat);
     message_fc(Const,sprintf('  Rel. error norm. for Z compared to FEKO sol. %f percent',Zerr));    
 
-    difference = abs(refmat-mat);
+    difference = abs(refmat-mat);        
     figure    
     imagesc(difference)
+
+    % Also calcualte the maximum difference for the matrix elements
+    matrix_diff = max(max(refmat-mat));
+    message_fc(Const,sprintf('  Maximum difference in Z-matrix entry: %f + j*%f',real(matrix_diff),imag(matrix_diff)));    

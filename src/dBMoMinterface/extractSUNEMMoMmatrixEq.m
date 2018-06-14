@@ -38,6 +38,9 @@ function [Const, zMatrices, yVectors] = extractSUNEMMoMmatrixEq(Const, Solver_se
     message_fc(Const,...
         '------------------------------------------------------------------------------------');
     message_fc(Const,sprintf('Calculating MoM matrix internally'));
+    if (Const.useEDM)
+        message_fc(Const,sprintf('  EDM active'));
+    end%if
 
     % -- Calculate the Z-matrix (edge-based fill)
     zMatfilltime=tic;

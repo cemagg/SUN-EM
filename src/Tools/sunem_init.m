@@ -145,6 +145,21 @@ function Const = sunem_init(Const, yVectors)
             Const.fastBuildMoMblock = true;
         end
     end
+    
+    % Use the Equivalent Dipole Method (EDM) for the Z-matrix calc.
+    % by default not activated. Note, this is for the internal 
+    % MoM matrix calculation.
+    try
+        set = false;
+        if (Const.useEDM)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)            
+            Const.useEDM = false;
+        end
+    end
 
     % ================================    
     try

@@ -122,13 +122,14 @@ function [xVectors] = readFEKOXvectorFromFile(Const, strfilename)
 
     % Now follow the numMoMbasis basis-functions
     xVectors.numSols = 0;
-    xVectors.values = [];
+    %xVectors.values = []; % Replace now with Isol to be consistent with other parts of code.
+    xVectors.Isol = []; % Replace now with Isol to be consistent with other parts of code.
     while ~feof(fid)
         xVectors.numSols = xVectors.numSols + 1;
         for jj=1:xVectors.numMoMbasis
             tline = fgets(fid);
             tmp = sscanf(tline,'(%f,%f)');
-            xVectors.values(jj,xVectors.numSols) = tmp(1) + 1i*tmp(2);
+            xVectors.Isol(jj,xVectors.numSols) = tmp(1) + 1i*tmp(2);
         end%for
         % read the delimiter line that seperates the individual modes
         tline = fgets(fid);

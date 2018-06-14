@@ -27,6 +27,8 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
     %   References: 
     %   [1] David B. Davidson, Computational Electromagnetics for RF and Microwave Engineering, 
     %       Second Edition, (see Chapter 6) - [DBD2011]
+    %   [2] Xinlei Chen, Changqing Gu, Zhenyi Niu, and Zhuo L, "Fast Dipole Method for Electromagnetic Scattering From Perfect 
+    %       Electric Conducting Targets", IEEE TRANSACTIONS ON ANTENNAS AND PROPAGATION, VOL. 60, NO. 2, FEBRUARY 2012
 
     message_fc(Const, sprintf('  Calculating Z-matrix '));
     
@@ -62,105 +64,170 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
         % Extract the particular frequency value:
         freq = Solver_setup.frequencies.samples(freq_index);
         % Calculate some frequency dependent parameters required below
-        omega = 2*pi*freq;  % Radial frequency
-        lambda = Const.C0/freq;    % Wavelength in m
-        k  = 2*pi/lambda;   % Wavenumber in rad/m
+        omega = 2*pi*freq;       % Radial frequency
+        lambda = Const.C0/freq;  % Wavelength in m
+        k  = 2*pi/lambda;        % Wavenumber in rad/m
+        jk = 1i*k;
+
+        if (Const.useEDM)
+            % Precompute a constant for the Equivalent Dipole Method (EDM) (see [2])
+            C1 = Const.ETA_0/(4*pi);
+            threshold_EDM = 3.0*lambda;  % Set the EDM threshold. In e.g. [2], this is selected as 0.15*lambda
+        end%if (Const.useEDM)
 
         message_fc(Const, sprintf('    Processing frequency %d of %d (%.2f Hz) ',freq_index,number_of_frequencies,freq))
 
         % Assemble by edges - not optimally fast computationally, but easy.
         % These are eqns. 32 and 33.
+        num_edm_approximations = 0;
+        num_std_zmn_entries_calculated = 0;
         for mm = 1:num_dofs
 
             %pp_pls = EDGECONXELEMS(mm,1);            
             pp_pls = Solver_setup.rwg_basis_functions_trianglePlus(mm);
             %pp_mns = EDGECONXELEMS(mm,2);
             pp_mns = Solver_setup.rwg_basis_functions_triangleMinus(mm);
+
+            if (Const.useEDM)
+                % Extract the precalculated dipole moment for edge mm
+                ed_m_moment = Solver_setup.rwg_basis_functions_equivalent_dipole_moment(mm);
+                % Centre of the above equivalent dipole
+                r_ed_m_centre = Solver_setup.rwg_basis_functions_equivalent_dipole_centre(mm);
+            end
            
             for nn = 1:num_dofs
-                %fprintf('Processing element %d,%d\n',mm,nn);
-                % There are four terms to add here;
-                % From integrals over source faces n+ & n- evaluated at centres of field faces m+ and m-.
-                % The n integrals associate with q, the m, with p.
-                % In datastructures EDGECONXELEMS & DOFLOCALNUM, second index 1
-                % associates with +, 2 with -. 
 
-                %qq_pls = EDGECONXELEMS(nn,1);
-                qq_pls = Solver_setup.rwg_basis_functions_trianglePlus(nn);
-                %qq_mns = EDGECONXELEMS(nn,2);
-                qq_mns = Solver_setup.rwg_basis_functions_triangleMinus(nn);
-            
-                triangle_tn_plus_free_vertex = Solver_setup.rwg_basis_functions_trianglePlusFreeVertex(nn);
-                triangle_tn_minus_free_vertex = Solver_setup.rwg_basis_functions_triangleMinusFreeVertex(nn);
-                
-                % First, find contribution from n+ and n- faces evaluated at m+
-                                
-                % --------------------------------------------------------------                
-                % Look at Tm+
-                % --------------------------------------------------------------
-                % -- Contribution from Tn+
-                
-                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_pls,qq_pls,mm,nn,triangle_tn_plus_free_vertex,...
-                    k,r_c,quad_pts,sing,eps_0,mu_0,omega);
-                
-                % [DBD2011] implementation below. I think there is a sign issue here.
-                %Amn_pls_source_pls = MagVecPot;
-                %Phi_mn_pls_source_pls = -ScalPot;
-                % [DL - 2018] implementation: Swop the signs around
-                Amn_pls_source_pls = -MagVecPot;
-                Phi_mn_pls_source_pls = +ScalPot;
+                % 2018.06.13: We can use the Equivalent Dipole Method (EDM), if active and only if the distance 
+                % between the two RWG dipole moments is sufficent (otherwise we still use normal matrix fill below)
+                Zmn_calculated = false;
+                if (Const.useEDM)
 
+                    % Extract the precalculated dipole moment for edge mm
+                    ed_n_moment = Solver_setup.rwg_basis_functions_equivalent_dipole_moment(nn);
+                    % Centre of the above equivalent dipole
+                    r_ed_n_centre = Solver_setup.rwg_basis_functions_equivalent_dipole_centre(nn);
+
+                    % Check first whether the distance between the dipole moments are sufficiently large (i.e. larger
+                    % than the preset threshold above). If it is, then we can use the EDM - if not, stil perform standard
+                    % matrix calculation below.
+                    R = r_ed_m_centre - r_ed_n_centre;
+                    R_mag = abs(R);
+                    one_over_R_mag = 1/R_mag;
+                    R_hat = R*one_over_R_mag; % normalised R vector
+
+                    if ((R_mag > threshold_EDM))                        
+                        num_edm_approximations = num_edm_approximations + 1;
+
+                        % Calculate C - see [2, Eq. 7]. Trying to do it a bit more efficiently by using precalculated terms
+                        % such as one_over_R_mag. TO-DO: Test the impact of this ... vs. readability of code.
+                        C = (one_over_R_mag)*(one_over_R_mag)*(1 + (1/jk)*one_over_R_mag);
+
+                        % Calculate Zmn as done in [2, Eq. 6]
+                        Z.values(mm,nn) = C1*exp(-jk*R_mag) * ( dot(ed_m_moment,ed_n_moment)*(jk*one_over_R_mag + C) - ...
+                             dot(ed_m_moment,R_hat)*dot(R_hat,ed_n_moment)*(jk*one_over_R_mag + 3*C) );
+
+                        % Set a flag that we are now done with this matrix entry
+                        Zmn_calculated = true; % using EDM
+                    end%if
+
+                end % if (Const.useEDM)
+                    
+                % Perform the standard Matrix calculation (using Gausian quadrature integration, if the EDM is not used above
+                if (~Zmn_calculated)
+                    num_std_zmn_entries_calculated = num_std_zmn_entries_calculated + 1;
+
+                    %fprintf('Processing element %d,%d\n',mm,nn);
+                    % There are four terms to add here;
+                    % From integrals over source faces n+ & n- evaluated at centres of field faces m+ and m-.
+                    % The n integrals associate with q, the m, with p.
+                    % In datastructures EDGECONXELEMS & DOFLOCALNUM, second index 1
+                    % associates with +, 2 with -. 
+
+                    %qq_pls = EDGECONXELEMS(nn,1);
+                    qq_pls = Solver_setup.rwg_basis_functions_trianglePlus(nn);
+                    %qq_mns = EDGECONXELEMS(nn,2);
+                    qq_mns = Solver_setup.rwg_basis_functions_triangleMinus(nn);
                 
-                % -- Contribution from Tn-
+                    triangle_tn_plus_free_vertex = Solver_setup.rwg_basis_functions_trianglePlusFreeVertex(nn);
+                    triangle_tn_minus_free_vertex = Solver_setup.rwg_basis_functions_triangleMinusFreeVertex(nn);
+                    
+                    % First, find contribution from n+ and n- faces evaluated at m+
+                                    
+                    % --------------------------------------------------------------                
+                    % Look at Tm+
+                    % --------------------------------------------------------------
+                    % -- Contribution from Tn+
+                    
+                    [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_pls,qq_pls,mm,nn,triangle_tn_plus_free_vertex,...
+                        k,r_c,quad_pts,sing,eps_0,mu_0,omega);
+                    
+                    % [DBD2011] implementation below. I think there is a sign issue here.
+                    %Amn_pls_source_pls = MagVecPot;
+                    %Phi_mn_pls_source_pls = -ScalPot;
+                    % [DL - 2018] implementation: Swop the signs around
+                    Amn_pls_source_pls = -MagVecPot;
+                    Phi_mn_pls_source_pls = +ScalPot;
+
+                    
+                    % -- Contribution from Tn-
+                    
+                    [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_pls,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
+                        k,r_c,quad_pts,sing,eps_0,mu_0,omega);
+                    % [DBD2011] implementation below. I think there is a sign issue here.
+                    %Amn_pls_source_mns = - MagVecPot;
+                    %Phi_mn_pls_source_mns = +ScalPot;
+                    % [DL - 2018] implementation: Swop the signs around
+                    Amn_pls_source_mns = + MagVecPot;
+                    Phi_mn_pls_source_mns = -ScalPot;
+                                    
+                    Amn_pls = Amn_pls_source_pls + Amn_pls_source_mns;
+                    Phi_mn_pls = Phi_mn_pls_source_pls + Phi_mn_pls_source_mns;
+                    
+                    % --------------------------------------------------------------                
+                    % Look at Tm-
+                    % --------------------------------------------------------------
+                    % -- Contribution from Tn+
+                    [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_pls,mm,nn,triangle_tn_plus_free_vertex,...
+                        k,r_c,quad_pts,sing,eps_0,mu_0,omega);
+                    % [DBD2011] implementation below. I think there is a sign issue here.
+                    %Amn_mns_source_pls = MagVecPot;
+                    %Phi_mn_mns_source_pls = -ScalPot;
+                    % [DL - 2018] implementation: Swop the signs around
+                    Amn_mns_source_pls = -MagVecPot;
+                    Phi_mn_mns_source_pls = +ScalPot;
+                    
+                    % -- Contribution from Tn-                
+                    [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
+                        k,r_c,quad_pts,sing,eps_0,mu_0,omega);
+                    % [DBD2011] implementation below. I think there is a sign issue here.
+                    %Amn_mns_source_mns = - MagVecPot;
+                    %Phi_mn_mns_source_mns = +ScalPot;
+                    % [DL - 2018] implementation: Swop the signs around
+                    Amn_mns_source_mns = +MagVecPot;
+                    Phi_mn_mns_source_mns = -ScalPot;
+                    
+                    Amn_mns = Amn_mns_source_pls + Amn_mns_source_mns;
+                    Phi_mn_mns = Phi_mn_mns_source_pls + Phi_mn_mns_source_mns;
+                           
+                    % Assemble with eq. 17 in [RWG82]
+                    Z.values(mm,nn) = 1i*omega*...
+                        (dot(Amn_pls',rho_c_pls(mm,:))/2 + dot(Amn_mns',rho_c_mns(mm,:))/2) + Phi_mn_mns - Phi_mn_pls;
+                    
+                    %mm
+                    %nn
+                    Z.values(mm,nn) = ell(mm)* Z.values(mm,nn);                    
+                end % if (~Zmn_calculated)
                 
-                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_pls,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
-                    k,r_c,quad_pts,sing,eps_0,mu_0,omega);
-                % [DBD2011] implementation below. I think there is a sign issue here.
-                %Amn_pls_source_mns = - MagVecPot;
-                %Phi_mn_pls_source_mns = +ScalPot;
-                % [DL - 2018] implementation: Swop the signs around
-                Amn_pls_source_mns = + MagVecPot;
-                Phi_mn_pls_source_mns = -ScalPot;
-                                
-                Amn_pls = Amn_pls_source_pls + Amn_pls_source_mns;
-                Phi_mn_pls = Phi_mn_pls_source_pls + Phi_mn_pls_source_mns;
-                
-                % --------------------------------------------------------------                
-                % Look at Tm-
-                % --------------------------------------------------------------
-                % -- Contribution from Tn+
-                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_pls,mm,nn,triangle_tn_plus_free_vertex,...
-                    k,r_c,quad_pts,sing,eps_0,mu_0,omega);
-                % [DBD2011] implementation below. I think there is a sign issue here.
-                %Amn_mns_source_pls = MagVecPot;
-                %Phi_mn_mns_source_pls = -ScalPot;
-                % [DL - 2018] implementation: Swop the signs around
-                Amn_mns_source_pls = -MagVecPot;
-                Phi_mn_mns_source_pls = +ScalPot;
-                
-                % -- Contribution from Tn-                
-                [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
-                    k,r_c,quad_pts,sing,eps_0,mu_0,omega);
-                % [DBD2011] implementation below. I think there is a sign issue here.
-                %Amn_mns_source_mns = - MagVecPot;
-                %Phi_mn_mns_source_mns = +ScalPot;
-                % [DL - 2018] implementation: Swop the signs around
-                Amn_mns_source_mns = +MagVecPot;
-                Phi_mn_mns_source_mns = -ScalPot;
-                
-                Amn_mns = Amn_mns_source_pls + Amn_mns_source_mns;
-                Phi_mn_mns = Phi_mn_mns_source_pls + Phi_mn_mns_source_mns;
-                       
-                % Assemble with eq. 17 in [RWG82]
-                Z.values(mm,nn) = 1i*omega*...
-                    (dot(Amn_pls',rho_c_pls(mm,:))/2 + dot(Amn_mns',rho_c_mns(mm,:))/2) + Phi_mn_mns - Phi_mn_pls;
-                
-                %mm
-                %nn
-                Z.values(mm,nn) = ell(mm)* Z.values(mm,nn);
             end % for nn = 1:NUM_DOFS
         end %for mm = 1:NUM_DOFS
     end %for freq_index = 1:Solver_setup.frequencies.freq_num    
+    
+    if (Const.useEDM)
+        EDM_mat_perc = num_edm_approximations / (num_dofs*num_dofs) * 100;
+        message_fc(Const,sprintf('  Number of EDM approximations   : %d (%f perc. of MoM matrix)',num_edm_approximations, EDM_mat_perc));
+        message_fc(Const,sprintf('  Number of Standard Zmn entries : %d ',num_std_zmn_entries_calculated));
+    end%if
+    
 end %function FillZMatrixByEdge
 
 % =================================================================================

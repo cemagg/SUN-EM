@@ -6,6 +6,11 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.19 - 2018-06-14
+- Added now Equivalent Dipole Method (EDM) for accelerated Z matrix filling. Still a bit of tweaking to
+  do, but at least the basic feature is there (threshold distance quite a parameter). Need to add now 
+  DGFM (+ i-DGFM support).
+
 ## 1.18 - 2018-06-13
 - Removed some debug info and also added a relativeErrorNorm for a matrix (the latter is showing a fairly
   large error for the PEC plate example ~ 42%, even thought the curernt solution is ~ 10.6%)

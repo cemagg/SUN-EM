@@ -87,7 +87,7 @@ function displayTriangleMesh(Const, Solver_setup)
     internal_bfs_only = false;
 
     % We can also rather plot the generating sub-array RWGs
-    plot_generating_sub_array_basis_functions = true;
+    plot_generating_sub_array_basis_functions = false;
 
     if (Const.domain_decomposition)
         if (Solver_setup.disconnected_domains && plot_generating_sub_array_basis_functions)

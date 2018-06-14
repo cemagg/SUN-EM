@@ -17,7 +17,7 @@ function errorNormPercentage = calculateMatrixErrorNormPercentage(refData, data)
     %       We use an expression similar to the 2-norm relative error percentage for vectors:
     %   =======================
 
-    error(nargchk(2,2,nargin));
+    narginchk(2,2);
 
     if ( size(refData) ~= size(data) )
         error('[calculateMatrixErrorNormPercentage] Data-sets not the same size'); 
