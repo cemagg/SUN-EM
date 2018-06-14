@@ -6,8 +6,11 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.21 - 2018-06-14
+- Added now DGFM (+ iDGFM). Generated sufficient results for linear array (example-8).
+
 ## 1.20 - 2018-06-14
-- Added now DGFM (+ iDGFM). Generated sufficient results for linear array (example-8)
+- Added now DGFM (+ iDGFM). Generated sufficient results for linear array (example-8).
 
 ## 1.19 - 2018-06-14
 - Added now Equivalent Dipole Method (EDM) for accelerated Z matrix filling. Still a bit of tweaking to
