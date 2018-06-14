@@ -54,5 +54,18 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
         Solution.ifbmom = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
     end%if
 
+    % -- DGFM solver
+    if (Const.runDGFMsolver)
+        ngf = []; % TO-DO: Add back NGF once supported.
+        % Depending on the DGFM weighting coefficients, we might need to
+        % run the MBF generator
+        if (Const.DGFMweightVectorCalcScheme == 3)
+            [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVectors);
+        else
+            mbfs = [];
+        end
+        Solution.dgfm = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs, ngf);        
+    end%if
+
 
     message_fc(Const,sprintf('Finished EM Solvers'));

@@ -72,7 +72,7 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
         if (Const.useEDM)
             % Precompute a constant for the Equivalent Dipole Method (EDM) (see [2])
             C1 = Const.ETA_0/(4*pi);
-            threshold_EDM = 3.0*lambda;  % Set the EDM threshold. In e.g. [2], this is selected as 0.15*lambda
+            threshold_EDM = 1.5*lambda;  % Set the EDM threshold. In e.g. [2], this is selected as 0.15*lambda
         end%if (Const.useEDM)
 
         message_fc(Const, sprintf('    Processing frequency %d of %d (%.2f Hz) ',freq_index,number_of_frequencies,freq))

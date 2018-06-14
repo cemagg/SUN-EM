@@ -149,7 +149,7 @@ function [jack] = runJACKITsolver(Const, Solver_setup, zMatrices, yVectors, xVec
         % See issue FEKDDM-6.2: If the NGF-enhanced DGFM is used, then we
         % compare only the current that is on the dynamic domain, i.e. the
         % finite array. This routine might also be called from the IFB-DGFM solver (therefore used now Const.domAoffset instead of Nngf)
-        jack.relError(solNum) = calculateErrorNormPercentage(xVectors.values(:,solNum), jack.Isol(:,solNum));
+        jack.relError(solNum) = calculateErrorNormPercentage(xVectors.Isol(:,solNum), jack.Isol(:,solNum));
     end%for solNum = 1:numSols
 
     % End timing

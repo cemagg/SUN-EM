@@ -575,7 +575,7 @@ function [cbfm] = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
         % that was stored in xVectors.values
         % See issue FEKDDM-6.2: If the NGF-enhanced CBFM is used, then we compare
         % only the current that is on the dynamic domain, i.e. the finite array.
-        cbfm.relError(solNum) = calculateErrorNormPercentage(xVectors.values(:,solNum), cbfm.Isol(:,solNum));
+        cbfm.relError(solNum) = calculateErrorNormPercentage(xVectors.Isol(:,solNum), cbfm.Isol(:,solNum));
         message_fc(Const,sprintf('Rel. error norm. for Sol. %d of %d compared to FEKO sol. %f percent.',solNum, numSols, cbfm.relError(solNum)));
 
         % =======================

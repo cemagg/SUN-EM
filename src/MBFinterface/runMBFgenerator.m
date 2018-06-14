@@ -78,8 +78,10 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
     % interconnected) arrays that have different number of BFs / element.
     %Ndom        = Solver_setup.max_mom_basis_functions_per_array_element;   % Number of basis functions per array element        
     numArrayEls = Solver_setup.num_finite_array_elements;  % The number of array elements
-    numGeneratingSubarrays = Solver_setup.generating_subarrays.number_of_domains; % Number of generating sub-arrays,
+    if (~Solver_setup.disconnected_domains)
+        numGeneratingSubarrays = Solver_setup.generating_subarrays.number_of_domains; % Number of generating sub-arrays,
                                                                                   % for connected structures    
+    end%if
     numSols     = xVectors.numSols;             % The number of solutions configurations
         
     % If we are reducing and orthonormalising the MBFs by using the SVD,

@@ -22,6 +22,7 @@ Const.runMoMsolver          = true;
 Const.runCBFMsolver         = false;
 Const.runJacobisolver       = false;
 Const.runIFBMoMsolver       = false;
+Const.runDGFMsolver         = true;
 
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
@@ -36,15 +37,16 @@ Const.FEKOffefilename          = 'bow_tie_array.ffe';
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMmomstrfilename      = 'sunem_mom_bow_tie_array.str';
+Const.SUNEMmomstrfilename      =  'sunem_mom_bow_tie_array.str';
+Const.SUNEMdgfmstrfilename     =  'sunem_dgfm_bow_tie_array.str';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
 % --------------------------------------------------------------------------------------------------
 % TO-DO: Setup some documentation for this
 Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
-Const.calcSecMBFs = false;      % For MBF based solvers
-Const.useMBFreduction = true;   % SVD applied after the MBFs are generated to retain an orthonormal set
+Const.calcSecMBFs = true;      % For MBF based solvers
+Const.useMBFreduction = false;   % SVD applied after the MBFs are generated to retain an orthonormal set
 Const.MBFthreshold = 1000;      % Threshold used for the SVD reduction of the MBFs
 Const.IFBalg = 14;              % Jacobi iterations (7). Adaptive MBF (14).
 Const.IFB_iterations = 10;      % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
@@ -56,13 +58,22 @@ Const.IFB_debug = 1;
 Const.cache_Z0_V0 = false;      % Precompute the Z0 and V0 terms
 Const.use_DGFM_start = false;   % Use the DGFM to calculate the initial (0th) solution
 
-Const.useEDM = false;            % Use the Equivalent Dipole Method (EDM) to accelerate the MoM Z-matrix
+Const.useEDM = true;            % Use the Equivalent Dipole Method (EDM) to accelerate the MoM Z-matrix
                                 % calculation
+
+% ------------------
+%  DGFM coefficients
+% ------------------
+Const.useDGFMmethod = 1;                 % 1: Local matrices. 2: Global matrices (not supported anymore)
+Const.DGFMweightVectorCalcScheme = 3;    % 0: Uniform coefficients / array excitation law. 
+                                         % 1: Ratio of the applied excitation coefficients (TO-DO: check)
+                                         % 2: Use Isol reference. (Great for testing)
+                                         % 3: Use the Jacobi-Generated CBFs (see [DL2013], Appendix A)
 
 % 2018.06.14: Working with the reference a bit (use SUN-EM MoM now)
 Const.loadSUNEMref = true;
 Const.saveSUNEMref = false;
-Const.useFEKOref   = true;
+Const.useFEKOref   = false;
 
 % --------------------------------------------------------------------------------------------------
 % Read the MoM matrix equation from the file
@@ -82,26 +93,32 @@ end
 % preprocessxing, e.g. Gmsh or GiD. For now the solver setup is read from FEKO.
 [Const, Solver_setup] = parseFEKOoutfile(Const, yVectorsFEKO);
 
-% 2018.06.10: If we are going to run the SUNEM MoM solver, then we need to extract our own internal
-% MoM matrix equation. Note: we can only do this after the solver data (i.e. geometry, etc. is setup)
-[Const, zMatricesSUNEM, yVectorsSUNEM] = extractSUNEMMoMmatrixEq(Const, Solver_setup);
+if (true)
+    % 2018.06.10: If we are going to run the SUNEM MoM solver, then we need to extract our own internal
+    % MoM matrix equation. Note: we can only do this after the solver data (i.e. geometry, etc. is setup)
+    [Const, zMatricesSUNEM, yVectorsSUNEM] = extractSUNEMMoMmatrixEq(Const, Solver_setup);
 
-% Compare now the above with that calculated using FEKO (or SUN-EM)
-if (Const.useFEKOref)
+    % Compare now the above with that calculated using FEKO (or SUN-EM)
+    if (Const.useFEKOref)
+        zRef = zMatricesFEKO.values;    
+        xRef = xVectorsFEKO;
+        message_fc(Const,sprintf('Using FEKO as reference'));
+    else
+        zRef = zMatricesSUNEMref.values;
+        xRef = xVectorsSUNEM;
+        message_fc(Const,sprintf('Using SUN-EM as reference'));
+    end
+
+    compareMatrices(Const, zRef, zMatricesSUNEM.values);
+
+    % For the RHS vectors, we calculate the rel. error norm % (2-norm)
+    yVectorErr = calculateErrorNormPercentage(yVectorsFEKO.values, yVectorsSUNEM.values);
+    message_fc(Const,sprintf('Rel. error norm. for V(RHS) compared to FEKO sol. %f percent',yVectorErr));
+else
     zRef = zMatricesFEKO.values;    
     xRef = xVectorsFEKO;
     message_fc(Const,sprintf('Using FEKO as reference'));
-else
-    zRef = zMatricesSUNEMref.values;
-    xRef = xVectorsSUNEM;
-    message_fc(Const,sprintf('Using SUN-EM as reference'));
 end
-
-compareMatrices(Const, zRef, zMatricesSUNEM.values);
-
-% For the RHS vectors, we calculate the rel. error norm % (2-norm)
-yVectorErr = calculateErrorNormPercentage(yVectorsFEKO.values, yVectorsSUNEM.values);
-message_fc(Const,sprintf('Rel. error norm. for V(RHS) compared to FEKO sol. %f percent',yVectorErr));
 
 % --------------------------------------------------------------------------------------------------
 % Run the EM solver 

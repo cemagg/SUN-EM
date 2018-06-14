@@ -289,6 +289,34 @@ function Const = sunem_init(Const, yVectors)
         end
     end
 
+    % ================================    
+    try
+        set = false;
+        if (Const.SUNEMdgfmstrfilename)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.SUNEMdgfmstrfilename = '';
+        end
+    end
+
+    % ================================    
+    try
+        set = false;
+        if (Const.SUNEMjackstrfilename)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.SUNEMjackstrfilename = '';
+        end
+    end
+
     % =================================
     % Other initialisations:
     Const.useACA = false; % ACA interface available, but not yet activated. (Requires some refactoring).
@@ -299,6 +327,8 @@ function Const = sunem_init(Const, yVectors)
 
     % Deactivate for now
     Const.runJACKITfromDGFM = false;
+    Const.runNGFenDGFMsolver = false;
+    Const.storeZact = false;
 
     % =================================
     % General constants:
@@ -329,7 +359,7 @@ function Const = sunem_init(Const, yVectors)
 
     % Check now whether domain decomposition is active. This is signalled 
     % by the type of solver used, e.g. DGFM, CBFM, etc.
-    if (Const.runCBFMsolver || Const.runJacobisolver || Const.runIFBMoMsolver)
+    if (Const.runCBFMsolver || Const.runJacobisolver || Const.runIFBMoMsolver ||Const.runDGFMsolver)
         message_fc(Const,sprintf('  Domain decomposition active'));
         Const.domain_decomposition = true;
     else
