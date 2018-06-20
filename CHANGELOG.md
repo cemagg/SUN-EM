@@ -6,6 +6,10 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.23 - 2018-06-20
+- Removed now also windowing method from adaptive MBF approach (convergence achieved now for 6x1 bow-tie array
+  see example-6).
+
 ## 1.22 - 2018-06-20
 - Removed now windowing method from iterative Jacobi approach (convergence achieved now for 6x1 bow-tie array
   see example-6).
