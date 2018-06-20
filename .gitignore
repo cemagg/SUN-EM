@@ -8,3 +8,4 @@
 SimOutput.log
 *.lock
 *.sublime*
+*.asv

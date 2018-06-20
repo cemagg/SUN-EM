@@ -7,7 +7,11 @@ Note the following list of abbreviations:
 ===================================================================================================
 
 ## 1.21 - 2018-06-14
+<<<<<<< HEAD
 - Added linear 10x1 bow-tie array (results used for ICEAA'18)
+=======
+- Added now DGFM (+ iDGFM). Generated sufficient results for linear array (example-8).
+>>>>>>> master
 
 ## 1.20 - 2018-06-14
 - Added now DGFM (+ iDGFM). Generated sufficient results for linear array (example-8).
