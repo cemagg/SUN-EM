@@ -49,7 +49,7 @@ Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
 Const.calcSecMBFs = false;     % For MBF based solvers
 Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set
 Const.MBFthreshold = -1;       % Threshold used for the SVD reduction of the MBFs
-Const.IFBalg = 14;              % Jacobi iterations (7). Adaptive MBF (14).
+Const.IFBalg = 7;              % Jacobi iterations (7). Adaptive MBF (14).
 Const.IFB_iterations = 10;     % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
                                % which then looks at Const.IFB_convergence_threshold_percentage;
 Const.IFB_convergence_threshold_percentage = 1E-3;                                

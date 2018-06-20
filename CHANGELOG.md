@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.24 - 2018-06-20
+- Working on Adaptive MBFs -- vivaldi array (example-4) not working.
+
 ## 1.23 - 2018-06-20
 - Removed now also windowing method from adaptive MBF approach (convergence achieved now for 6x1 bow-tie array
   see example-6).
