@@ -82,9 +82,11 @@ function displayTriangleMesh(Const, Solver_setup)
     % are). Note, currently this is only for domain decomposition. Should
     % be trivial to extend for general case. To show all basis functions, 
     % set plot_domain = 0;
-    plot_domain = 0;
+    plot_domain = 3;
     % Only plot the internal basis functions associated with the domain
     internal_bfs_only = false;
+    % Only plot the unique basis functions associated with the domain
+    unique_bfs_only = true;
 
     % We can also rather plot the generating sub-array RWGs
     plot_generating_sub_array_basis_functions = false;
@@ -100,7 +102,7 @@ function displayTriangleMesh(Const, Solver_setup)
 
     if (~plot_generating_sub_array_basis_functions)
     
-        % Plot for each of the domains the basis functions. We can also
+        % Plot the basis functions in the various domains. We can also
         % display only the basis functions of a specific domain if 
         % domain_id <> -1 as set above
         for domain_index = 1:Solver_setup.number_of_domains
@@ -109,10 +111,13 @@ function displayTriangleMesh(Const, Solver_setup)
                 if (Const.domain_decomposition)
                     if (internal_bfs_only)                
                         domain_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{domain_index};
-                    else
+                    elseif (unique_bfs_only)
+                        domain_basis_functions = Solver_setup.rwg_basis_functions_unique_domains{domain_index};
+                    else                        
                         domain_basis_functions = Solver_setup.rwg_basis_functions_domains{domain_index};
                     end
                 else
+                    % Just plot all the RWGs
                     domain_basis_functions = 1:Solver_setup.num_metallic_edges;
                 end%if
                     

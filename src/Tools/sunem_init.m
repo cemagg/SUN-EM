@@ -93,7 +93,22 @@ function Const = sunem_init(Const, yVectors)
            Const.runIFBMoMsolver = false;
         end
     end
+
+    % ================================    
+    try
+        set = false;
+        if (Const.runDGFMsolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.runDGFMsolver = false;
+        end
+    end
     
+    % ================================    
     % First check whether the variables exist:
     % -- solStart
     try

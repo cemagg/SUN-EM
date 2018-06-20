@@ -11,7 +11,7 @@
 % --------------------------------------------------------------------------------------------------
 % Project output directory: './dipoles/'
 % Debug: True/False
-Const = sunem_initialise('larger_bow_tie_array',false);
+Const = sunem_initialise('bow_tie_array_6by1',false);
 
 % --------------------------------------------------------------------------------------------------
 % Program flow settings
@@ -27,17 +27,17 @@ Const.runDGFMsolver      = false;
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.FEKOmatfilename          = 'bow_tie_array_9by1.mat';
-Const.FEKOstrfilename          = 'bow_tie_array_9by1.str';
-Const.FEKOrhsfilename          = 'bow_tie_array_9by1.rhs';
-Const.FEKOoutfilename          = 'bow_tie_array_9by1.out';
-Const.FEKOefefilename          = 'bow_tie_array_9by1.efe';
-Const.FEKOffefilename          = 'bow_tie_array_9by1.ffe';
+Const.FEKOmatfilename          = 'bow_tie_array_6by1.mat';
+Const.FEKOstrfilename          = 'bow_tie_array_6by1.str';
+Const.FEKOrhsfilename          = 'bow_tie_array_6by1.rhs';
+Const.FEKOoutfilename          = 'bow_tie_array_6by1.out';
+Const.FEKOefefilename          = 'bow_tie_array_6by1.efe';
+Const.FEKOffefilename          = 'bow_tie_array_6by1.ffe';
 
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMifbmomstrfilename   = '';%'ifbmom_bow_tie_array_9by1.str';
+Const.SUNEMifbmomstrfilename   = '';%'ifbmom_bow_tie_array_6by1.str';
 Const.SUNEMcbfmstrfilename     = '';
 
 % --------------------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ Const.no_mutual_coupling_array = false; % Deactivate coupling between domains.
 Const.calcSecMBFs = false;     % For MBF based solvers
 Const.useMBFreduction = true;  % SVD applied after the MBFs are generated to retain an orthonormal set
 Const.MBFthreshold = -1;       % Threshold used for the SVD reduction of the MBFs
-Const.IFBalg = 14;              % Jacobi iterations (7). Adaptive MBF (14).
+Const.IFBalg = 7;              % Jacobi iterations (7). Adaptive MBF (14).
 Const.IFB_iterations = 10;     % Number of Jacobi iterations. (TO-DO: Ellaborate special meaning, e.g. -1)
                                % which then looks at Const.IFB_convergence_threshold_percentage;
 Const.IFB_convergence_threshold_percentage = 1E-3;                                

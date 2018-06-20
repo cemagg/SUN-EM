@@ -6,12 +6,13 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.22 - 2018-06-20
+- Removed now windowing method from iterative Jacobi approach (convergence achieved now for 6x1 bow-tie array
+  see example-6).
+- TO-DO: Expand this now for the CBFM-enhanced Jacobi (adaptive MBFs, i.e. IFBalg 14)
+
 ## 1.21 - 2018-06-14
-<<<<<<< HEAD
 - Added linear 10x1 bow-tie array (results used for ICEAA'18)
-=======
-- Added now DGFM (+ iDGFM). Generated sufficient results for linear array (example-8).
->>>>>>> master
 
 ## 1.20 - 2018-06-14
 - Added now DGFM (+ iDGFM). Generated sufficient results for linear array (example-8).
@@ -21,6 +22,7 @@ Note the following list of abbreviations:
   do, but at least the basic feature is there (threshold distance quite a parameter). Need to add now 
   DGFM (+ i-DGFM support).
 
+.0.,
 ## 1.18 - 2018-06-13
 - Removed some debug info and also added a relativeErrorNorm for a matrix (the latter is showing a fairly
   large error for the PEC plate example ~ 42%, even thought the curernt solution is ~ 10.6%)

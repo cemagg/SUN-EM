@@ -80,11 +80,17 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
         % Solver_setup.rwg_basis_functions_internal_domains
         Solver_setup.rwg_basis_functions_domains = cell(Solver_setup.number_of_domains,1);
         Solver_setup.rwg_basis_functions_internal_domains = cell(Solver_setup.number_of_domains,1);
+        Solver_setup.rwg_basis_functions_unique_domains = cell(Solver_setup.number_of_domains,1);
         
         % Initialise now each of the domain basis function lists
         for domain_index = 1:Solver_setup.number_of_domains
             Solver_setup.rwg_basis_functions_domains{domain_index} = [];
+            Solver_setup.rwg_basis_functions_unique_domains{domain_index} = [];
         end
+
+        % Also keep track of all basis function allocation. Used below for unique allocation 
+        % strategy. This is allocated below and initialsed to false.
+        Solver_setup.rwg_basis_functions_allocated = zeros(Solver_setup.num_metallic_edges,1);
         
         % Let's assume we have disjoint domains (flag will be updated below
         % if we find this is not the case)
@@ -164,12 +170,22 @@ function [Solver_setup] = extract_shared_edge_triangle_details(Const, Solver_set
             domain_index_triangle_minus = strsplit(triangle_minus_label,{'@'});
             domain_index_triangle_minus = str2num(domain_index_triangle_minus{2});
 
+            % If the basis function has not already been allocated to a domain, then do it now)
+            if (~Solver_setup.rwg_basis_functions_allocated(edge_index))
+                % Add it to the list of unique RWGs / domain
+                Solver_setup.rwg_basis_functions_unique_domains{domain_index_triangle_plus} = [ ...
+                    Solver_setup.rwg_basis_functions_unique_domains{domain_index_triangle_plus},...
+                    edge_index];
+                % Mark the RWG as allocated (i.e. assigned to a domain)
+                Solver_setup.rwg_basis_functions_allocated(edge_index) = true;
+            end%if
+
             % Add the basis function now to this domain's list
             if (domain_index_triangle_plus == domain_index_triangle_minus)
                 % Basis function entirely in domain. Add it to the list.
                 Solver_setup.rwg_basis_functions_domains{domain_index_triangle_plus} = [ ...
                     Solver_setup.rwg_basis_functions_domains{domain_index_triangle_plus},...
-                    edge_index];
+                    edge_index];                
             else
                 % Basis function on the boundary - we have detected
                 % interconnected domains!

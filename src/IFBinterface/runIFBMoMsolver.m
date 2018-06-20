@@ -393,7 +393,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
         if (Const.IFB_debug>=1)
             ifbmom.relIterError = zeros(1,k_iter);
-            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
         end%if
 
         for k=2:k_iter % Iterations k=2, ...
@@ -411,7 +411,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 ifbmom.Isol(NdomA+1:Ntot,1) = ifbmom.Isol(NdomA+1:Ntot,1) + Ik(NdomA+1:Ntot,k);
             end%if mod(..)
             if (Const.IFB_debug>=1)
-                ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+                ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
             end%if
         end%for
 
@@ -544,9 +544,9 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                                                   % 1 : Standard (use VdomB)
                                                   % 2 : Use exact Xsol
             %[dgfm_sol] = runDGFMsolver(Const, zMatrices, yVectors, xVectors, [], []);
-            %dgfm_sol = xVectors.values;
+            %dgfm_sol = xVectors.Isol;
             %Ik(:,1) = dgfm_sol.Isol;
-            Ik(:,1) = xVectors.values;
+            Ik(:,1) = xVectors.Isol;
 
         end%if
 
@@ -554,7 +554,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                                        % but MATLAB does not allow this
         if (Const.IFB_debug>=1)
             ifbmom.relIterError = zeros(1,k_iter);
-            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
         end%if
 
         % Add secondary MBFs for each of the array elements if the number of iterations are greater
@@ -597,7 +597,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 end%for n=1:numArrayElements
 
                 if (Const.IFB_debug>=1)
-                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
                 end%if
             end%for nk=2:k_iter
 
@@ -631,7 +631,10 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
             for n=1:numArrayElements
                 %domain_bot_n = Const.arrayElBasisFunctRange(n,1);
                 %domain_top_n = Const.arrayElBasisFunctRange(n,2);
-                domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+                %domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+                % 2018.06.20: Use only unique RWGs in each domain - i.e. for interconnected cases, 
+                % we no longer do a special weighting on the interface.
+                domain_n_basis_functions = Solver_setup.rwg_basis_functions_unique_domains{n};
                 VdomB = yVectors.values(domain_n_basis_functions,1);
 
                 if (~Solver_setup.disconnected_domains)                    
@@ -651,15 +654,17 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 Ik(domain_n_basis_functions,1) = IdomB_0;  % Domain B (array element) - primary MBF
 
                 % If we had an interconnected array, then we need to apply a windowing here for the primary MBF
-                if (~Solver_setup.disconnected_domains)                    
-                    % Let's first determine the BFs on the interface esssentially the difference between the 
-                    % unknowns internal to the domain and that on the interface.
-                    interface_basis_functions = setdiff(domain_n_basis_functions, ...
-                        Solver_setup.rwg_basis_functions_internal_domains{n});
+                % 2018.06.20: No longer apply a weighting - we work with unique RWGs in each domain, i.e, without
+                % overlap
+                % if (~Solver_setup.disconnected_domains)                    
+                %     % Let's first determine the BFs on the interface esssentially the difference between the 
+                %     % unknowns internal to the domain and that on the interface.
+                %     interface_basis_functions = setdiff(domain_n_basis_functions, ...
+                %         Solver_setup.rwg_basis_functions_internal_domains{n});
 
-                    % Apply now windowing : Factor of a half.
-                    Ik(interface_basis_functions,1) = 0.5.*Ik(interface_basis_functions,1);
-                end
+                %     % Apply now windowing : Factor of a half.
+                %     Ik(interface_basis_functions,1) = 0.5.*Ik(interface_basis_functions,1);
+                % end
 
                 % For the CBFM-enh. Jacobi Method (with the precomputation step) precalculate here
                 % the Z0 and V0 terms using the primary CBFs (see Alg.2 in [8])
@@ -690,7 +695,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                                        % but MATLAB does not allow this
         if (Const.IFB_debug>=1)
             ifbmom.relIterError = zeros(1,k_iter);
-            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
         end%if
 
         beta_k = complex(zeros(numArrayElements,1));
@@ -703,12 +708,12 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
                 if (Const.IFBalg == 10)
                     % -- First store the MoM solution (will be reset below)
-                    MoM_sol= xVectors.values(:,1);
+                    MoM_sol= xVectors.Isol(:,1);
                     DGFMweightVectorCalcScheme_tmp = Const.DGFMweightVectorCalcScheme;
 
                     % -- Overwrite now the Xsol values with that of the previous iterations
                     % -- Jacobi solution
-                    xVectors.values(:,1) = Ik(:,k-1);
+                    xVectors.Isol(:,1) = Ik(:,k-1);
 
                     % -- Calculate now the weighting vectors, using Scheme 2 (i.e. use Xsol values)
                     Const.DGFMweightVectorCalcScheme = 2;
@@ -716,7 +721,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
                     % Reset again the Xsol values (we want use them when calculating the rel. error)
                     % and also the DGFM weighting scheme
-                    xVectors.values(:,1) = MoM_sol;
+                    xVectors.Isol(:,1) = MoM_sol;
                     Const.DGFMweightVectorCalcScheme = DGFMweightVectorCalcScheme_tmp;
                 end%if
 
@@ -724,8 +729,9 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                     % Get the correct basis function range for element n:
                     %domain_bot_n = Const.arrayElBasisFunctRange(n,1);
                     %domain_top_n = Const.arrayElBasisFunctRange(n,2);
-
-                    domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};                    
+                    % 2018.06.20: See above comment - we work now with uniqye RWGs in each domain.
+                    %domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
+                    domain_n_basis_functions = Solver_setup.rwg_basis_functions_unique_domains{n};
 
                     if (~Solver_setup.disconnected_domains)
                         % Connected domains - calculate the LU factorisation for domain N
@@ -759,11 +765,13 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
                         % For connected arrays, we only work with the internal basis functions, i.e.
                         % we do not account for the source functions on the extended domain m.
-                        if (~Solver_setup.disconnected_domains)
-                            domain_m_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{m};
-                        else
-                            domain_m_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
-                        end
+                        % 2018.06.20: No longer apply special treatment for interface.
+                        domain_m_basis_functions = Solver_setup.rwg_basis_functions_unique_domains{m};
+                        % if (~Solver_setup.disconnected_domains)
+                        %     domain_m_basis_functions = Solver_setup.rwg_basis_functions_internal_domains{m};
+                        % else
+                        %     domain_m_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
+                        % end
 
                         % Extract first Znm
                         [Znm, Unm, Vnm] = ...
@@ -784,16 +792,17 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                                 % if we have a connected array, then this has to be windowed first.
                                 secMBF(domain_n_basis_functions) = Udom_n\b;
 
-                                % Window the secondary MBF here, if we are working with interconnected domains:
-                                if (~Solver_setup.disconnected_domains)
-                                    % Let's first determine the BFs on the interface esssentially the difference between the 
-                                    % unknowns internal to the domain and that on the interface.
-                                    interface_basis_functions = setdiff(domain_n_basis_functions, ...
-                                        Solver_setup.rwg_basis_functions_internal_domains{n});
+                                % 2018.06.20: Windowing no longer applied as there are no overlapping BFs.
+                                % % Window the secondary MBF here, if we are working with interconnected domains:
+                                % if (~Solver_setup.disconnected_domains)
+                                %     % Let's first determine the BFs on the interface esssentially the difference between the 
+                                %     % unknowns internal to the domain and that on the interface.
+                                %     interface_basis_functions = setdiff(domain_n_basis_functions, ...
+                                %         Solver_setup.rwg_basis_functions_internal_domains{n});
 
-                                    % Apply now windowing : Factor of a half.
-                                    secMBF(interface_basis_functions) = 0.5.*secMBF(interface_basis_functions);
-                                end%if
+                                %     % Apply now windowing : Factor of a half.
+                                %     secMBF(interface_basis_functions) = 0.5.*secMBF(interface_basis_functions);
+                                % end%if
 
                                 % Update surface-current at the current iteration.
                                 Ik(domain_n_basis_functions,k) = Ik(domain_n_basis_functions,k) + secMBF(domain_n_basis_functions);
@@ -927,7 +936,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 end%if ((Const.IFBalg == 9)||(Const.IFBalg == 11)||(Const.IFBalg == 12))
 
                 if (Const.IFB_debug>=1)
-                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
                 end%if
 
                 % Check whether the rel. error is <= eps_percent - if so, then exit the loop here
@@ -1036,7 +1045,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
             if (calculateRelativeResiduum)
                 ifbmom.relResError = zeros(1,k_iter);
             end
-            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
             if (calculateRelativeResiduum)
                 ifbmom.relResError(1) = (calculateErrorNormPercentage(yVectors.values, zMatrices.values*ifbmom.Isol))/100.0;
             end%if
@@ -1357,7 +1366,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 ifbmom.solTime = ifbmom.solTime + toc;
 
                 if (Const.IFB_debug>=1)
-                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
                     % Calculate the relative residual error here (only if enabled, as this is expensive)
                     if (calculateRelativeResiduum)
                         ifbmom.relResError(k) = (calculateErrorNormPercentage(yVectors.values, zMatrices.values*ifbmom.Isol))/100.0;
@@ -1444,7 +1453,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
             if (calculateRelativeResiduum)
                 ifbmom.relResError = zeros(1,k_iter);
             end
-            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
             if (calculateRelativeResiduum)
                 ifbmom.relResError(1) = (calculateErrorNormPercentage(yVectors.values, zMatrices.values*ifbmom.Isol))/100.0;
             end%if
@@ -1732,7 +1741,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
 
                 if (Const.IFB_debug>=1)
-                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
                     % Calculate the relative residual error here (only if enabled, as this is expensive)
                     if (calculateRelativeResiduum)
                         ifbmom.relResError(k) = (calculateErrorNormPercentage(yVectors.values, zMatrices.values*ifbmom.Isol))/100.0;
@@ -1844,7 +1853,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
             ifbmom.relIterError = zeros(1,k_iter);
             ifbmom.iterTiming = zeros(1,k_iter);
 
-            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
             ifbmom.iterTiming(1) = ifbmom.solTime;
         end%if
 
@@ -2200,7 +2209,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 ifbmom.solTime = ifbmom.solTime + toc;
 
                 if (Const.IFB_debug>=1)
-                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
                     ifbmom.iterTiming(k) = ifbmom.solTime;
                     if (local_debug_flag)
                         % Some debug output here.
@@ -2291,7 +2300,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 ifbmom.relResError = zeros(1,k_iter);
             end
 
-            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+            ifbmom.relIterError(1) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
             if (calculateRelativeResiduum)
                 ifbmom.relResError(1) = (calculateErrorNormPercentage(yVectors.values, zMatrices.values*ifbmom.Isol))/100.0;
             end%if
@@ -2590,7 +2599,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 ifbmom.cbfmTiming(k) = ifbmom.cbfmTiming(k-1) + toc;
 
                 if (Const.IFB_debug>=1)
-                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+                    ifbmom.relIterError(k) = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
                     % Calculate the relative residual error here (only if enabled, as this is expensive)
                     if (calculateRelativeResiduum)
                         ifbmom.relResError(k) = (calculateErrorNormPercentage(yVectors.values, zMatrices.values*ifbmom.Isol))/100.0;
@@ -2662,13 +2671,13 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
     end%if
     % ==============================================================================================
 
-    % Compare the solution obtained here, with that obtained by FEKO that was stored in xVectors.values
+    % Compare the solution obtained here, with that obtained by FEKO that was stored in xVectors.Isol
     if ( (Const.IFBalg~=5) && (Const.IFBalg~=6) && (Const.IFBalg~=7) && (Const.IFBalg~=8) && (Const.IFBalg~=9) ...
         && (Const.IFBalg~=10) && (Const.IFBalg~=11) && (Const.IFBalg~=12) && (Const.IFBalg~=13) && (Const.IFBalg~=14) ...
         && (Const.IFBalg~=15) )
-        ifbmom.relErrorDomA = calculateErrorNormPercentage(xVectors.values(1:NdomA), ifbmom.Isol(1:NdomA));
+        ifbmom.relErrorDomA = calculateErrorNormPercentage(xVectors.Isol(1:NdomA), ifbmom.Isol(1:NdomA));
     end%if
-    ifbmom.relError = calculateErrorNormPercentage(xVectors.values, ifbmom.Isol);
+    ifbmom.relError = calculateErrorNormPercentage(xVectors.Isol, ifbmom.Isol);
 
     % TO-DO: Danie, support the following:
     % Write the NGF-en. DGFM solution to a ASCII str file, so that it can be read
