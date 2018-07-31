@@ -358,9 +358,11 @@ function Const = sunem_init(Const, yVectors)
 
     % For numerical integration over a triangular domain (based on DBD2011)
     Const.QUAD_PTS = 6;     % Quadrature rule (6 point is a good default)
-    Const.SING = true;      % If set to true, then singularities are treated in the DBD2011 routine for
+    Const.SING = false;     % If set to true, then singularities are treated in the DBD2011 routine for
                             % filling the Z matrix
 
+    Const.use_CPP_engine = false; % 2018.07.31: Added now a flag to enable fast C++ Z matrix engine calculator
+                            
     % Note:other parameters like Omega, K, Lambda, is dependent on the wavelenght and 
     % has to be calculated inside the frequency loops associated with the various routines, 
     % e.g. impedance matrix filling and is therefore not set here.
@@ -370,7 +372,6 @@ function Const = sunem_init(Const, yVectors)
     % =================================    
     Const.FEKO_efe_file_format = 4; % FEKO *.efe file format
     % TO-DO: Also check other files, e.g. *.str, *.hfe, *.ffe, *.snp, etc.    
-
 
     % Check now whether domain decomposition is active. This is signalled 
     % by the type of solver used, e.g. DGFM, CBFM, etc.

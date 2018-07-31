@@ -41,10 +41,20 @@ function [Const, zMatrices, yVectors] = extractSUNEMMoMmatrixEq(Const, Solver_se
     if (Const.useEDM)
         message_fc(Const,sprintf('  EDM active'));
     end%if
+    if (Const.use_CPP_engine)
+        message_fc(Const,sprintf('  Using C++ engine'));
+    end%if
 
     % -- Calculate the Z-matrix (edge-based fill)
     zMatfilltime=tic;
-        [zMatrices] = FillZMatrixByEdge(Const, Solver_setup);
+        if (Const.use_CPP_engine)
+            %TO-DO: Add here the fast C++ Z matrix engine (faster)
+            %[zMatrices] = FillZMatrixByEdgeCPP(Const, Solver_setup);
+            message_fc(Const,'  C++ engine not yet active');
+            error('  C++ engine not yet active');
+        else
+            [zMatrices] = FillZMatrixByEdge(Const, Solver_setup);
+        end%if
     totMatrixSetupTime = toc(zMatfilltime);
 
     % Define a normally incident, X-directed plane wave:

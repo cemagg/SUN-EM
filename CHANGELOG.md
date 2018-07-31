@@ -6,6 +6,10 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.25 - 2018-07-31
+- Added now a new example (PEC plate, example 10) for a skripsie student to start working on C++
+  Z matrix filling. Also added some place-holders for where this Z-matrix C++ filling should be called.
+
 ## 1.24 - 2018-06-20
 - Working on Adaptive MBFs -- vivaldi array (example-4) not working.
 
