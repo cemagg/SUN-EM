@@ -27,18 +27,18 @@ Const.runDGFMsolver         = true;
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.FEKOmatfilename          = 'bow_tie_array.mat';
-Const.FEKOstrfilename          = 'bow_tie_array.str';
-Const.FEKOrhsfilename          = 'bow_tie_array.rhs';
-Const.FEKOoutfilename          = 'bow_tie_array.out';
-Const.FEKOefefilename          = 'bow_tie_array.efe';
-Const.FEKOffefilename          = 'bow_tie_array.ffe';
+Const.FEKOmatfilename          = 'random_pec_plate_array.mat';
+Const.FEKOstrfilename          = 'random_pec_plate_array.str';
+Const.FEKOrhsfilename          = 'random_pec_plate_array.rhs';
+Const.FEKOoutfilename          = 'random_pec_plate_array.out';
+Const.FEKOefefilename          = 'random_pec_plate_array.efe';
+Const.FEKOffefilename          = 'random_pec_plate_array.ffe';
 
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMmomstrfilename      =  'sunem_mom_bow_tie_array.str';
-Const.SUNEMdgfmstrfilename     =  'sunem_dgfm_bow_tie_array.str';
+Const.SUNEMmomstrfilename      =  '';
+Const.SUNEMdgfmstrfilename     =  '';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
@@ -71,7 +71,7 @@ Const.DGFMweightVectorCalcScheme = 3;    % 0: Uniform coefficients / array excit
                                          % 3: Use the Jacobi-Generated CBFs (see [DL2013], Appendix A)
 
 % 2018.06.14: Working with the reference a bit (use SUN-EM MoM now)
-Const.loadSUNEMref = true;
+Const.loadSUNEMref = false;
 Const.saveSUNEMref = false;
 Const.useFEKOref   = false;
 

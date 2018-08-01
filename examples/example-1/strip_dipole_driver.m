@@ -46,7 +46,7 @@ Const.FEKOffefilename          = 'strip_dipole.ffe';
 % --------------------------------------------------------------------------------------------------
 % TO-DO: At a later stage we can also add other meshing / geometry
 % preprocessxing, e.g. Gmsh or GiD. For now the solver setup is read from FEKO.
-[Const, Solver_setup] = parseFEKOoutfile(Const);
+[Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
 
 % --------------------------------------------------------------------------------------------------
 % Run the EM solver

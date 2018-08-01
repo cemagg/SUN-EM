@@ -49,7 +49,7 @@ function EfieldAtPointSpherical =  calculateEfieldAtPointRWG(Const, r, theta_deg
         % Wavelength
         lambda = Const.C0/Solver_setup.frequencies.samples(freq_index);
         k = 2*pi/lambda;
-        K = (k*Const.ETA/(4*pi));
+        K = (k*Const.ETA_0/(4*pi));
         %K = 1.0;
 
         % The E-field at the point is calculated as the superposition of the individual 

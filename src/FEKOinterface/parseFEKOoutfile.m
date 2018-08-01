@@ -62,7 +62,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     FEKO_data.num_finite_array_elements = -1;
 
     % A local debug flag (e.g. to plot geometry)
-    LOCAL_DEBUG = true;
+    LOCAL_DEBUG = false;
     
     % Flag to make sure we actually read the geometry
     geometry_found = false;

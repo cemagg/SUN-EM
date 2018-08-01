@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.26 - 2018-08-01
+- Added now a suggestion for calling the sequential and parallel C++ binaries
+
 ## 1.25 - 2018-07-31
 - Added now a new example (PEC plate, example 10) for a skripsie student to start working on C++
   Z matrix filling. Also added some place-holders for where this Z-matrix C++ filling should be called.

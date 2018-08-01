@@ -52,6 +52,12 @@ function [Const, zMatrices, yVectors] = extractSUNEMMoMmatrixEq(Const, Solver_se
             %[zMatrices] = FillZMatrixByEdgeCPP(Const, Solver_setup);
             message_fc(Const,'  C++ engine not yet active');
             error('  C++ engine not yet active');
+            if (Const.use_mpi_processes ~= -1)
+                %call parallel C++ binary
+            else
+                %call sequential C++ binary
+            end%of
+
         else
             [zMatrices] = FillZMatrixByEdge(Const, Solver_setup);
         end%if

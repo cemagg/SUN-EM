@@ -20,6 +20,8 @@ Const = sunem_initialise('pec_plate',false);
 % Choose the solvers that will be executed
 Const.runMoMsolver          = true;
 
+Const.use_mpi_processes     = 3;
+
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
 % --------------------------------------------------------------------------------------------------
