@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.27 - 2018-08-08
+- Added now also PEC fine mesh example in Example-10
+
 ## 1.26 - 2018-08-01
 - Added now a suggestion for calling the sequential and parallel C++ binaries
 
