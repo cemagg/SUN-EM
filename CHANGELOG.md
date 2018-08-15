@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.28 - 2018-08-15
+- Added now a new placeholder for where to call the C++ code (in runEMsolvers.m)
+
 ## 1.27 - 2018-08-08
 - Added now also PEC fine mesh example in Example-10
 
