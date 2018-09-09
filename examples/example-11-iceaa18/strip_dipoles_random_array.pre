@@ -26,7 +26,7 @@
 ** Meshing                   **
 *******************************
 ** Mesh size
-#t_edge = #lam/15  ** #lam/15 creates 15 basis-functions per element
+#t_edge = #lam/30  ** #lam/15 creates 15 basis-functions per element
                    ** #lam/30 creates 28 basis-functions per element
 #s_rad = 4E-6
 #s_len = #lam/15
@@ -43,23 +43,21 @@ IP                            #s_rad    #t_edge   #s_len
 ** CB: Union1.Face6_1 : 1 
 ** CB: Union1.Face6_2_1 : 2 
 
-#b = 6*#w
-
 ** Side 1
-DP   A                        -#b         0         0
-DP   B                        #w+#b        0         0
+DP   A                        0         0         0
+DP   B                        #w        0         0
 DP   C                        #w        #L/2      0
 DP   D                        0         #L/2      0
 LA   1
-BQ   A    B    C    D
+BP   A    B    C    D
 
 ** Side 2
 DP   E                        0         #L/2      0
 DP   F                        #w        #L/2      0
-DP   G                        #w+#b        #L        0
-DP   H                        -#b         #L        0
+DP   G                        #w        #L        0
+DP   H                        0         #L        0
 LA   2
-BQ   E    F    G    H
+BP   E    F    G    H
 
 **********************************************************************************
 ** Functionality of the 'FA' card, presented by using TG cards                  **
@@ -73,23 +71,25 @@ BQ   E    F    G    H
 *******************************
 
 ** Array dimensions
-#arr_N = 10       ** Number of elements along X-axis
+#arr_N = 3      ** Number of elements along X-axis
 #arr_M = 1       ** Number of elements along Y-axis
 
 ** offsetts/spacings
-#arr_Noff = #L **0.4*#lam        ** Offset of elements along X-axis
-#arr_Moff = 1.25*#L **0.4*#lam        ** Offset of elements along Y-axis
+#arr_Noff = 0.25*#lam        ** Offset of elements along X-axis
+#arr_Moff = 0.75*#lam        ** Offset of elements along Y-axis
 
 ** Some preparation so that we can identify the base elementa
-CB: 1 : s1
-CB: 2 : s2
+**CB: 1 : internal_1
+**CB: 2 : internal_2
 
 *******************************
 ** The Aray                  **
 *******************************
 !!print  "FA card construction"
 
-FA: 0 : 3 : #arr_N : #arr_M :  : #arr_Noff : #arr_Moff
+** FA: 0 : 3 : #arr_N : #arr_M :  : #arr_Noff : #arr_Moff
+** Import the array now using the Magus file convention
+FA: 0 : 1 :  :  :  :  :  :  :  :  :  :  :  : "total_array_layout.xml"
 
 **SU   408       0
 
@@ -97,13 +97,13 @@ FA: 0 : 3 : #arr_N : #arr_M :  : #arr_Noff : #arr_Moff
 EG   0    0    0                                                                                    0
 
 ** Control efficient/non-efficient fill of [A], requires the SU card
-PS: 0 : 0 : 2 : 0 : 0
+PS: 0 : 1 : 1 : 0 : 0
 
 ** Frequency
 FR   1                        #freq
 
 ** Data output
-DA   0    0    0    0    0    0         0         0         0         0
+DA: 1 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0
 
 ** Control preconditioning
 CG   -1        -1
@@ -113,23 +113,21 @@ CG   -1        -1
 *******************************
 
 ** Excited by AE source
-** AE: 0 : internal_1 : internal_2 : 0 : 1 : 1 : 0
-AE: 0 : s1 : s2 : 0 : 1 : 1 : 0
+AE: 0 : 1 : 2 : 0 : 1 : 1 : 0
 
 ** Request Currents
 OS   1         1
 
-** ** Calculate far-fields along a theta cut
-FF   1    181  1    0         0         90        0.5       0
-FF: 1 : 181 : 1 : 0 : 0 : 0 : 0 : 0.5 : 0 :  :  : 0
+** Calculate far-fields along a theta cut
+FF: 1 : 724 : 2 : 0 : 0 : 0 : 90 : 0.125 : 90 :  :  : 0
 
-** 
-#max_arr_dim =CEIL ((#a/2)*#arr_M)
-!!print  #max_arr_dim
-#num_points =300
-FE: 1 : 1 : #num_points : 1 : 0 : (#arr_Noff*#arr_N)/2-0.15 : -0.15 : #lam/15 :  : #max_arr_dim/(#num_points+#lam/4)
+**#max_arr_dim =CEIL ((#a/2)*#arr_M)
+**!!print  #max_arr_dim
+**#num_points =200
+**FE: 1 : 1 : #num_points : 1 : 0 : #arr_Noff*#arr_N/2 : -#lam/4 : #lam/15 :  : #max_arr_dim/#num_points
+** Request E-field (for comparison with MATLAB implementation)
+FE: 1 : 1 : 1 : 91 : 2 : 1 : 90 : 0 : 0 : 1 : 1
 
-FE: 1 : #num_points : 1 : 1 : 0 : -0.15 : (#arr_Moff*#arr_M)/2-0.11 : #lam/15 : 0.0055 : 0 : 0
 
 ** End of file
 EN

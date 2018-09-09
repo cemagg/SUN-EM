@@ -45,6 +45,16 @@ function [Const, zMatrices, yVectors] = extractSUNEMMoMmatrixEq(Const, Solver_se
         message_fc(Const,sprintf('  Using C++ engine'));
     end%if
 
+    % Define a normally incident, X-directed plane wave:
+    EMag = 1;
+    theta_0 = 0;
+    phi_0 = 0;
+    
+    % -- Calculate the yVectors, i.e. the RHS
+    vVecfilltime=tic;        
+        yVectors.values = FillVVector(Const,Solver_setup,EMag,theta_0,phi_0);
+    totRHSvecSetupTime = toc(vVecfilltime);
+    
     % -- Calculate the Z-matrix (edge-based fill)
     zMatfilltime=tic;
         if (Const.use_CPP_engine)
@@ -62,16 +72,6 @@ function [Const, zMatrices, yVectors] = extractSUNEMMoMmatrixEq(Const, Solver_se
             [zMatrices] = FillZMatrixByEdge(Const, Solver_setup);
         end%if
     totMatrixSetupTime = toc(zMatfilltime);
-
-    % Define a normally incident, X-directed plane wave:
-    EMag = 1;
-    theta_0 = 0;
-    phi_0 = 0;
-    
-    % -- Calculate the yVectors, i.e. the RHS
-    vVecfilltime=tic;        
-        yVectors.values = FillVVector(Const,Solver_setup,EMag,theta_0,phi_0);        
-    totRHSvecSetupTime = toc(vVecfilltime);
     
     % Output total time
     message_fc(Const,sprintf('Time for Z-matrix setup       : %f sec.',totMatrixSetupTime));

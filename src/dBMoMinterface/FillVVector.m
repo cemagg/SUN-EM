@@ -56,8 +56,16 @@ function [V] = FillVVector(Const, Solver_setup, EMag,theta_0,phi_0)
         pp_pls = Solver_setup.rwg_basis_functions_trianglePlus(mm);
         %pp_mns = EDGECONXELEMS(mm,2);
         pp_mns = Solver_setup.rwg_basis_functions_triangleMinus(mm);
-                
-        V(mm) = dot(E(pp_pls,:)',rho_c_pls(mm,:))/2 + dot(E(pp_mns,:)',rho_c_mns(mm,:))/2;
+        if (mm == 894)
+            a = 1;
+        end%if
+        % TO-DO: Danie, check the following, I uncommented now the
+        % E(pp_pls,:) access, as it resulted in a segmentation violation. I
+        % think we are sampling it on the edge, mm.
+        %V(mm) = dot(E(pp_pls,:)',rho_c_pls(mm,:))/2 + dot(E(pp_mns,:)',rho_c_mns(mm,:))/2;
+        % or, the incident electric field is not correctly defined (i.e.
+        % sized above).
+        V(mm) = dot(E(mm,:)',rho_c_pls(mm,:))/2 + dot(E(mm,:)',rho_c_mns(mm,:))/2;
         V(mm) = ell(mm)*V(mm);
     end
 

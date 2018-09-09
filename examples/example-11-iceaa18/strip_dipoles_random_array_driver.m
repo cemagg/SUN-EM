@@ -11,7 +11,7 @@
 % --------------------------------------------------------------------------------------------------
 % Project output directory: './dipoles/'
 % Debug: True/False
-Const = sunem_initialise('bow_tie_array',false);
+Const = sunem_initialise('random_strip_dipoles',false);
 
 % --------------------------------------------------------------------------------------------------
 % Program flow settings
@@ -27,18 +27,18 @@ Const.runDGFMsolver         = true;
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.FEKOmatfilename          = 'bow_tie_array.mat';
-Const.FEKOstrfilename          = 'bow_tie_array.str';
-Const.FEKOrhsfilename          = 'bow_tie_array.rhs';
-Const.FEKOoutfilename          = 'bow_tie_array.out';
-Const.FEKOefefilename          = 'bow_tie_array.efe';
-Const.FEKOffefilename          = 'bow_tie_array.ffe';
+Const.FEKOmatfilename          = 'strip_dipoles_random_array.mat';
+Const.FEKOstrfilename          = 'strip_dipoles_random_array.str';
+Const.FEKOrhsfilename          = 'strip_dipoles_random_array.rhs';
+Const.FEKOoutfilename          = 'strip_dipoles_random_array.out';
+Const.FEKOefefilename          = 'strip_dipoles_random_array.efe';
+Const.FEKOffefilename          = 'strip_dipoles_random_array.ffe';
 
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMmomstrfilename      =  'sunem_mom_bow_tie_array.str';
-Const.SUNEMdgfmstrfilename     =  '';%'sunem_dgfm_bow_tie_array.str';
+Const.SUNEMmomstrfilename      =  'SUNEM_MOM_strip_dipoles_random_array.str';%'sunem_mom_bow_tie_array.str';
+Const.SUNEMdgfmstrfilename     =  'DGFM_strip_dipoles_random_array.str';%'sunem_dgfm_bow_tie_array.str';
 
 % --------------------------------------------------------------------------------------------------
 % Define additional program flow constants
@@ -58,22 +58,22 @@ Const.IFB_debug = 1;
 Const.cache_Z0_V0 = false;      % Precompute the Z0 and V0 terms
 Const.use_DGFM_start = false;   % Use the DGFM to calculate the initial (0th) solution
 
-Const.useEDM = false;            % Use the Equivalent Dipole Method (EDM) to accelerate the MoM Z-matrix
+Const.useEDM = true;            % Use the Equivalent Dipole Method (EDM) to accelerate the MoM Z-matrix
                                 % calculation
 
 % ------------------
 %  DGFM coefficients
 % ------------------
 Const.useDGFMmethod = 1;                 % 1: Local matrices. 2: Global matrices (not supported anymore)
-Const.DGFMweightVectorCalcScheme = 3;    % 0: Uniform coefficients / array excitation law. 
+Const.DGFMweightVectorCalcScheme = 0;    % 0: Uniform coefficients / array excitation law. 
                                          % 1: Ratio of the applied excitation coefficients (TO-DO: check)
                                          % 2: Use Isol reference. (Great for testing)
                                          % 3: Use the Jacobi-Generated CBFs (see [DL2013], Appendix A)
 
 % 2018.06.14: Working with the reference a bit (use SUN-EM MoM now)
-Const.loadSUNEMref = true;
+Const.loadSUNEMref = false;
 Const.saveSUNEMref = false;
-Const.useFEKOref   = false;
+Const.useFEKOref   = true;
 
 % --------------------------------------------------------------------------------------------------
 % Read the MoM matrix equation from the file

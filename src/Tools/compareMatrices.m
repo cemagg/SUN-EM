@@ -22,7 +22,7 @@ function compareMatrices(Const, refmat, mat)
     message_fc(Const,sprintf('Comparing matrices'));
     
     if (size(refmat)~=size(mat))
-        message(Const,sprintf('Cannot compare matrices of different sizes'));
+        message_fc(Const,sprintf('Cannot compare matrices of different sizes'));
         error('Cannot compare matrices of different sizes');
     end%if
        

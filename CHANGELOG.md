@@ -6,6 +6,15 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.29 - 2018-09-09
+- Added now two examples for iceaa 2018 for the DGFM-EDM verification. Works very well, but can 
+  perhaps do more investigation re quantitative derivation of optimal threshold.
+- Also added the tools/array_tools folder that contains some code for setting up a random array
+  on a circular grid.
+
+## 1.28 - 2018-08-15
+- Added now a new placeholder for where to call the C++ code (in runEMsolvers.m)
+
 ## 1.28 - 2018-08-15
 - Added now a new placeholder for where to call the C++ code (in runEMsolvers.m)
 
