@@ -343,7 +343,7 @@ function Const = sunem_init(Const, yVectors)
     % Deactivate for now
     Const.runJACKITfromDGFM = false;
     Const.runNGFenDGFMsolver = false;
-    Const.storeZact = false;
+    %Const.storeZact = false;
 
     % =================================
     % General constants:

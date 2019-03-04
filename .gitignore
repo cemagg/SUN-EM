@@ -9,3 +9,9 @@ SimOutput.log
 *.lock
 *.sublime*
 *.asv
+*.str
+*.png
+*.rhs
+*.mat
+*.fig
+*.efe

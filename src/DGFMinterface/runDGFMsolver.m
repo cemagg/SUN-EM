@@ -300,53 +300,6 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                         dgfm.Zact(domain_m_basis_functions,domain_m_basis_functions,index) = Zact;
                     end%if
 
-                    % For the CMA solver, we now use Zact here for input. 
-                    % TO-DO: Tracking is not yet supported at the moment, as we do
-                    % this only for a single frequency.
-                    % See WORKBOOK 2018-1, p.4 (2018-01-03): Disable now the hybrid CMA
-                    % DGFM solution here. We now export the Zact impedance matrices and 
-                    % then run the standard CMA part in runEMsolvers.m                    
-%                     if (Const.runCMAsolver && false)
-%                         % ====================================================
-%                         % === Run the CMA solver                           ===
-%                         % ====================================================
-%                         
-%                         %TO-DO: Time this part!
-%                         
-%                         % The runCMAsolver expects a zMatrices type structure.
-%                         % Create now such a structure here, using the active
-%                         % impedance matrix for the DGFM (Zact) as the input.
-%                         zMatrices_CMA.values = Zact;
-%                         zMatrices_CMA.mBasis = Narr;
-%                         zMatrices_CMA.nBasis = Narr;
-%                         zMatrices_CMA.numFreq = 1;   % We only run this at a single frequency
-%                         Const.arrayID = Const.arrayID + 1;
-%                         
-%                         cma = runCMAsolver(Const, zMatrices_CMA);
-%                         
-%                         % TO-DO: Add tracking once we are sure how to handle
-%                         % multiple frequencies.
-%                         
-%                         % % See FEKDEV-25040: Use here an adaptive tracking algorithm
-%                         % % (Add this call here, as we can run it afterwards)
-%                         % if (Const.trackModes)
-%                         %     [cma] = cmaTrackModesAdaptive (Const, cma);
-%                         %     %cma.mode_ranks_adaptive = cma.mode_ranks;
-%                         % end%if
-%                         
-%                         % ====================================================
-%                         % === Write the eigenvectors to a *.str file       ===
-%                         % ====================================================
-%                         writeCMAsolToFile (Const, cma, xVectorsCMA_array_element);
-%                         
-%                         % TO-DO: Add the following once we can support frequency
-%                         % loops.
-%                         % ====================================================
-%                         % === Postprocessing (e.g. plot tracked modes)     ===
-%                         % ====================================================
-%                         % [cma] = postCMA (Const, cma, FEKO_mode_data);
-%                     end%if
-
                 else % -- Array element m not active.
                      % Passive elements are treated as follows, based on the value of Const.calcDGFMweightVectors.m:
                      switch Const.DGFMweightVectorCalcScheme

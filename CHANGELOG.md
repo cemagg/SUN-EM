@@ -6,6 +6,10 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.30 - 2019-03-04
+- Started work now of the runDGFMInterpolate routine that calculates DGFM derived MBFs for an irregular
+  array layout, and interpolates over them. 
+
 ## 1.29 - 2018-09-09
 - Added now two examples for iceaa 2018 for the DGFM-EDM verification. Works very well, but can 
   perhaps do more investigation re quantitative derivation of optimal threshold.

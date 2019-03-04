@@ -25,7 +25,7 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     %       from the FEKO *.out, *.mat, *.str and *.rhs files (for now).
 
     narginchk(5,5);
-
+  
     % Initialise the return values
     Solution  = [];
 
@@ -45,7 +45,7 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
         % different MBF generation techniques)
         [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVectors);
         
-        % No reduced matrix setup + solution
+        % Now reduced matrix setup + solution
         Solution.cbfm = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs);
     end%if
 
@@ -58,7 +58,7 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     if (Const.runIFBMoMsolver)
         Solution.ifbmom = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
     end%if
-
+    
     % -- DGFM solver
     if (Const.runDGFMsolver)
         ngf = []; % TO-DO: Add back NGF once supported.
@@ -69,7 +69,15 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
         else
             mbfs = [];
         end
-        Solution.dgfm = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs, ngf);        
+        
+        Solution.dgfm = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs, ngf);  
+        
+        % In order to extrapolate the DGFM obtained MBF coefficients, we
+        % first need to visualise them on the array processing grid to
+        % see whether they are smooth. Some initial tests can then also be
+        % done here.
+        Solution.dgfm = dgfmMBFinterpolate(Const, Solver_setup, yVectors, Solution.dgfm, mbfs);
+        
     end%if
 
 
