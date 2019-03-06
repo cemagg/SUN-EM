@@ -47,6 +47,10 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     if (Const.useACA && Const.ACAalg)
         message_fc(Const,sprintf('  (Using the ACA - algorithm: %d)',Const.ACAalg));
     end%if
+    if (Const.useDGFMinterpolation)
+        message_fc(Const,sprintf('  (Using Interpolation - algorithm: %d with sampling factor %.2f)',...
+            Const.useDGFMinterpolation, Const.DGFMinterpolationSamplingFactor));
+    end%if
     message_fc(Const,sprintf('  Number of DGFM basis functions: %d.',Solver_setup.num_mom_basis_functions));
 
     % Initialisations
@@ -82,6 +86,20 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     % loop)
     [dgfm.weightVectors, jackDGFM] = calcDGFMweightVectors(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs);
 
+    % If we are going to do interpolation afterwards, then we are not going
+    % to calculate a full-wave DGFM solution (+ MBF extraction) for each of
+    % the elements. Instead, we are going to calculate only a few based on
+    % a sampling grid, which we calculate now here:
+    
+    if (Const.useDGFMinterpolation)
+        % First extract the known array positions
+        dgfm.array_XY = zeros(numArrayEls,2);    
+        [dgfm.array_XY(:,1),dgfm.array_XY(:,2)] = extract_array_element_positions(Const);
+    
+        % Now extract some uniformly distributed samples on this grid
+        [dgfm.interpolation_sampling_array_indices] = extractDGFMcircularInterpolationGrid(Const, numArrayEls, dgfm.array_XY);
+    end%if
+    
     % --------------------- START HERE FREQUENCY LOOP
     for freq=1:numFreq
 
@@ -147,6 +165,17 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
             % accessing the weighting coefficient.
             index = solNum + (freq-1)*numRHSperFreq;
             for m=1:numArrayEls % M_LOOP
+                
+                % If we are going to use interpolation, then we only
+                % calculate the DGFM entry if it is included in the
+                % sampling point
+                
+                if (Const.useDGFMinterpolation)
+                    if find(dgfm.interpolation_sampling_array_indices == m)
+                        message_fc(Const,sprintf('    Array index %d in sampling grid for interpolation',m));
+                        continue;
+                    end
+                end%if
 
                 % See issue FEKDDM-6.2: Improve the array numbering by using a
                 % bottom and top basis function index (particularly for use with
@@ -288,6 +317,9 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                             Varr = yVectors.values(domain_m_basis_functions,index);
                         end
                         dgfm.Isol(domain_m_basis_functions,index) = Zact \ Varr;
+                        
+                        % Check first here whether we are using Interpolation. If so, then we need 
+                        % to calculate the MBF coefficients also for this sample on the interpolation grid.
 
                     elseif(Const.useDGFMmethod == 2)
                         % -- DGFM method 2: Solve on block matrix level (after M_LOOP)

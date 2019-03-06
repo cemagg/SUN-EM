@@ -1,4 +1,4 @@
-function [x, y] = extract_array_element_positions(Const, xml_file)
+function [x, y] = extract_array_element_positions(Const)
     %extract_array_element_positions
     %   Date: 2018.03.24
     %   Usage:
@@ -6,9 +6,8 @@ function [x, y] = extract_array_element_positions(Const, xml_file)
     %
     %   Input Arguments:
     %       Const
-    %           A global struct containing program flow settings
-    %       xml_file
-    %           The *.xml file name that contains the positions of 
+    %           A global struct containing program flow settings as well
+    %           as the *.xml file name that contains the positions of 
     %           the array elements (e.g. total_array_layout.xml)
     %   Output Arguments:
     %       x,y
@@ -24,27 +23,34 @@ function [x, y] = extract_array_element_positions(Const, xml_file)
     %   Stellenbosch University
     %   Email: dludick@sun.ac.za    
 
-error(nargchk(2,2,nargin));
-message_fc(Const,' ');
+    narginchk(1,1);
+    message_fc(Const,' ');
 
-message_fc(Const,sprintf('    Reading array element positions form %s', xml_file));
+    % local debug flag
+    LOCAL_DEBUG = false;
+    
+    xml_file = Const.arrayLayoutfilename;
 
-% To read the XML file, we make use of a xml2struct script that is
-% available on mathworks file exchange :
-% https://www.mathworks.com/matlabcentral/fileexchange/28518-xml2struct
-struct = xml2struct(xml_file);
+    message_fc(Const,sprintf('      Reading array element positions form %s', xml_file));
 
-% Extract the number of array elements in the structure:
-number_array_elements = length(struct.ArrayDistributionMatrix.Elements.Element);
+    % To read the XML file, we make use of a xml2struct script that is
+    % available on mathworks file exchange :
+    % https://www.mathworks.com/matlabcentral/fileexchange/28518-xml2struct
+    struct = xml2struct(xml_file);
 
-% Allocate some space for the x and y co-ordinates:
-x = zeros(1,number_array_elements);
-y = zeros(1,number_array_elements);
+    % Extract the number of array elements in the structure:
+    number_array_elements = length(struct.ArrayDistributionMatrix.Elements.Element);
 
-% Loop over each of the element data in the struct and extract the x and y
-% co-ordinates:
-for index = 1:number_array_elements    
-    x(1,index) = str2double(struct.ArrayDistributionMatrix.Elements.Element{index}.Attributes.X);
-    y(1,index) = str2double(struct.ArrayDistributionMatrix.Elements.Element{index}.Attributes.Y);
-    fprintf("      Extracting position of element %d = (%.2f, %.2f)\n",index,x(1,index),y(1,index));
-end%for
+    % Allocate some space for the x and y co-ordinates:
+    x = zeros(1,number_array_elements);
+    y = zeros(1,number_array_elements);
+
+    % Loop over each of the element data in the struct and extract the x and y
+    % co-ordinates:
+    for index = 1:number_array_elements    
+        x(1,index) = str2double(struct.ArrayDistributionMatrix.Elements.Element{index}.Attributes.X);
+        y(1,index) = str2double(struct.ArrayDistributionMatrix.Elements.Element{index}.Attributes.Y);
+        if (LOCAL_DEBUG)
+            fprintf("      Extracting position of element %d = (%.2f, %.2f)\n",index,x(1,index),y(1,index));
+        end%if 
+    end%for

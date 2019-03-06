@@ -444,7 +444,7 @@ function [mbfs] = runMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVec
                 %redMBFs = reduceMBFset(origMBFs,Const.MBFthreshold,Const.MBFplotSVspectrum);
                 mbfs.RedIsol(:,1:size(redMBFs,2),m,solNum) = redMBFs;
                 mbfs.numRedMBFs(m,solNum) = size(redMBFs,2);
-                if (true)
+                if (false)
                     message_fc(Const,['Number of retained orthonormal CBFs: ' num2str(size(redMBFs,2))]);
                 end%if                
             end%for

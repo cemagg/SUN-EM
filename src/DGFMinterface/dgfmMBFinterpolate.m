@@ -30,13 +30,17 @@ function [dgfm_interpolate] = dgfmMBFinterpolate(Const, Solver_setup, yVectors, 
     %
     %   References:
     %   [1] Dirk de Villers, Ngoy, CBFP TAP article (TO-DO: Add reference)
-
+    
     narginchk(5,5);
+    
+    % local debug flag
+    LOCAL_DEBUG = true;
     
     message_fc(Const,' ');
     message_fc(Const,'------------------------------------------------------------------------------------');
     message_fc(Const,sprintf('Running DGFM interpolation solver'));
-    message_fc(Const,sprintf('  Number of DGFM basis functions: %d.',Solver_setup.num_mom_basis_functions));
+    message_fc(Const,sprintf('  Number of DGFM basis functions : %d.',Solver_setup.num_mom_basis_functions));
+    message_fc(Const,sprintf('  Interpolation scheme to be used: %d.',Const.useDGFMinterpolation));
 
     % Currently we only allow this for a single solution
     numSols = yVectors.numRhs;
@@ -57,19 +61,20 @@ function [dgfm_interpolate] = dgfmMBFinterpolate(Const, Solver_setup, yVectors, 
     numArrayEls = Solver_setup.num_finite_array_elements;  % The number of array elements
     
     % Allocate some space for the MBF coefficients associated with each
-    % array element. TO-DO: We need to rather keep the number of MBFs /
-    % domain consistent. As an initial test, we keep the MBFs for the 
-    % first element in the array.
+    % array element. We need to keep the number of MBFs per domain consistent. As an initial test, 
+    % we keep the MBFs for the first element in the array (which for a circular layout, corresponds to 
+    % an element near the centre)
     ref_domain = 1;
     numMBFs = mbfs.numRedMBFs(ref_domain,1);
     ref_domain_basis_functions = Solver_setup.rwg_basis_functions_domains{ref_domain};
     MBFs = mbfs.RedIsol(ref_domain_basis_functions,1:numMBFs,ref_domain,1);
-            
+    
+    % Initialise complex array for storing the MBF weights
     dgfm_interpolate.MBF_weights = complex(zeros(numArrayEls,numMBFs));
     
-    % For each of the arrays, we need to extract a set of MBFs, with their
-    % respective coefficients. The set of reduced MBFs have already been
-    % setup for each of the elements in the runMBFgenerator routine.
+    % For each of the array elements, we need to extract a set of MBFs, with their
+    % respective coefficients. The set of reduced MBFs have already been setup for each 
+    % of the elements in the runMBFgenerator routine.
     for m=1:numArrayEls
         domain_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
         
@@ -96,7 +101,7 @@ function [dgfm_interpolate] = dgfmMBFinterpolate(Const, Solver_setup, yVectors, 
         dgfm_interpolate.MBF_weights(m,:) = MBF_weights;
         
         % Compare now this solution against that obtained from the DGFM.
-        if (true)
+        if (LOCAL_DEBUG)
             % First build again Isol using the MBFs
             Isol_m = MBFs * MBF_weights;
             relError = calculateErrorNormPercentage(dgfm.Isol(domain_basis_functions,1), Isol_m);
@@ -107,14 +112,7 @@ function [dgfm_interpolate] = dgfmMBFinterpolate(Const, Solver_setup, yVectors, 
     % Now that we have the interpolated MBF coefficients (that we obtain
     % using the same set of MBFs / element - i.e. that of the reference
     % element, which in our case is set to some element near the centre).
-    
-    % Extract the array positions
-    dgfm_interpolate.array_XY = zeros(numArrayEls,2);    
-    [dgfm_interpolate.array_XY(:,1),dgfm_interpolate.array_XY(:,2)] = extract_array_element_positions(Const, 'array_layout.xml');
-    
-    figure
-    plot(dgfm_interpolate.array_XY(:,1),dgfm_interpolate.array_XY(:,2), 'o', 'MarkerFaceColor','k','MarkerSize',10);
-    
+       
     % Plot now the real part of the first MBF coefficient on this grid
     %VqReal = real(dgfm_interpolate.MBF_weights(:,1));
     %figure

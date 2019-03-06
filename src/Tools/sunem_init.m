@@ -331,7 +331,35 @@ function Const = sunem_init(Const, yVectors)
            Const.SUNEMjackstrfilename = '';
         end
     end
-
+    
+    % ================================    
+    try
+        set = false;
+        if (Const.useDGFMinterpolation)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % No interpolation used by default for the DGFM
+           Const.useDGFMinterpolation = 0;
+        end
+    end
+    
+    % ================================    
+    try
+        set = false;
+        if (Const.arrayLayoutfilename)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % No array layout file specified
+           Const.arrayLayoutfilename = '';
+        end
+    end
+    
     % =================================
     % Other initialisations:
     Const.useACA = false; % ACA interface available, but not yet activated. (Requires some refactoring).

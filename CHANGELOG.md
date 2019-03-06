@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.31 - 2019-03-06
+- Continuing work on the runDGFMInterpolate routine - e.g. moved out the sampling grid layout.
+
 ## 1.30 - 2019-03-04
 - Started work now of the runDGFMInterpolate routine that calculates DGFM derived MBFs for an irregular
   array layout, and interpolates over them. 

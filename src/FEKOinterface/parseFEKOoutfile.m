@@ -507,7 +507,7 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
         for solNum = 1:yVectors.numRhs
             for el = 1:FEKO_data.num_finite_array_elements                      
                domain_indices = FEKO_data.rwg_basis_functions_domains{el};    
-               if (~isempty(find(yVectors.values(domain_indices,solNum))))
+               if (~isempty(find(yVectors.values(domain_indices,solNum), 1)))
                    Const.is_array_element_active(el,solNum) = 1;
                end
             end

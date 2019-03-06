@@ -19,7 +19,7 @@ Const = sunem_initialise('random_strip_dipoles',false);
 
 % Choose the solvers that will be executed
 Const.runMoMsolver          = true;
-Const.runCBFMsolver         = false;
+Const.runCBFMsolver         = true;
 Const.runJacobisolver       = false;
 Const.runIFBMoMsolver       = false;
 Const.runDGFMsolver         = true;
@@ -33,6 +33,9 @@ Const.FEKOrhsfilename          = 'strip_dipoles_random_array.rhs';
 Const.FEKOoutfilename          = 'strip_dipoles_random_array.out';
 Const.FEKOefefilename          = 'strip_dipoles_random_array.efe';
 Const.FEKOffefilename          = 'strip_dipoles_random_array.ffe';
+
+% Added also array layout specification
+Const.arrayLayoutfilename      = 'array_layout.xml';
 
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
@@ -70,7 +73,15 @@ Const.DGFMweightVectorCalcScheme = 3;    % 0: Uniform coefficients / array excit
                                          % 1: Ratio of the applied excitation coefficients (TO-DO: check)
                                          % 2: Use Isol reference. (Great for testing)
                                          % 3: Use the Jacobi-Generated CBFs (see [DL2013], Appendix A)
-
+                                         
+Const.useDGFMinterpolation = 1;          % 0: No interpolation
+                                         % 1: Use interpolation (MATLAB internal scattered interpolant method)
+                                         % 2: TO-DO: Krigin interpolation
+                                         
+Const.DGFMinterpolationSamplingFactor = 0.2; % The sampling factor of the array for the interpolation
+                                             % where 1 corresponds to a fully sampled array.
+                                             % Each sample corresponds to a full DGFM calculation.
+                                         
 % --------------------------------------------------------------------------------------------------
 % Read the MoM matrix equation from the file
 % --------------------------------------------------------------------------------------------------

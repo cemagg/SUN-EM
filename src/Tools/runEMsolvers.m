@@ -72,13 +72,14 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
         
         Solution.dgfm = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs, ngf);  
         
-        % In order to extrapolate the DGFM obtained MBF coefficients, we
-        % first need to visualise them on the array processing grid to
-        % see whether they are smooth. Some initial tests can then also be
-        % done here.
-        Solution.dgfm = dgfmMBFinterpolate(Const, Solver_setup, yVectors, Solution.dgfm, mbfs);
+        if (Const.useDGFMinterpolation)
+            % In order to extrapolate the DGFM obtained MBF coefficients, we
+            % first need to visualise them on the array processing grid to
+            % see whether they are smooth. Some initial tests can then also be
+            % done here.
+            Solution.dgfm = dgfmMBFinterpolate(Const, Solver_setup, yVectors, Solution.dgfm, mbfs);
+        end %if (Const.useDGFMinterpolation)
         
     end%if
-
 
     message_fc(Const,sprintf('Finished EM Solvers'));
