@@ -78,7 +78,7 @@ Const.useDGFMinterpolation = 1;          % 0: No interpolation
                                          % 1: Use interpolation (MATLAB internal scattered interpolant method)
                                          % 2: TO-DO: Krigin interpolation
                                          
-Const.DGFMinterpolationSamplingFactor = 0.2; % The sampling factor of the array for the interpolation
+Const.DGFMinterpolationSamplingFactor = 0.6; % The sampling factor of the array for the interpolation
                                              % where 1 corresponds to a fully sampled array.
                                              % Each sample corresponds to a full DGFM calculation.
                                          

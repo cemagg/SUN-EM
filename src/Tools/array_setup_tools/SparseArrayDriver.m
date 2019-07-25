@@ -42,10 +42,10 @@ FIRST_QUADRANT_ONLY = 0;
                   
 x1=0;                  % The unit circle X co-ordinate
 y1=0;                  % The unit circle X co-ordinate
-rc=25*lambda;          % The unit circle size (for large arrays, this should be ~25xlambda +)
+rc=5*lambda;          % The unit circle size (for large arrays, this should be ~25xlambda +)
 
-numTotPoints = 100     % The total number of points that will be calculated
-distAvMin = lambda*2 % The minimum average distance between the samples (make 1.2 for SKA)
+numTotPoints = 20     % The total number of points that will be calculated
+distAvMin = lambda*0.5 % The minimum average distance between the samples (make 1.2 for SKA)
 
 % declare now some variables here for the X, Y co-ordinates and also the
 % distance to each (R)

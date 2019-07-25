@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.32 - 2019-07-25
+- Promoted some files associated with the interpolation (for the DGFM).
+
 ## 1.31 - 2019-03-06
 - Continuing work on the runDGFMInterpolate routine - e.g. moved out the sampling grid layout.
 
