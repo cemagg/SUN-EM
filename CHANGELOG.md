@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.33 - 2019-07-31
+- Promoted some files associated with the interpolation (for the DGFM).
+
 ## 1.32 - 2019-07-25
 - Promoted some files associated with the interpolation (for the DGFM).
 
