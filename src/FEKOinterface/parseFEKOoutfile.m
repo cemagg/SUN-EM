@@ -61,6 +61,10 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
     freq_num = 0;
     FEKO_data.num_finite_array_elements = -1;
 
+    % Initialise some basis function related information
+    FEKO_data.num_metallic_edges = 0;              % For RWG BFs
+    FEKO_data.number_nodes_between_segments = 0;   % For wire (rooftop?) BFs
+    
     % A local debug flag (e.g. to plot geometry)
     LOCAL_DEBUG = false;
     
@@ -129,6 +133,24 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
             FEKO_data.num_metallic_edges = str2num(edge_line_info{7});
         end%if
 
+        % See GitHub issue #2 : Adding now support for parsing wire segments
+ 
+        % -------------------------------------------------
+        % -- Parse the number ofnNumber of metallic wire segments
+        g = strfind(line,'Number of metallic segments:'); 
+        if (g > 0)
+            segment_line_info = strsplit(line);
+            FEKO_data.num_metallic_segments = str2num(segment_line_info{6});
+        end%if
+
+        % -------------------------------------------------
+        % -- Parse the number of nodes between metallic wire segments
+        g = strfind(line,'Number of nodes between segments:'); 
+        if (g > 0)
+            edge_line_info = strsplit(line);
+            FEKO_data.number_nodes_between_segments = str2num(edge_line_info{7});
+        end%if
+        
         % -------------------------------------------------
         % -- Parse the number of array elements 
         % Put some more parsing work in here: We need to distinguish what
@@ -172,12 +194,17 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
         end
                 
         % Check that we actually have the geometry specifified in the 
-        % *.out file (necessary at the moment).        
-        g = strfind(line,'DATA OF THE METALLIC TRIANGLE');
-        if (g > 0)
+        % *.out file (necessary at the moment). TO-DO: Expand as more geometry is supported.      
+        found_metallic_triangles = contains(line,'DATA OF THE METALLIC TRIANGLE');
+        if (found_metallic_triangles > 0)
             geometry_found = true;
-        end%if
-
+        end
+        
+        found_wire_segments = contains(line,'DATA OF THE SEGMENTS');
+        if (found_wire_segments > 0)
+            geometry_found = true;
+        end%if        
+        
     end%while end_flag == 0
     fclose('all');
 
@@ -223,253 +250,269 @@ function [Const, FEKO_data] = parseFEKOoutfile(Const, yVectors)
 
     end_flag = 0;
 
-    % Create an empty cell array to store the (variable) string labels of each triangle
-    FEKO_data.metallic_triangles_labels = cell(FEKO_data.num_metallic_triangles,1);
-
-    % Create other datastructures to store the triangle information. Note we initialise
-    % this as NaN, otherwise we might run into a problem if the first node is also
-    % at position (0,0,0). Note, the node_xyz matrix will also contain node indices
-    % of other structures later, e.g. that of segments, or triangle + segment interfaces.
-    FEKO_data.nodes_xyz = nan(FEKO_data.num_metallic_triangles,3);
-
-    % -- Store only the nodal indices here below. Actual cartesian co-ordinates of the nodes
-    % are stored in the nodes_xyz structure.
-    FEKO_data.triangle_vertices = zeros(FEKO_data.num_metallic_triangles,3);
-    FEKO_data.triangle_area_m2 = zeros(FEKO_data.num_metallic_triangles,1);
-
-    % -- Initialisations for the RWG basis functions (Type 1 elements as per FEKO convention)
-    FEKO_data.rwg_basis_functions_length_m = zeros(FEKO_data.num_metallic_edges,1);
-    FEKO_data.rwg_basis_functions_triangleMinus = zeros(FEKO_data.num_metallic_edges,1);
-    FEKO_data.rwg_basis_functions_trianglePlus = zeros(FEKO_data.num_metallic_edges,1);
-    
-    while end_flag == 0
-        line=fgetl(fid);
+    if (FEKO_data.num_metallic_edges ~= 0)
         
-        % Check for end of file:
-        if strcmp(line,'                    SUMMARY OF REQUIRED TIMES IN SECONDS')
-            end_flag = 1;
-        end%if
+        % Create an empty cell array to store the (variable) string labels of each triangle
+        FEKO_data.metallic_triangles_labels = cell(FEKO_data.num_metallic_triangles,1);
         
-        % -------------------------------------------------
-        % -- Extract the triangle data
-        g = strfind(line,'DATA OF THE METALLIC TRIANGLE');
-        if (g > 0)
-            % 6 lines before start of triangle data
-            for ii=1:6
-                line=fgetl(fid);    
-            end%for
+        % Create other datastructures to store the triangle information. Note we initialise
+        % this as NaN, otherwise we might run into a problem if the first node is also
+        % at position (0,0,0). Note, the node_xyz matrix will also contain node indices
+        % of other structures later, e.g. that of segments, or triangle + segment interfaces.
+        FEKO_data.nodes_xyz = nan(FEKO_data.num_metallic_triangles,3);
+        
+        % -- Store only the nodal indices here below. Actual cartesian co-ordinates of the nodes
+        % are stored in the nodes_xyz structure.
+        FEKO_data.triangle_vertices = zeros(FEKO_data.num_metallic_triangles,3);
+        FEKO_data.triangle_area_m2 = zeros(FEKO_data.num_metallic_triangles,1);
+        
+        % -- Initialisations for the RWG basis functions (Type 1 elements as per FEKO convention)
+        FEKO_data.rwg_basis_functions_length_m = zeros(FEKO_data.num_metallic_edges,1);
+        FEKO_data.rwg_basis_functions_triangleMinus = zeros(FEKO_data.num_metallic_edges,1);
+        FEKO_data.rwg_basis_functions_trianglePlus = zeros(FEKO_data.num_metallic_edges,1);
+        
+        while end_flag == 0
+            line=fgetl(fid);
             
-            max_node_index = 0;
-            % Read now the data for all the triangles
-            for ii=1:FEKO_data.num_metallic_triangles
-                %fprintf('    ** processing triangle %d\n', ii);
-                %line
-                triangle_line_data = strsplit(line);
-                triangle_id = str2num(triangle_line_data{2});
-                FEKO_data.metallic_triangles_labels{triangle_id} = triangle_line_data{3};
-                
-                % 2018.05.15: Read now the other triangle data, e.g. nodal co-ordinates
-                % area, shared edges info.
-
-                % Read the X, Y and Z nodal co-ordinates of the triangle
-                % Note: might still contain duplicate entries at this point.
-
-                % Read 3 nodes:
-                for jj=1:3                   
-                    node_xyz = [str2num(triangle_line_data{4}), ...
-                    str2num(triangle_line_data{5}), ...
-                    str2num(triangle_line_data{6})];
-
-                    % Take care before inserting this node address into the nodal list.
-                    % We only store unique node identifiers, not duplicate nodes. We 
-                    % check therefore first whether the node is in the list. If it is, 
-                    % then the routine below returns that index.
-
-                    node_index = is_node_in_list(Const, node_xyz, FEKO_data.nodes_xyz);
-
-                    % We have detected a new node - add this to the back of the list.
-                    if ( node_index == -1)
-                        % New node - add to back of list
-                        max_node_index = max_node_index + 1;
-                        node_index = max_node_index;
-                    end%if
-
-                    % Update the node and triangle data structures.
-                    FEKO_data.nodes_xyz(node_index,:) = node_xyz;
-                    FEKO_data.triangle_vertices(triangle_id,jj) = node_index;
-
-                    % Read the next node
+            % Check for end of file:
+            if strcmp(line,'                    SUMMARY OF REQUIRED TIMES IN SECONDS')
+                end_flag = 1;
+            end%if
+            
+            % -------------------------------------------------
+            % -- Extract the triangle data
+            g = strfind(line,'DATA OF THE METALLIC TRIANGLE');
+            if (g > 0)
+                % 6 lines before start of triangle data
+                for ii=1:6
                     line=fgetl(fid);
-                    triangle_line_data = strsplit(line);
-
-                    % TO-DO: Later, we can also extract the medium on both sides of the
-                    % triangle. This is associated with the second and third nodal co-ordinate entry.
-
                 end%for
                 
-                % Extract the normal co-ordinate of the triangle
-                FEKO_data.triangle_normal_vector(triangle_id,:) = [str2double(triangle_line_data{2}), ...
-                    str2double(triangle_line_data{3}), ...
-                    str2double(triangle_line_data{4})];
-
-                % Extract the triangle area (in m^2)
-                FEKO_data.triangle_area_m2(triangle_id,1) = str2double(triangle_line_data{5});
-
-                % Extract the triangle centre-point [X,Y,Z] co-ordinate by first extracting the 
-                % triangle vertices and then calculating from that the midpoint.
-                v1 = FEKO_data.triangle_vertices(triangle_id,1);
-                v2 = FEKO_data.triangle_vertices(triangle_id,2);
-                v3 = FEKO_data.triangle_vertices(triangle_id,3);
+                max_node_index = 0;
+                % Read now the data for all the triangles
+                for ii=1:FEKO_data.num_metallic_triangles
+                    %fprintf('    ** processing triangle %d\n', ii);
+                    %line
+                    triangle_line_data = strsplit(line);
+                    triangle_id = str2num(triangle_line_data{2});
+                    FEKO_data.metallic_triangles_labels{triangle_id} = triangle_line_data{3};
+                    
+                    % 2018.05.15: Read now the other triangle data, e.g. nodal co-ordinates
+                    % area, shared edges info.
+                    
+                    % Read the X, Y and Z nodal co-ordinates of the triangle
+                    % Note: might still contain duplicate entries at this point.
+                    
+                    % Read 3 nodes:
+                    for jj=1:3
+                        node_xyz = [str2num(triangle_line_data{4}), ...
+                            str2num(triangle_line_data{5}), ...
+                            str2num(triangle_line_data{6})];
+                        
+                        % Take care before inserting this node address into the nodal list.
+                        % We only store unique node identifiers, not duplicate nodes. We
+                        % check therefore first whether the node is in the list. If it is,
+                        % then the routine below returns that index.
+                        
+                        node_index = is_node_in_list(Const, node_xyz, FEKO_data.nodes_xyz);
+                        
+                        % We have detected a new node - add this to the back of the list.
+                        if ( node_index == -1)
+                            % New node - add to back of list
+                            max_node_index = max_node_index + 1;
+                            node_index = max_node_index;
+                        end%if
+                        
+                        % Update the node and triangle data structures.
+                        FEKO_data.nodes_xyz(node_index,:) = node_xyz;
+                        FEKO_data.triangle_vertices(triangle_id,jj) = node_index;
+                        
+                        % Read the next node
+                        line=fgetl(fid);
+                        triangle_line_data = strsplit(line);
+                        
+                        % TO-DO: Later, we can also extract the medium on both sides of the
+                        % triangle. This is associated with the second and third nodal co-ordinate entry.
+                        
+                    end%for
+                    
+                    % Extract the normal co-ordinate of the triangle
+                    FEKO_data.triangle_normal_vector(triangle_id,:) = [str2double(triangle_line_data{2}), ...
+                        str2double(triangle_line_data{3}), ...
+                        str2double(triangle_line_data{4})];
+                    
+                    % Extract the triangle area (in m^2)
+                    FEKO_data.triangle_area_m2(triangle_id,1) = str2double(triangle_line_data{5});
+                    
+                    % Extract the triangle centre-point [X,Y,Z] co-ordinate by first extracting the
+                    % triangle vertices and then calculating from that the midpoint.
+                    v1 = FEKO_data.triangle_vertices(triangle_id,1);
+                    v2 = FEKO_data.triangle_vertices(triangle_id,2);
+                    v3 = FEKO_data.triangle_vertices(triangle_id,3);
+                    
+                    v1XYZ = [FEKO_data.nodes_xyz(v1,1), FEKO_data.nodes_xyz(v1,2), FEKO_data.nodes_xyz(v1,3)];
+                    v2XYZ = [FEKO_data.nodes_xyz(v2,1), FEKO_data.nodes_xyz(v2,2), FEKO_data.nodes_xyz(v2,3)];
+                    v3XYZ = [FEKO_data.nodes_xyz(v3,1), FEKO_data.nodes_xyz(v3,2), FEKO_data.nodes_xyz(v3,3)];
+                    
+                    FEKO_data.triangle_centre_point(triangle_id,:) = (1/3) .* (v1XYZ + v2XYZ + v3XYZ);
+                    
+                    % Read the next triangle entry
+                    line=fgetl(fid);
+                end
+                
+            end% if g>0
+            
+            % -------------------------------------------------
+            % -- Extract the triangle edge data (RWG basis functions)
+            % -------------------------------------------------
+            g = strfind(line,'DATA OF THE METALLIC EDGES');
+            if (g > 0)
+                % 5 lines before start of triangle data
+                for ii=1:4
+                    line=fgetl(fid);
+                end%for
+                
+                % Read now the data for all the metallic edges
+                for ii=1:FEKO_data.num_metallic_edges
+                    %fprintf('    ** processing RWG basis function %d\n', ii);
+                    %line
+                    
+                    rwg_bf_data = strsplit(line);
+                    
+                    rwg_bf_id   = str2num(rwg_bf_data{2});
+                    % Check that we do not exceed the max. number of BFs.
+                    if (rwg_bf_id > FEKO_data.num_metallic_edges)
+                        message_fc(Const,sprintf('Number of RWG basis functions exceeded'));
+                        error(['Number of RWG basis functions exceeded']);
+                    end%if
+                    
+                    rwg_bf_type = str2num(rwg_bf_data{3});
+                    % At the moment, we only allow Type 1 BFs, i.e. RWG elements spanning
+                    % the shared edge between two triangles
+                    if (rwg_bf_type > 1)
+                        message_fc(Const,sprintf('Only RWG basis functions supported'));
+                        error(['Only RWG basis functions supported']);
+                    end%if
+                    
+                    % Extract the edge length [m]
+                    FEKO_data.rwg_basis_functions_length_m(rwg_bf_id) = str2double(rwg_bf_data{4});
+                    
+                    % Extract the Tm+ triangle (KORP in FEKO) [m]
+                    FEKO_data.rwg_basis_functions_trianglePlus(rwg_bf_id) = str2num(rwg_bf_data{8});
+                    
+                    % Extract the Tm- triangle (KORM in FEKO) [m]
+                    FEKO_data.rwg_basis_functions_triangleMinus(rwg_bf_id) = str2num(rwg_bf_data{9});
+                    
+                    % Read the next basis function entry
+                    line=fgetl(fid);
+                end% for ii=1:FEKO_data.num_metallic_edges
+            end% if g>0
+            
+        end%while end_flag == 0
+        fclose('all');
+        
+        % ==============================================
+        % Additional processing for the basis functions
+        % ==============================================
+        
+        % Extract the free vertex of Tm+ and Tm- for the RWGs
+        % and the nodal indices of the shared edge of the RWG
+        FEKO_data = extract_shared_edge_triangle_details(Const, FEKO_data);
+        
+        % We also need now the Rho vectors as defined in [DBD2011], so that we can fill the
+        % Z matrix internally. This is essentially the vectors \vec\rho_n^c+ and - in [Fig2, RWG82]
+        % and also documented in [Chapter 6, DBD2011] - see the function ComputeRho_c.m. We can do
+        % this easily now after the RWGs have been determined in the above routine as we know know for each
+        % which is the free vertex
+        FEKO_data.rho_c_pls = zeros(FEKO_data.num_metallic_edges,3);
+        FEKO_data.rho_c_mns = zeros(FEKO_data.num_metallic_edges,3);
+        % What follows is an adaption of ComputeRho_c.m [DBD2011]
+        for mm=1:FEKO_data.num_metallic_edges % General code
+            
+            % ---------------------
+            % Process rho_c_pls (\vec\rho_n^c+)
+            % ---------------------
+            % Extract the positive triangle for the RWG element
+            pp_pls = FEKO_data.rwg_basis_functions_trianglePlus(mm);
+            % Extract the free vertex (XYZ co-ordinate associated with this vertex)
+            vertex_pls = FEKO_data.rwg_basis_functions_trianglePlusFreeVertex(mm);
+            vertxX = FEKO_data.nodes_xyz(vertex_pls,1);
+            vertxY = FEKO_data.nodes_xyz(vertex_pls,2);
+            vertxZ = FEKO_data.nodes_xyz(vertex_pls,3);
+            vertx = [vertxX, vertxY, vertxZ];
+            FEKO_data.rho_c_pls(mm,:) = FEKO_data.triangle_centre_point(pp_pls,:) - vertx; % Directed from vertex
+            
+            % ---------------------
+            % Process rho_c_mns (\vec\rho_n^c-)
+            % ---------------------
+            % Extract the positive triangle for the RWG element
+            pp_mns = FEKO_data.rwg_basis_functions_triangleMinus(mm);
+            % Extract the free vertex (XYZ co-ordinate associated with this vertex)
+            vertex_mns = FEKO_data.rwg_basis_functions_triangleMinusFreeVertex(mm);
+            vertxX = FEKO_data.nodes_xyz(vertex_mns,1);
+            vertxY = FEKO_data.nodes_xyz(vertex_mns,2);
+            vertxZ = FEKO_data.nodes_xyz(vertex_mns,3);
+            vertx = [vertxX, vertxY, vertxZ];
+            FEKO_data.rho_c_mns(mm,:) =  - (FEKO_data.triangle_centre_point(pp_mns,:) - vertx); % Directed to vertex
+            
+        end %for mm
+        
+        % --------------------------------------------------------
+        % Equivalent Dipole Specific (EDM) specific pre-processing
+        % --------------------------------------------------------
+        if (Const.useEDM)
+            % 2018.06.13: If we are to use the Equivalent Dipole Method (EDM), as explained in [1], then we have to do a bit of preprocessing here
+            % Log the time however
+            edm_setup_time_tmp=tic;
+            
+            % Some initialisations
+            FEKO_data.rwg_basis_functions_equivalent_dipole_moment = zeros(FEKO_data.num_metallic_edges,3); % X, Y and Z component
+            FEKO_data.rwg_basis_functions_equivalent_dipole_centre = zeros(FEKO_data.num_metallic_edges,3); % X, Y and Z co-ordinate
+            
+            % Loop over each of the shared edges and extract the additional details mentioned below:
+            for edge_index = 1:FEKO_data.num_metallic_edges
+                
+                % Extract the positive and negative triangles for the RWG element
+                triangle_plus = FEKO_data.rwg_basis_functions_trianglePlus(edge_index);
+                triangle_minus = FEKO_data.rwg_basis_functions_triangleMinus(edge_index);
+                
+                % Extracts the preprocessed centre-points of each of the above triangles
+                rn_c_pls = FEKO_data.triangle_centre_point(triangle_plus,:);
+                rn_c_mns = FEKO_data.triangle_centre_point(triangle_minus,:);
+                
+                % Extract the length of this shared edge
+                ln = FEKO_data.rwg_basis_functions_length_m(edge_index);
+                
+                % Calculate and store the equivalent dipole moment [1, eq. 5]
+                FEKO_data.rwg_basis_functions_equivalent_dipole_moment(edge_index,:) = ln.*(rn_c_mns - rn_c_pls);
+                
+                % We can also calculate the centre-point of the equivalent dipoles
+                FEKO_data.rwg_basis_functions_equivalent_dipole_centre(edge_index,:) = 0.5.*(rn_c_pls + rn_c_mns);
+                
+            end%for edge_index = 1:FEKO_data.num_metallic_edges
+            
+            edm_setup_time = toc(edm_setup_time_tmp);
+            % Display the time.
+            message_fc(Const,sprintf('Preprocessing time for the EDM: %f sec. ',edm_setup_time));
+        end%if
+    end %if (FEKO_data.num_metallic_edges ~= 0)
     
-                v1XYZ = [FEKO_data.nodes_xyz(v1,1), FEKO_data.nodes_xyz(v1,2), FEKO_data.nodes_xyz(v1,3)];
-                v2XYZ = [FEKO_data.nodes_xyz(v2,1), FEKO_data.nodes_xyz(v2,2), FEKO_data.nodes_xyz(v2,3)];
-                v3XYZ = [FEKO_data.nodes_xyz(v3,1), FEKO_data.nodes_xyz(v3,2), FEKO_data.nodes_xyz(v3,3)];
-
-                FEKO_data.triangle_centre_point(triangle_id,:) = (1/3) .* (v1XYZ + v2XYZ + v3XYZ);
-
-                % Read the next triangle entry
-                line=fgetl(fid);
-            end
-
-        end% if g>0
-
-        % -------------------------------------------------
-        % -- Extract the triangle edge data (RWG basis functions)
-        % -------------------------------------------------        
-        g = strfind(line,'DATA OF THE METALLIC EDGES');
-        if (g > 0)
-            % 5 lines before start of triangle data
-            for ii=1:4
-                line=fgetl(fid);
-            end%for
-
-            % Read now the data for all the metallic edges
-            for ii=1:FEKO_data.num_metallic_edges
-                %fprintf('    ** processing RWG basis function %d\n', ii);
-                %line                
-
-                rwg_bf_data = strsplit(line);         
-
-                rwg_bf_id   = str2num(rwg_bf_data{2});
-                % Check that we do not exceed the max. number of BFs.
-                if (rwg_bf_id > FEKO_data.num_metallic_edges)
-                    message_fc(Const,sprintf('Number of RWG basis functions exceeded'));
-                    error(['Number of RWG basis functions exceeded']);
-                end%if
-
-                rwg_bf_type = str2num(rwg_bf_data{3});
-                % At the moment, we only allow Type 1 BFs, i.e. RWG elements spanning
-                % the shared edge between two triangles
-                if (rwg_bf_type > 1)
-                    message_fc(Const,sprintf('Only RWG basis functions supported'));
-                    error(['Only RWG basis functions supported']);
-                end%if
-
-                % Extract the edge length [m]
-                FEKO_data.rwg_basis_functions_length_m(rwg_bf_id) = str2double(rwg_bf_data{4});
-
-                % Extract the Tm+ triangle (KORP in FEKO) [m]
-                FEKO_data.rwg_basis_functions_trianglePlus(rwg_bf_id) = str2num(rwg_bf_data{8});
-
-                % Extract the Tm- triangle (KORM in FEKO) [m]
-                FEKO_data.rwg_basis_functions_triangleMinus(rwg_bf_id) = str2num(rwg_bf_data{9});
-
-                % Read the next basis function entry
-                line=fgetl(fid);
-            end% for ii=1:FEKO_data.num_metallic_edges
-        end% if g>0
-
-    end%while end_flag == 0
-    fclose('all');
-
-    % ==============================================
-    % Additional processing for the basis functions
-    % ==============================================
-    
-    % Extract the free vertex of Tm+ and Tm- for the RWGs
-    % and the nodal indices of the shared edge of the RWG
-    FEKO_data = extract_shared_edge_triangle_details(Const, FEKO_data);
-
-    % We also need now the Rho vectors as defined in [DBD2011], so that we can fill the 
-    % Z matrix internally. This is essentially the vectors \vec\rho_n^c+ and - in [Fig2, RWG82]
-    % and also documented in [Chapter 6, DBD2011] - see the function ComputeRho_c.m. We can do 
-    % this easily now after the RWGs have been determined in the above routine as we know know for each
-    % which is the free vertex
-    FEKO_data.rho_c_pls = zeros(FEKO_data.num_metallic_edges,3); 
-    FEKO_data.rho_c_mns = zeros(FEKO_data.num_metallic_edges,3); 
-    % What follows is an adaption of ComputeRho_c.m [DBD2011]
-    for mm=1:FEKO_data.num_metallic_edges % General code
-
-        % ---------------------
-        % Process rho_c_pls (\vec\rho_n^c+)
-        % ---------------------
-        % Extract the positive triangle for the RWG element
-        pp_pls = FEKO_data.rwg_basis_functions_trianglePlus(mm);
-        % Extract the free vertex (XYZ co-ordinate associated with this vertex)
-        vertex_pls = FEKO_data.rwg_basis_functions_trianglePlusFreeVertex(mm);
-        vertxX = FEKO_data.nodes_xyz(vertex_pls,1);
-        vertxY = FEKO_data.nodes_xyz(vertex_pls,2);
-        vertxZ = FEKO_data.nodes_xyz(vertex_pls,3);
-        vertx = [vertxX, vertxY, vertxZ];
-        FEKO_data.rho_c_pls(mm,:) = FEKO_data.triangle_centre_point(pp_pls,:) - vertx; % Directed from vertex
-
-        % ---------------------
-        % Process rho_c_mns (\vec\rho_n^c-)
-        % ---------------------
-        % Extract the positive triangle for the RWG element
-        pp_mns = FEKO_data.rwg_basis_functions_triangleMinus(mm);
-        % Extract the free vertex (XYZ co-ordinate associated with this vertex)
-        vertex_mns = FEKO_data.rwg_basis_functions_triangleMinusFreeVertex(mm);
-        vertxX = FEKO_data.nodes_xyz(vertex_mns,1);
-        vertxY = FEKO_data.nodes_xyz(vertex_mns,2);
-        vertxZ = FEKO_data.nodes_xyz(vertex_mns,3);
-        vertx = [vertxX, vertxY, vertxZ];
-        FEKO_data.rho_c_mns(mm,:) =  - (FEKO_data.triangle_centre_point(pp_mns,:) - vertx); % Directed to vertex        
-
-    end %for mm
-
-    % --------------------------------------------------------
-    % Equivalent Dipole Specific (EDM) specific pre-processing
-    % --------------------------------------------------------
-    if (Const.useEDM)
-        % 2018.06.13: If we are to use the Equivalent Dipole Method (EDM), as explained in [1], then we have to do a bit of preprocessing here
-        % Log the time however
-        edm_setup_time_tmp=tic;
-
-        % Some initialisations
-        FEKO_data.rwg_basis_functions_equivalent_dipole_moment = zeros(FEKO_data.num_metallic_edges,3); % X, Y and Z component
-        FEKO_data.rwg_basis_functions_equivalent_dipole_centre = zeros(FEKO_data.num_metallic_edges,3); % X, Y and Z co-ordinate
-
-        % Loop over each of the shared edges and extract the additional details mentioned below:
-        for edge_index = 1:FEKO_data.num_metallic_edges
-
-            % Extract the positive and negative triangles for the RWG element
-            triangle_plus = FEKO_data.rwg_basis_functions_trianglePlus(edge_index);
-            triangle_minus = FEKO_data.rwg_basis_functions_triangleMinus(edge_index);
-
-            % Extracts the preprocessed centre-points of each of the above triangles
-            rn_c_pls = FEKO_data.triangle_centre_point(triangle_plus,:);
-            rn_c_mns = FEKO_data.triangle_centre_point(triangle_minus,:);
-
-            % Extract the length of this shared edge
-            ln = FEKO_data.rwg_basis_functions_length_m(edge_index);
-
-            % Calculate and store the equivalent dipole moment [1, eq. 5]
-            FEKO_data.rwg_basis_functions_equivalent_dipole_moment(edge_index,:) = ln.*(rn_c_mns - rn_c_pls);
-
-            % We can also calculate the centre-point of the equivalent dipoles
-            FEKO_data.rwg_basis_functions_equivalent_dipole_centre(edge_index,:) = 0.5.*(rn_c_pls + rn_c_mns);
-
-        end%for edge_index = 1:FEKO_data.num_metallic_edges
-
-        edm_setup_time = toc(edm_setup_time_tmp);
-        % Display the time.
-        message_fc(Const,sprintf('Preprocessing time for the EDM: %f sec. ',edm_setup_time));
-    end%if
+    if (FEKO_data.number_nodes_between_segments ~= 0)
+        %TO-DO: Extract here the segment data (i.e. nodal co-ordinates, BF
+        %       numbering, etc. - already logged in GitHub issue #2
+        
+        % We do however, only for the meantime, have to specify that we are
+        % working with disconnected domains, otherwise we will get an error
+        % later on
+        FEKO_data.disconnected_domains = true;
+        
+    end%if (FEKO_data.number_nodes_between_segments ~= 0)
 
     % Set the total number of MoM basis functions
-    % -- For now, we have RWG elements. Add as more types are included.
-    FEKO_data.num_mom_basis_functions = FEKO_data.num_metallic_edges;
+    % -- For now, we have RWG elements and also wire segments (partially -
+    %    see issue #3. Expand as more basis functions are supported.
+    FEKO_data.num_mom_basis_functions = FEKO_data.num_metallic_edges + ...
+        FEKO_data.number_nodes_between_segments;
 
     % ==============================================
     % Additional processing for the finite antenna array (if present)

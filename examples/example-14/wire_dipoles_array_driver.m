@@ -19,6 +19,7 @@ Const = sunem_initialise('dipole_antenna_array',false);
 
 % Choose the solvers that will be executed
 Const.runMoMsolver          = true;
+Const.runCBFMsolver         = true;
 
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
@@ -36,7 +37,7 @@ Const.FEKOoutfilename          = 'dipole_antenna_array.out';
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMmomstrfilename      =  'dipole_antenna_array.str';
+Const.SUNEMmomstrfilename      =  '';%'dipole_antenna_array.str';
 
 % --------------------------------------------------------------------------------------------------
 % Read the MoM matrix equation from the file
@@ -54,5 +55,4 @@ Const.SUNEMmomstrfilename      =  'dipole_antenna_array.str';
 % Run the EM solver 
 % --------------------------------------------------------------------------------------------------
 [Solution] = runEMsolvers(Const, Solver_setup, zMatricesFEKO, yVectorsFEKO, xVectorsFEKO);
-
 

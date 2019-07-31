@@ -6,8 +6,12 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.34 - 2019-07-31
+- See issue #3: Added some initial work regarding the support for wire segments
+- Added a new (reduced) driver for example-12
+
 ## 1.33 - 2019-07-31
-- Promoted some files associated with the interpolation (for the DGFM).
+- Cleaned up example directory
 
 ## 1.32 - 2019-07-25
 - Promoted some files associated with the interpolation (for the DGFM).
