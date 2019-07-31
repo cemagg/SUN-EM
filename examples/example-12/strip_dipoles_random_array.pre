@@ -28,7 +28,6 @@
 ** Mesh size
 #t_edge = #lam/30  ** #lam/15 creates 15 basis-functions per element
                    ** #lam/30 creates 28 basis-functions per element
-                   ** #lam/60 creates    basis-functions per element
 #s_rad = 4E-6
 #s_len = #lam/15
 IP                            #s_rad    #t_edge   #s_len
@@ -90,7 +89,7 @@ BP   E    F    G    H
 
 ** FA: 0 : 3 : #arr_N : #arr_M :  : #arr_Noff : #arr_Moff
 ** Import the array now using the Magus file convention
-FA: 0 : 1 :  :  :  :  :  :  :  :  :  :  :  : "array_layout.xml"
+FA: 0 : 1 :  :  :  :  :  :  :  :  :  :  :  : "total_array_layout.xml"
 
 **SU   408       0
 

@@ -89,7 +89,7 @@ BP   E    F    G    H
 
 ** FA: 0 : 3 : #arr_N : #arr_M :  : #arr_Noff : #arr_Moff
 ** Import the array now using the Magus file convention
-FA: 0 : 1 :  :  :  :  :  :  :  :  :  :  :  : "total_array_layout.xml"
+FA: 0 : 1 :  :  :  :  :  :  :  :  :  :  :  : "array_layout.xml"
 
 **SU   408       0
 
@@ -97,7 +97,7 @@ FA: 0 : 1 :  :  :  :  :  :  :  :  :  :  :  : "total_array_layout.xml"
 EG   0    0    0                                                                                    0
 
 ** Control efficient/non-efficient fill of [A], requires the SU card
-PS: 0 : 1 : 1 : 0 : 0
+PS: 0 : 0 : 1 : 0 : 0
 
 ** Frequency
 FR   1                        #freq
@@ -119,7 +119,7 @@ AE: 0 : 1 : 2 : 0 : 1 : 1 : 0
 OS   1         1
 
 ** Calculate far-fields along a theta cut
-FF: 1 : 724 : 2 : 0 : 0 : 0 : 90 : 0.125 : 90 :  :  : 0
+FF   1    181  1    0         0         90        0.5       0
 
 **#max_arr_dim =CEIL ((#a/2)*#arr_M)
 **!!print  #max_arr_dim
