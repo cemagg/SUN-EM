@@ -22,11 +22,11 @@ function [Const] = sunem_setup(Const)
     % Set the version Major.Minor.Patch (see CHANGELOG.md for details)
     % --------------------------------------------------------------------------------------------------
     Const.MajorVersion = 1;  % Major version
-    Const.MinorVersion = 34;  % Minor version
+    Const.MinorVersion = 35;  % Minor version
 
     Const.Year = 2019;
-    Const.Month = 07;
-    Const.Day = 31;
+    Const.Month = 08;
+    Const.Day = 12;
 
     % --------------------------------------------------------------------------------------------------
     % Set the Project path directories, and also add the tools, and interfaces to the Path
@@ -60,8 +60,11 @@ function [Const] = sunem_setup(Const)
     % === DGFM Solver Interface ===
     addpath([MainPath '/src/DGFMinterface']);
 
-    % === DGFM Solver Interface ===
+    % === Iterative Solver Interface ===
     addpath([MainPath '/src/IFBinterface']);
+
+    % === CMA Interface ===
+    addpath([MainPath '/src/CMAinterface']);
     
     % ==  Set the executables path % ==
     if (ispc)

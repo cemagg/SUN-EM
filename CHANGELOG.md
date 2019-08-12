@@ -6,6 +6,12 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.35 - 2019-08-12
+- Added some CMA code in the /src/CMAinterface dictory taken from FEKO-Connect on Bitbucket.
+  NOTE: This is not yet in a working order.
+- For Jacques Meyer skripsie : Also moved some of his CMA-MFB related code to src/MBFinterface/CMAMBFinterface/
+  and added this to the path.
+
 ## 1.34 - 2019-07-31
 - See issue #3: Added some initial work regarding the support for wire segments
 - Added a new (reduced) driver for example-12
