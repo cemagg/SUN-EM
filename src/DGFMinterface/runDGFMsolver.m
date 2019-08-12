@@ -91,6 +91,7 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     % the elements. Instead, we are going to calculate only a few based on
     % a sampling grid, which we calculate now here:
     
+    % TO-DO: Might have to time this initial setup for the interpolation
     if (Const.useDGFMinterpolation)
         % First extract the known array positions
         dgfm.array_XY = zeros(numArrayEls,2);    
@@ -98,6 +99,20 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
     
         % Now extract some uniformly distributed samples on this grid
         [dgfm.interpolation_sampling_array_indices] = extractDGFMcircularInterpolationGrid(Const, numArrayEls, dgfm.array_XY);
+    
+        % After we have set up the lattice, we also need to define the reference MBFs:
+        % Allocate some space for the MBF coefficients associated with each array element. We need to keep the number of 
+        % MBFs per domain consistent. As an initial test, we keep the MBFs for the first element in the array 
+        % (which for a circular layout, corresponds to an element near the centre)
+        ref_domain = 1;
+        dgfm.numRefMBFs = mbfs.numRedMBFs(ref_domain,1);
+        ref_domain_basis_functions = Solver_setup.rwg_basis_functions_domains{ref_domain};
+        % Note: Below, we assume that we are working with solution index 1
+        dgfm.refMBFs = mbfs.RedIsol(ref_domain_basis_functions,1:dgfm.numRefMBFs,ref_domain,1);
+
+        % Initialise complex array for storing the MBF weights
+        dgfm.MBF_weights = complex(zeros(numArrayEls,dgfm.numRefMBFs));
+    
     end%if
     
     % --------------------- START HERE FREQUENCY LOOP
@@ -169,10 +184,13 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                 % If we are going to use interpolation, then we only
                 % calculate the DGFM entry if it is included in the
                 % sampling point
-                
                 if (Const.useDGFMinterpolation)
                     if find(dgfm.interpolation_sampling_array_indices == m)
+                        % Calculate the DGFM solution for this interpolation sample point.
                         message_fc(Const,sprintf('    Array index %d in sampling grid for interpolation',m));
+                    else
+                        % Skip this element (solution will be calculated using interpolation)
+                        message_fc(Const,sprintf('    Skipping array index %d (not in sampling grid for interpolation)',m));
                         continue;
                     end
                 end%if
@@ -320,6 +338,22 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
                         
                         % Check first here whether we are using Interpolation. If so, then we need 
                         % to calculate the MBF coefficients also for this sample on the interpolation grid.
+                        if (Const.useDGFMinterpolation)                        
+                            % Now we can find the MBF weights by setting up a reduced impedance matrix
+                            Zred = (dgfm.refMBFs)' * Zact * dgfm.refMBFs;
+                            Vrwg = yVectors.values(domain_m_basis_functions,1);
+                            Vred = (dgfm.refMBFs)' * Vrwg;
+                            % Store these MBF coefficients now for later processing.
+                            dgfm.MBF_weights(m,:) = Zred \ Vred;
+
+                            % Compare now this solution against that obtained from the DGFM for this particular sample
+                            if (true)
+                                % First build again Isol using the MBFs
+                                Isol_m = dgfm.refMBFs * (dgfm.MBF_weights(m,:)).';
+                                relError = calculateErrorNormPercentage(dgfm.Isol(domain_m_basis_functions,1), Isol_m);
+                                message_fc(Const,sprintf('Rel. error norm. for element. %d compared to DGFM sol. %f percent',m, relError));
+                            end
+                        end %if (Const.useDGFMinterpolation)
 
                     elseif(Const.useDGFMmethod == 2)
                         % -- DGFM method 2: Solve on block matrix level (after M_LOOP)
