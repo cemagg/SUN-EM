@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.36 - 2019-08-19
+- Added now another driver (DGFM only) for example-12 (for Stella Schleich's skripsie).
+
 ## 1.35 - 2019-08-12
 - Added some CMA code in the /src/CMAinterface dictory taken from FEKO-Connect on Bitbucket.
   NOTE: This is not yet in a working order.

@@ -22,11 +22,11 @@ function [Const] = sunem_setup(Const)
     % Set the version Major.Minor.Patch (see CHANGELOG.md for details)
     % --------------------------------------------------------------------------------------------------
     Const.MajorVersion = 1;  % Major version
-    Const.MinorVersion = 35;  % Minor version
+    Const.MinorVersion = 36;  % Minor version
 
     Const.Year = 2019;
     Const.Month = 08;
-    Const.Day = 12;
+    Const.Day = 19;
 
     % --------------------------------------------------------------------------------------------------
     % Set the Project path directories, and also add the tools, and interfaces to the Path
