@@ -8,9 +8,9 @@ numArrayEls = Solver_setup.num_finite_array_elements;
 max_primaries_per_domain = 1;
 macro.RedIsol = complex(zeros(Nmom,numArrayEls,numArrayEls,numSols));
 macro.PrimIsol = complex(zeros(Nmom, 1, numArrayEls, numSols));
-%macro.SecIsol = complex(zeros(Nmom,max_primaries_per_domain*(numArrayEls-1),numArrayEls,numSols));
+macro.SecIsol = complex(zeros(Nmom,max_primaries_per_domain*(numArrayEls-1),numArrayEls,numSols));
 macro.numPrimMBFs = zeros(numArrayEls,numSols); % Number of Prim. MBFs / solution config.
-%macro.numSecMBFs = zeros(numArrayEls,numSols); % Number of Sec.  MBFs / solution config.
+macro.numSecMBFs = zeros(numArrayEls,numSols); % Number of Sec.  MBFs / solution config.
 domain_indices = Solver_setup.rwg_basis_functions_domains{1}; 
 [L,U] = lu(zMatrices.values(domain_indices, domain_indices));
 
@@ -37,12 +37,12 @@ for solNum = 1:numSols
              end
              if (Const.is_array_element_active(n,solNum))
                  count = count + 1;
-                 %macro.numSecMBFs(m,solNum) = count;  
+                 macro.numSecMBFs(m,solNum) = count;  
                  domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
                  Zcoupl = zMatrices.values(domain_m_basis_functions,domain_n_basis_functions);
                  Vcoupl =  - Zcoupl * macro.PrimIsol(domain_n_basis_functions,1,n,solNum);
                  b = L\Vcoupl;
-                 %macro.SecIsol(domain_m_basis_functions,count,m,solNum) = U\b;
+                 macro.SecIsol(domain_m_basis_functions,count,m,solNum) = U\b;
                  
              end
          end
@@ -50,7 +50,7 @@ for solNum = 1:numSols
     macro.totRedMBFs  = 0;
     if(Const.useMBFreduction)
         for m=1:numArrayEls
-            MBF = [macro.PrimIsol(:,1:macro.numPrimMBFs(m,solNum),m,solNum)];% macro.SecIsol(:,1:macro.numSecMBFs(m,solNum),m,solNum)];
+            MBF = [macro.PrimIsol(:,1:macro.numPrimMBFs(m,solNum),m,solNum) macro.SecIsol(:,1:macro.numSecMBFs(m,solNum),m,solNum)];
             redMBF = reduceCMAMBFs(Const, MBF);
             macro.numRedMBFs(m,1) = size(redMBF,2);
             macro.RedIsol(:,1:size(redMBF,2),m,solNum) = redMBF;
