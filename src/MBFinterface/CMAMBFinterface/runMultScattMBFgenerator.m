@@ -51,7 +51,7 @@ for solNum = 1:numSols
     if(Const.useMBFreduction)
         for m=1:numArrayEls
             MBF = [macro.PrimIsol(:,1:macro.numPrimMBFs(m,solNum),m,solNum) macro.SecIsol(:,1:macro.numSecMBFs(m,solNum),m,solNum)];
-            redMBF = reduceCMAMBFs(Const, MBF);
+            redMBF = reduceGenMBFs(Const, MBF);
             macro.numRedMBFs(m,1) = size(redMBF,2);
             macro.RedIsol(:,1:size(redMBF,2),m,solNum) = redMBF;
             
