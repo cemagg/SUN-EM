@@ -1,0 +1,582 @@
+7-9-2019, 16:24:4 =>  
+7-9-2019, 16:24:4 => ==================================================================================
+7-9-2019, 16:24:4 => ======                          SUN-EM                                      ======
+7-9-2019, 16:24:4 => ======                 Version 1.35 Date: 2019-8-12                         ======
+7-9-2019, 16:24:4 => ======                                                                      ======
+7-9-2019, 16:24:4 => ======      CEM toolkit and solvers from Stellenbosch University            ======
+7-9-2019, 16:24:4 => ======                      Copyright 2018                                  ======
+7-9-2019, 16:24:4 => ==================================================================================
+7-9-2019, 16:24:4 =>  
+7-9-2019, 16:24:4 =>  
+7-9-2019, 16:24:4 => ------------------------------------------------------------------------------------
+7-9-2019, 16:24:4 => Reading *.mat file from: Large_array_active.mat
+7-9-2019, 16:24:8 => Read Zmn file version 5
+7-9-2019, 16:24:8 => Dim. of Zmn is m=5400 and n=5400
+7-9-2019, 16:24:8 => Zmn is stored in double precision
+7-9-2019, 16:24:8 => Read: 1 frequencies (number of Z-mats.)
+7-9-2019, 16:24:8 => Finished processing the *.mat file: Large_array_active.mat
+7-9-2019, 16:24:9 =>  
+7-9-2019, 16:24:9 => ------------------------------------------------------------------------------------
+7-9-2019, 16:24:9 => Reading *.str file from: ascii_Large_array_active.str
+7-9-2019, 16:24:9 => Read Xsol file version 4
+7-9-2019, 16:24:9 => No. of MoM basis = 5400 and no. of FEM basis = 0
+7-9-2019, 16:24:9 => Read: 1 solutions (number of Xsols.)
+7-9-2019, 16:24:9 => Finished processing the *.str file: ascii_Large_array_active.str
+7-9-2019, 16:24:9 =>  
+7-9-2019, 16:24:9 => ------------------------------------------------------------------------------------
+7-9-2019, 16:24:9 => Reading *.rhs file from: Large_array_active.rhs
+7-9-2019, 16:24:9 => Read: 1 excitations (number of Yrhs.)
+7-9-2019, 16:24:9 => Finished processing the *.rhs file: Large_array_active.rhs
+7-9-2019, 16:24:9 =>  
+7-9-2019, 16:24:9 => ------------------------------------------------------------------------------------
+7-9-2019, 16:24:9 => Initialising the configuration setup
+7-9-2019, 16:24:9 =>   Domain decomposition active
+7-9-2019, 16:24:9 => Done
+7-9-2019, 16:24:10 =>  
+7-9-2019, 16:24:10 => ------------------------------------------------------------------------------------
+7-9-2019, 16:24:10 => Reading additional FEKO data from *.out file
+7-9-2019, 16:24:10 =>   *.out file: Large_array_active.out
+7-9-2019, 16:24:44 => 
+  Number of frequencies: 1
+7-9-2019, 16:24:44 =>   Number of metallic triangles: 5600
+7-9-2019, 16:24:44 =>   Number of metallic edges (RWG basis functions): 5400
+7-9-2019, 16:24:44 =>   Number of MoM basis functions: 5400
+7-9-2019, 16:24:44 =>   Number of finite array elements: 200
+7-9-2019, 16:24:44 =>   Number of MoM basis functions per array element : 27
+7-9-2019, 16:24:44 =>   Number of domains: 200
+7-9-2019, 16:24:44 =>   Interconnectivity: Disconnected domains
+7-9-2019, 16:24:44 =>   Finished processing the *.out file: Large_array_active.out
+7-9-2019, 16:24:58 =>  
+7-9-2019, 16:24:58 => ==================================================================================
+7-9-2019, 16:24:58 => ======                          SUN-EM                                      ======
+7-9-2019, 16:24:58 => ======                 Version 1.35 Date: 2019-8-12                         ======
+7-9-2019, 16:24:58 => ======                                                                      ======
+7-9-2019, 16:24:58 => ======      CEM toolkit and solvers from Stellenbosch University            ======
+7-9-2019, 16:24:58 => ======                      Copyright 2018                                  ======
+7-9-2019, 16:24:58 => ==================================================================================
+7-9-2019, 16:24:58 =>  
+7-9-2019, 16:24:59 =>  
+7-9-2019, 16:24:59 => ------------------------------------------------------------------------------------
+7-9-2019, 16:24:59 => Reading *.mat file from: Large_array_active.mat
+7-9-2019, 16:25:2 => Read Zmn file version 5
+7-9-2019, 16:25:2 => Dim. of Zmn is m=5400 and n=5400
+7-9-2019, 16:25:2 => Zmn is stored in double precision
+7-9-2019, 16:25:2 => Read: 1 frequencies (number of Z-mats.)
+7-9-2019, 16:25:2 => Finished processing the *.mat file: Large_array_active.mat
+7-9-2019, 16:25:2 =>  
+7-9-2019, 16:25:2 => ------------------------------------------------------------------------------------
+7-9-2019, 16:25:2 => Reading *.str file from: ascii_Large_array_active.str
+7-9-2019, 16:25:2 => Read Xsol file version 4
+7-9-2019, 16:25:2 => No. of MoM basis = 5400 and no. of FEM basis = 0
+7-9-2019, 16:25:2 => Read: 1 solutions (number of Xsols.)
+7-9-2019, 16:25:2 => Finished processing the *.str file: ascii_Large_array_active.str
+7-9-2019, 16:25:2 =>  
+7-9-2019, 16:25:2 => ------------------------------------------------------------------------------------
+7-9-2019, 16:25:2 => Reading *.rhs file from: Large_array_active.rhs
+7-9-2019, 16:25:2 => Read: 1 excitations (number of Yrhs.)
+7-9-2019, 16:25:2 => Finished processing the *.rhs file: Large_array_active.rhs
+7-9-2019, 16:25:3 =>  
+7-9-2019, 16:25:3 => ------------------------------------------------------------------------------------
+7-9-2019, 16:25:3 => Initialising the configuration setup
+7-9-2019, 16:25:3 =>   Domain decomposition active
+7-9-2019, 16:25:3 => Done
+7-9-2019, 16:25:3 =>  
+7-9-2019, 16:25:3 => ------------------------------------------------------------------------------------
+7-9-2019, 16:25:3 => Reading additional FEKO data from *.out file
+7-9-2019, 16:25:3 =>   *.out file: Large_array_active.out
+7-9-2019, 16:25:27 => 
+  Number of frequencies: 1
+7-9-2019, 16:25:27 =>   Number of metallic triangles: 5600
+7-9-2019, 16:25:27 =>   Number of metallic edges (RWG basis functions): 5400
+7-9-2019, 16:25:27 =>   Number of MoM basis functions: 5400
+7-9-2019, 16:25:27 =>   Number of finite array elements: 200
+7-9-2019, 16:25:27 =>   Number of MoM basis functions per array element : 27
+7-9-2019, 16:25:27 =>   Number of domains: 200
+7-9-2019, 16:25:27 =>   Interconnectivity: Disconnected domains
+7-9-2019, 16:25:27 =>   Finished processing the *.out file: Large_array_active.out
+7-9-2019, 16:25:38 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000946 percent.
+7-9-2019, 16:25:38 => Finished CBFMCMA solver in 11.402208 sec. (including MBF calculation)
+7-9-2019, 16:31:7 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.033539 percent.
+7-9-2019, 16:31:7 => Finished CBFMMultScat solver in 329.035359 sec. (including MBF calculation)
+7-9-2019, 16:39:48 =>  
+7-9-2019, 16:39:48 => ==================================================================================
+7-9-2019, 16:39:48 => ======                          SUN-EM                                      ======
+7-9-2019, 16:39:48 => ======                 Version 1.35 Date: 2019-8-12                         ======
+7-9-2019, 16:39:48 => ======                                                                      ======
+7-9-2019, 16:39:48 => ======      CEM toolkit and solvers from Stellenbosch University            ======
+7-9-2019, 16:39:48 => ======                      Copyright 2018                                  ======
+7-9-2019, 16:39:48 => ==================================================================================
+7-9-2019, 16:39:48 =>  
+7-9-2019, 16:39:48 =>  
+7-9-2019, 16:39:48 => ------------------------------------------------------------------------------------
+7-9-2019, 16:39:48 => Reading *.mat file from: Large_array_active.mat
+7-9-2019, 16:39:56 => Read Zmn file version 5
+7-9-2019, 16:39:56 => Dim. of Zmn is m=5400 and n=5400
+7-9-2019, 16:39:56 => Zmn is stored in double precision
+7-9-2019, 16:39:56 => Read: 1 frequencies (number of Z-mats.)
+7-9-2019, 16:39:57 => Finished processing the *.mat file: Large_array_active.mat
+7-9-2019, 16:39:57 =>  
+7-9-2019, 16:39:57 => ------------------------------------------------------------------------------------
+7-9-2019, 16:39:57 => Reading *.str file from: ascii_Large_array_active.str
+7-9-2019, 16:39:58 => Read Xsol file version 4
+7-9-2019, 16:39:58 => No. of MoM basis = 5400 and no. of FEM basis = 0
+7-9-2019, 16:39:58 => Read: 1 solutions (number of Xsols.)
+7-9-2019, 16:39:58 => Finished processing the *.str file: ascii_Large_array_active.str
+7-9-2019, 16:39:58 =>  
+7-9-2019, 16:39:58 => ------------------------------------------------------------------------------------
+7-9-2019, 16:39:58 => Reading *.rhs file from: Large_array_active.rhs
+7-9-2019, 16:39:58 => Read: 1 excitations (number of Yrhs.)
+7-9-2019, 16:39:58 => Finished processing the *.rhs file: Large_array_active.rhs
+7-9-2019, 16:39:58 =>  
+7-9-2019, 16:39:58 => ------------------------------------------------------------------------------------
+7-9-2019, 16:39:58 => Initialising the configuration setup
+7-9-2019, 16:39:58 =>   Domain decomposition active
+7-9-2019, 16:39:58 => Done
+7-9-2019, 16:39:59 =>  
+7-9-2019, 16:39:59 => ------------------------------------------------------------------------------------
+7-9-2019, 16:39:59 => Reading additional FEKO data from *.out file
+7-9-2019, 16:39:59 =>   *.out file: Large_array_active.out
+7-9-2019, 16:40:13 => 
+  Number of frequencies: 1
+7-9-2019, 16:40:13 =>   Number of metallic triangles: 5600
+7-9-2019, 16:40:13 =>   Number of metallic edges (RWG basis functions): 5400
+7-9-2019, 16:40:13 =>   Number of MoM basis functions: 5400
+7-9-2019, 16:40:13 =>   Number of finite array elements: 200
+7-9-2019, 16:40:13 =>   Number of MoM basis functions per array element : 27
+7-9-2019, 16:40:13 =>   Number of domains: 200
+7-9-2019, 16:40:13 =>   Interconnectivity: Disconnected domains
+7-9-2019, 16:40:13 =>   Finished processing the *.out file: Large_array_active.out
+7-9-2019, 16:40:18 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000946 percent.
+7-9-2019, 16:40:18 => Finished CBFMCMA solver in 5.061890 sec. (including MBF calculation)
+7-9-2019, 16:43:27 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.033539 percent.
+7-9-2019, 16:43:27 => Finished CBFMMultScat solver in 189.314609 sec. (including MBF calculation)
+8-9-2019, 11:33:30 =>  
+8-9-2019, 11:33:30 => ==================================================================================
+8-9-2019, 11:33:30 => ======                          SUN-EM                                      ======
+8-9-2019, 11:33:30 => ======                 Version 1.35 Date: 2019-8-12                         ======
+8-9-2019, 11:33:30 => ======                                                                      ======
+8-9-2019, 11:33:30 => ======      CEM toolkit and solvers from Stellenbosch University            ======
+8-9-2019, 11:33:30 => ======                      Copyright 2018                                  ======
+8-9-2019, 11:33:30 => ==================================================================================
+8-9-2019, 11:33:30 =>  
+8-9-2019, 11:33:30 =>  
+8-9-2019, 11:33:30 => ------------------------------------------------------------------------------------
+8-9-2019, 11:33:30 => Reading *.mat file from: Large_array_active.mat
+8-9-2019, 11:33:33 => Read Zmn file version 5
+8-9-2019, 11:33:33 => Dim. of Zmn is m=5400 and n=5400
+8-9-2019, 11:33:33 => Zmn is stored in double precision
+8-9-2019, 11:33:33 => Read: 1 frequencies (number of Z-mats.)
+8-9-2019, 11:33:33 => Finished processing the *.mat file: Large_array_active.mat
+8-9-2019, 11:33:33 =>  
+8-9-2019, 11:33:33 => ------------------------------------------------------------------------------------
+8-9-2019, 11:33:33 => Reading *.str file from: ascii_Large_array_active.str
+8-9-2019, 11:33:33 => Read Xsol file version 4
+8-9-2019, 11:33:33 => No. of MoM basis = 5400 and no. of FEM basis = 0
+8-9-2019, 11:33:33 => Read: 1 solutions (number of Xsols.)
+8-9-2019, 11:33:33 => Finished processing the *.str file: ascii_Large_array_active.str
+8-9-2019, 11:33:33 =>  
+8-9-2019, 11:33:33 => ------------------------------------------------------------------------------------
+8-9-2019, 11:33:33 => Reading *.rhs file from: Large_array_active.rhs
+8-9-2019, 11:33:33 => Read: 1 excitations (number of Yrhs.)
+8-9-2019, 11:33:33 => Finished processing the *.rhs file: Large_array_active.rhs
+8-9-2019, 11:33:33 =>  
+8-9-2019, 11:33:33 => ------------------------------------------------------------------------------------
+8-9-2019, 11:33:33 => Initialising the configuration setup
+8-9-2019, 11:33:33 =>   Domain decomposition active
+8-9-2019, 11:33:33 => Done
+8-9-2019, 11:33:33 =>  
+8-9-2019, 11:33:33 => ------------------------------------------------------------------------------------
+8-9-2019, 11:33:33 => Reading additional FEKO data from *.out file
+8-9-2019, 11:33:33 =>   *.out file: Large_array_active.out
+8-9-2019, 11:33:51 => 
+  Number of frequencies: 1
+8-9-2019, 11:33:51 =>   Number of metallic triangles: 5600
+8-9-2019, 11:33:51 =>   Number of metallic edges (RWG basis functions): 5400
+8-9-2019, 11:33:51 =>   Number of MoM basis functions: 5400
+8-9-2019, 11:33:51 =>   Number of finite array elements: 200
+8-9-2019, 11:33:52 =>   Number of MoM basis functions per array element : 27
+8-9-2019, 11:33:52 =>   Number of domains: 200
+8-9-2019, 11:33:52 =>   Interconnectivity: Disconnected domains
+8-9-2019, 11:33:52 =>   Finished processing the *.out file: Large_array_active.out
+8-9-2019, 11:33:55 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 3.222900 percent.
+8-9-2019, 11:33:55 => Finished CMA_MBF solver in 2.439379 sec. (including MBF calculation)
+8-9-2019, 11:33:57 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.108055 percent.
+8-9-2019, 11:33:57 => Finished CMA_SM_MBF solver in 2.235777 sec. (including MBF calculation)
+8-9-2019, 11:34:1 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 3.226933 percent.
+8-9-2019, 11:34:1 => Finished CMA_DGFM_MBF solver in 3.425159 sec. (including MBF calculation)
+8-9-2019, 11:34:4 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000946 percent.
+8-9-2019, 11:34:4 => Finished CMA_SM_DGFM_MBF solver in 3.419123 sec. (including MBF calculation)
+8-9-2019, 11:34:8 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.001127 percent.
+8-9-2019, 11:34:8 => Finished CMA_DGFM_SM_MBF solver in 3.685507 sec. (including MBF calculation)
+8-9-2019, 11:35:16 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.033539 percent.
+8-9-2019, 11:35:18 => Finished CBFMMultScat solver in 68.667527 sec. (including MBF calculation)
+29-9-2019, 14:20:44 =>  
+29-9-2019, 14:20:44 => ==================================================================================
+29-9-2019, 14:20:44 => ======                          SUN-EM                                      ======
+29-9-2019, 14:20:44 => ======                 Version 1.35 Date: 2019-8-12                         ======
+29-9-2019, 14:20:44 => ======                                                                      ======
+29-9-2019, 14:20:44 => ======      CEM toolkit and solvers from Stellenbosch University            ======
+29-9-2019, 14:20:44 => ======                      Copyright 2018                                  ======
+29-9-2019, 14:20:44 => ==================================================================================
+29-9-2019, 14:20:44 =>  
+29-9-2019, 14:20:44 =>  
+29-9-2019, 14:20:44 => ------------------------------------------------------------------------------------
+29-9-2019, 14:20:44 => Reading *.mat file from: Large_array_active.mat
+29-9-2019, 14:20:47 => Read Zmn file version 5
+29-9-2019, 14:20:47 => Dim. of Zmn is m=5400 and n=5400
+29-9-2019, 14:20:47 => Zmn is stored in double precision
+29-9-2019, 14:20:47 => Read: 1 frequencies (number of Z-mats.)
+29-9-2019, 14:20:47 => Finished processing the *.mat file: Large_array_active.mat
+29-9-2019, 14:20:47 =>  
+29-9-2019, 14:20:47 => ------------------------------------------------------------------------------------
+29-9-2019, 14:20:47 => Reading *.str file from: ascii_Large_array_active.str
+29-9-2019, 14:20:47 => Read Xsol file version 4
+29-9-2019, 14:20:47 => No. of MoM basis = 5400 and no. of FEM basis = 0
+29-9-2019, 14:20:47 => Read: 1 solutions (number of Xsols.)
+29-9-2019, 14:20:47 => Finished processing the *.str file: ascii_Large_array_active.str
+29-9-2019, 14:20:47 =>  
+29-9-2019, 14:20:48 => ------------------------------------------------------------------------------------
+29-9-2019, 14:20:48 => Reading *.rhs file from: Large_array_active.rhs
+29-9-2019, 14:20:48 => Read: 1 excitations (number of Yrhs.)
+29-9-2019, 14:20:48 => Finished processing the *.rhs file: Large_array_active.rhs
+29-9-2019, 14:20:48 =>  
+29-9-2019, 14:20:48 => ------------------------------------------------------------------------------------
+29-9-2019, 14:20:48 => Initialising the configuration setup
+29-9-2019, 14:20:48 =>   Domain decomposition active
+29-9-2019, 14:20:48 => Done
+29-9-2019, 14:20:48 =>  
+29-9-2019, 14:20:48 => ------------------------------------------------------------------------------------
+29-9-2019, 14:20:48 => Reading additional FEKO data from *.out file
+29-9-2019, 14:20:48 =>   *.out file: Large_array_active.out
+29-9-2019, 14:21:5 => 
+  Number of frequencies: 1
+29-9-2019, 14:21:5 =>   Number of metallic triangles: 5600
+29-9-2019, 14:21:5 =>   Number of metallic edges (RWG basis functions): 5400
+29-9-2019, 14:21:5 =>   Number of MoM basis functions: 5400
+29-9-2019, 14:21:5 =>   Number of finite array elements: 200
+29-9-2019, 14:21:5 =>   Number of MoM basis functions per array element : 27
+29-9-2019, 14:21:5 =>   Number of domains: 200
+29-9-2019, 14:21:5 =>   Interconnectivity: Disconnected domains
+29-9-2019, 14:21:5 =>   Finished processing the *.out file: Large_array_active.out
+29-9-2019, 14:21:23 =>  
+29-9-2019, 14:21:23 => ==================================================================================
+29-9-2019, 14:21:23 => ======                          SUN-EM                                      ======
+29-9-2019, 14:21:23 => ======                 Version 1.35 Date: 2019-8-12                         ======
+29-9-2019, 14:21:23 => ======                                                                      ======
+29-9-2019, 14:21:23 => ======      CEM toolkit and solvers from Stellenbosch University            ======
+29-9-2019, 14:21:23 => ======                      Copyright 2018                                  ======
+29-9-2019, 14:21:23 => ==================================================================================
+29-9-2019, 14:21:23 =>  
+29-9-2019, 14:21:23 =>  
+29-9-2019, 14:21:23 => ------------------------------------------------------------------------------------
+29-9-2019, 14:21:23 => Reading *.mat file from: Large_array_active.mat
+29-9-2019, 14:21:28 => Read Zmn file version 5
+29-9-2019, 14:21:29 => Dim. of Zmn is m=5400 and n=5400
+29-9-2019, 14:21:29 => Zmn is stored in double precision
+29-9-2019, 14:21:29 => Read: 1 frequencies (number of Z-mats.)
+29-9-2019, 14:21:29 => Finished processing the *.mat file: Large_array_active.mat
+29-9-2019, 14:21:29 =>  
+29-9-2019, 14:21:29 => ------------------------------------------------------------------------------------
+29-9-2019, 14:21:29 => Reading *.str file from: ascii_Large_array_active.str
+29-9-2019, 14:21:29 => Read Xsol file version 4
+29-9-2019, 14:21:29 => No. of MoM basis = 5400 and no. of FEM basis = 0
+29-9-2019, 14:21:29 => Read: 1 solutions (number of Xsols.)
+29-9-2019, 14:21:29 => Finished processing the *.str file: ascii_Large_array_active.str
+29-9-2019, 14:21:29 =>  
+29-9-2019, 14:21:29 => ------------------------------------------------------------------------------------
+29-9-2019, 14:21:29 => Reading *.rhs file from: Large_array_active.rhs
+29-9-2019, 14:21:29 => Read: 1 excitations (number of Yrhs.)
+29-9-2019, 14:21:29 => Finished processing the *.rhs file: Large_array_active.rhs
+29-9-2019, 14:21:29 =>  
+29-9-2019, 14:21:29 => ------------------------------------------------------------------------------------
+29-9-2019, 14:21:29 => Initialising the configuration setup
+29-9-2019, 14:21:29 =>   Domain decomposition active
+29-9-2019, 14:21:29 => Done
+29-9-2019, 14:21:29 =>  
+29-9-2019, 14:21:29 => ------------------------------------------------------------------------------------
+29-9-2019, 14:21:29 => Reading additional FEKO data from *.out file
+29-9-2019, 14:21:29 =>   *.out file: Large_array_active.out
+29-9-2019, 14:21:45 => 
+  Number of frequencies: 1
+29-9-2019, 14:21:45 =>   Number of metallic triangles: 5600
+29-9-2019, 14:21:45 =>   Number of metallic edges (RWG basis functions): 5400
+29-9-2019, 14:21:45 =>   Number of MoM basis functions: 5400
+29-9-2019, 14:21:45 =>   Number of finite array elements: 200
+29-9-2019, 14:21:45 =>   Number of MoM basis functions per array element : 27
+29-9-2019, 14:21:45 =>   Number of domains: 200
+29-9-2019, 14:21:45 =>   Interconnectivity: Disconnected domains
+29-9-2019, 14:21:45 =>   Finished processing the *.out file: Large_array_active.out
+29-9-2019, 14:21:53 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 3.221088 percent.
+29-9-2019, 14:21:55 => Finished CMA_MBF solver in 8.009888 sec. (including MBF calculation)
+29-9-2019, 14:21:56 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.001489 percent.
+29-9-2019, 14:21:56 => Finished CMA_SM_MBF solver in 1.756406 sec. (including MBF calculation)
+29-9-2019, 14:21:59 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 3.226933 percent.
+29-9-2019, 14:21:59 => Finished CMA_DGFM_MBF solver in 2.460539 sec. (including MBF calculation)
+29-9-2019, 14:22:2 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000946 percent.
+29-9-2019, 14:22:2 => Finished CMA_SM_DGFM_MBF solver in 2.972080 sec. (including MBF calculation)
+29-9-2019, 14:22:5 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.001127 percent.
+29-9-2019, 14:22:5 => Finished CMA_DGFM_SM_MBF solver in 3.025339 sec. (including MBF calculation)
+29-9-2019, 14:23:16 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.033539 percent.
+29-9-2019, 14:23:18 => Finished CBFMMultScat solver in 71.683572 sec. (including MBF calculation)
+30-9-2019, 8:24:6 =>  
+30-9-2019, 8:24:7 => ==================================================================================
+30-9-2019, 8:24:7 => ======                          SUN-EM                                      ======
+30-9-2019, 8:24:7 => ======                 Version 1.35 Date: 2019-8-12                         ======
+30-9-2019, 8:24:7 => ======                                                                      ======
+30-9-2019, 8:24:7 => ======      CEM toolkit and solvers from Stellenbosch University            ======
+30-9-2019, 8:24:7 => ======                      Copyright 2018                                  ======
+30-9-2019, 8:24:7 => ==================================================================================
+30-9-2019, 8:24:7 =>  
+30-9-2019, 8:24:7 =>  
+30-9-2019, 8:24:7 => ------------------------------------------------------------------------------------
+30-9-2019, 8:24:7 => Reading *.mat file from: Large_array_active.mat
+30-9-2019, 8:24:10 => Read Zmn file version 5
+30-9-2019, 8:24:10 => Dim. of Zmn is m=5400 and n=5400
+30-9-2019, 8:24:10 => Zmn is stored in double precision
+30-9-2019, 8:24:10 => Read: 1 frequencies (number of Z-mats.)
+30-9-2019, 8:24:10 => Finished processing the *.mat file: Large_array_active.mat
+30-9-2019, 8:24:10 =>  
+30-9-2019, 8:24:10 => ------------------------------------------------------------------------------------
+30-9-2019, 8:24:10 => Reading *.str file from: ascii_Large_array_active.str
+30-9-2019, 8:24:10 => Read Xsol file version 4
+30-9-2019, 8:24:10 => No. of MoM basis = 5400 and no. of FEM basis = 0
+30-9-2019, 8:24:10 => Read: 1 solutions (number of Xsols.)
+30-9-2019, 8:24:10 => Finished processing the *.str file: ascii_Large_array_active.str
+30-9-2019, 8:24:10 =>  
+30-9-2019, 8:24:10 => ------------------------------------------------------------------------------------
+30-9-2019, 8:24:10 => Reading *.rhs file from: Large_array_active.rhs
+30-9-2019, 8:24:10 => Read: 1 excitations (number of Yrhs.)
+30-9-2019, 8:24:10 => Finished processing the *.rhs file: Large_array_active.rhs
+30-9-2019, 8:24:10 =>  
+30-9-2019, 8:24:10 => ------------------------------------------------------------------------------------
+30-9-2019, 8:24:10 => Initialising the configuration setup
+30-9-2019, 8:24:10 =>   Domain decomposition active
+30-9-2019, 8:24:10 => Done
+30-9-2019, 8:24:10 =>  
+30-9-2019, 8:24:10 => ------------------------------------------------------------------------------------
+30-9-2019, 8:24:10 => Reading additional FEKO data from *.out file
+30-9-2019, 8:24:10 =>   *.out file: Large_array_active.out
+30-9-2019, 8:24:22 => 
+  Number of frequencies: 1
+30-9-2019, 8:24:22 =>   Number of metallic triangles: 5600
+30-9-2019, 8:24:22 =>   Number of metallic edges (RWG basis functions): 5400
+30-9-2019, 8:24:22 =>   Number of MoM basis functions: 5400
+30-9-2019, 8:24:22 =>   Number of finite array elements: 200
+30-9-2019, 8:24:22 =>   Number of MoM basis functions per array element : 27
+30-9-2019, 8:24:22 =>   Number of domains: 200
+30-9-2019, 8:24:22 =>   Interconnectivity: Disconnected domains
+30-9-2019, 8:24:22 =>   Finished processing the *.out file: Large_array_active.out
+30-9-2019, 8:24:29 => Solving problem with 1.000000 modes
+30-9-2019, 8:24:29 =>  
+30-9-2019, 8:24:32 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.120554 percent.
+30-9-2019, 8:24:32 => Finished CMA_SM_DGFM_MBF solver in 2.709325 sec. (including MBF calculation)
+30-9-2019, 8:24:32 =>  
+30-9-2019, 8:24:32 => Solving problem with 2.000000 modes
+30-9-2019, 8:24:32 =>  
+30-9-2019, 8:24:34 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.053448 percent.
+30-9-2019, 8:24:34 => Finished CMA_SM_DGFM_MBF solver in 2.173083 sec. (including MBF calculation)
+30-9-2019, 8:24:34 =>  
+30-9-2019, 8:24:34 => Solving problem with 3.000000 modes
+30-9-2019, 8:24:34 =>  
+30-9-2019, 8:24:36 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.053415 percent.
+30-9-2019, 8:24:36 => Finished CMA_SM_DGFM_MBF solver in 2.052957 sec. (including MBF calculation)
+30-9-2019, 8:24:36 =>  
+30-9-2019, 8:24:36 => Solving problem with 4.000000 modes
+30-9-2019, 8:24:36 =>  
+30-9-2019, 8:24:39 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.052537 percent.
+30-9-2019, 8:24:39 => Finished CMA_SM_DGFM_MBF solver in 2.467415 sec. (including MBF calculation)
+30-9-2019, 8:24:39 =>  
+30-9-2019, 8:24:39 => Solving problem with 5.000000 modes
+30-9-2019, 8:24:39 =>  
+30-9-2019, 8:24:42 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.001061 percent.
+30-9-2019, 8:24:42 => Finished CMA_SM_DGFM_MBF solver in 2.894126 sec. (including MBF calculation)
+30-9-2019, 8:24:42 =>  
+30-9-2019, 8:24:42 => Solving problem with 6.000000 modes
+30-9-2019, 8:24:42 =>  
+30-9-2019, 8:24:45 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000946 percent.
+30-9-2019, 8:24:45 => Finished CMA_SM_DGFM_MBF solver in 3.518846 sec. (including MBF calculation)
+30-9-2019, 8:24:45 =>  
+30-9-2019, 8:24:45 => Solving problem with 7.000000 modes
+30-9-2019, 8:24:45 =>  
+30-9-2019, 8:24:50 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000177 percent.
+30-9-2019, 8:24:50 => Finished CMA_SM_DGFM_MBF solver in 5.162936 sec. (including MBF calculation)
+30-9-2019, 8:24:50 =>  
+30-9-2019, 8:24:50 => Solving problem with 8.000000 modes
+30-9-2019, 8:24:51 =>  
+30-9-2019, 8:24:55 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000165 percent.
+30-9-2019, 8:24:55 => Finished CMA_SM_DGFM_MBF solver in 4.063103 sec. (including MBF calculation)
+30-9-2019, 8:24:55 =>  
+30-9-2019, 8:24:55 => Solving problem with 9.000000 modes
+30-9-2019, 8:24:55 =>  
+30-9-2019, 8:24:59 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000160 percent.
+30-9-2019, 8:24:59 => Finished CMA_SM_DGFM_MBF solver in 4.497767 sec. (including MBF calculation)
+30-9-2019, 8:24:59 =>  
+30-9-2019, 8:24:59 => Solving problem with 10.000000 modes
+30-9-2019, 8:24:59 =>  
+30-9-2019, 8:25:4 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000110 percent.
+30-9-2019, 8:25:4 => Finished CMA_SM_DGFM_MBF solver in 4.739763 sec. (including MBF calculation)
+30-9-2019, 8:25:4 =>  
+30-9-2019, 8:25:4 => Solving problem with 11.000000 modes
+30-9-2019, 8:25:4 =>  
+30-9-2019, 8:25:9 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000098 percent.
+30-9-2019, 8:25:9 => Finished CMA_SM_DGFM_MBF solver in 5.030087 sec. (including MBF calculation)
+30-9-2019, 8:25:9 =>  
+30-9-2019, 8:25:9 => Solving problem with 12.000000 modes
+30-9-2019, 8:25:9 =>  
+30-9-2019, 8:25:15 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000091 percent.
+30-9-2019, 8:25:15 => Finished CMA_SM_DGFM_MBF solver in 5.666569 sec. (including MBF calculation)
+30-9-2019, 8:25:15 =>  
+30-9-2019, 8:25:15 => Solving problem with 13.000000 modes
+30-9-2019, 8:25:15 =>  
+30-9-2019, 8:25:22 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000091 percent.
+30-9-2019, 8:25:22 => Finished CMA_SM_DGFM_MBF solver in 7.026454 sec. (including MBF calculation)
+30-9-2019, 8:25:22 =>  
+30-9-2019, 8:25:22 => Solving problem with 14.000000 modes
+30-9-2019, 8:25:22 =>  
+30-9-2019, 8:25:28 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000091 percent.
+30-9-2019, 8:25:28 => Finished CMA_SM_DGFM_MBF solver in 6.439054 sec. (including MBF calculation)
+30-9-2019, 8:25:28 =>  
+30-9-2019, 8:25:28 => Solving problem with 15.000000 modes
+30-9-2019, 8:25:28 =>  
+30-9-2019, 8:25:36 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000082 percent.
+30-9-2019, 8:25:36 => Finished CMA_SM_DGFM_MBF solver in 7.302714 sec. (including MBF calculation)
+30-9-2019, 8:25:36 =>  
+30-9-2019, 8:25:36 => Solving problem with 16.000000 modes
+30-9-2019, 8:25:36 =>  
+30-9-2019, 8:25:44 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000056 percent.
+30-9-2019, 8:25:44 => Finished CMA_SM_DGFM_MBF solver in 8.451126 sec. (including MBF calculation)
+30-9-2019, 8:25:44 =>  
+30-9-2019, 8:25:44 => Solving problem with 17.000000 modes
+30-9-2019, 8:25:44 =>  
+30-9-2019, 8:25:55 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000055 percent.
+30-9-2019, 8:25:55 => Finished CMA_SM_DGFM_MBF solver in 11.232260 sec. (including MBF calculation)
+30-9-2019, 8:25:56 =>  
+30-9-2019, 8:25:56 => Solving problem with 18.000000 modes
+30-9-2019, 8:25:56 =>  
+30-9-2019, 8:26:7 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000041 percent.
+30-9-2019, 8:26:7 => Finished CMA_SM_DGFM_MBF solver in 11.857973 sec. (including MBF calculation)
+30-9-2019, 8:26:7 =>  
+30-9-2019, 8:26:7 => Solving problem with 19.000000 modes
+30-9-2019, 8:26:7 =>  
+30-9-2019, 8:26:17 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000041 percent.
+30-9-2019, 8:26:17 => Finished CMA_SM_DGFM_MBF solver in 9.393906 sec. (including MBF calculation)
+30-9-2019, 8:26:17 =>  
+30-9-2019, 8:26:17 => Solving problem with 20.000000 modes
+30-9-2019, 8:26:17 =>  
+30-9-2019, 8:26:27 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000041 percent.
+30-9-2019, 8:26:27 => Finished CMA_SM_DGFM_MBF solver in 9.890778 sec. (including MBF calculation)
+30-9-2019, 8:26:27 =>  
+30-9-2019, 8:26:27 => Solving problem with 21.000000 modes
+30-9-2019, 8:26:27 =>  
+30-9-2019, 8:26:37 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000040 percent.
+30-9-2019, 8:26:37 => Finished CMA_SM_DGFM_MBF solver in 10.286700 sec. (including MBF calculation)
+30-9-2019, 8:26:37 =>  
+30-9-2019, 8:26:37 => Solving problem with 22.000000 modes
+30-9-2019, 8:26:37 =>  
+30-9-2019, 8:26:49 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000039 percent.
+30-9-2019, 8:26:49 => Finished CMA_SM_DGFM_MBF solver in 11.706049 sec. (including MBF calculation)
+30-9-2019, 8:26:49 =>  
+30-9-2019, 8:26:49 => Solving problem with 23.000000 modes
+30-9-2019, 8:26:49 =>  
+30-9-2019, 8:27:2 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000038 percent.
+30-9-2019, 8:27:2 => Finished CMA_SM_DGFM_MBF solver in 13.348221 sec. (including MBF calculation)
+30-9-2019, 8:27:2 =>  
+30-9-2019, 8:27:2 => Solving problem with 24.000000 modes
+30-9-2019, 8:27:2 =>  
+30-9-2019, 8:27:16 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000038 percent.
+30-9-2019, 8:27:16 => Finished CMA_SM_DGFM_MBF solver in 13.360226 sec. (including MBF calculation)
+30-9-2019, 8:27:16 =>  
+30-9-2019, 8:27:16 => Solving problem with 25.000000 modes
+30-9-2019, 8:27:16 =>  
+30-9-2019, 8:27:31 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000001 percent.
+30-9-2019, 8:27:31 => Finished CMA_SM_DGFM_MBF solver in 15.156112 sec. (including MBF calculation)
+30-9-2019, 8:27:31 =>  
+30-9-2019, 8:27:31 => Solving problem with 26.000000 modes
+30-9-2019, 8:27:31 =>  
+30-9-2019, 8:27:47 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000000 percent.
+30-9-2019, 8:27:47 => Finished CMA_SM_DGFM_MBF solver in 16.060477 sec. (including MBF calculation)
+30-9-2019, 8:27:47 =>  
+30-9-2019, 8:27:47 => Solving problem with 27.000000 modes
+30-9-2019, 8:27:47 =>  
+30-9-2019, 8:28:3 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.000000 percent.
+30-9-2019, 8:28:3 => Finished CMA_SM_DGFM_MBF solver in 16.039785 sec. (including MBF calculation)
+30-9-2019, 8:28:3 =>  
+30-9-2019, 8:28:23 => Finished MBF generation in 4.769721 sec. (including MBF calculation)
+30-9-2019, 8:29:0 => Finished Matrix reduction in 36.266163 sec. (including MBF calculation)
+30-9-2019, 8:29:1 => Rel. error norm. for Sol. 1 of 1 compared to FEKO sol. 0.033539 percent.
+30-9-2019, 8:29:2 => Finished CBFMMultScat solver in 37.767705 sec. (including MBF calculation)
+30-9-2019, 14:53:31 =>  
+30-9-2019, 14:53:31 => ==================================================================================
+30-9-2019, 14:53:31 => ======                          SUN-EM                                      ======
+30-9-2019, 14:53:31 => ======                 Version 1.35 Date: 2019-8-12                         ======
+30-9-2019, 14:53:31 => ======                                                                      ======
+30-9-2019, 14:53:31 => ======      CEM toolkit and solvers from Stellenbosch University            ======
+30-9-2019, 14:53:31 => ======                      Copyright 2018                                  ======
+30-9-2019, 14:53:31 => ==================================================================================
+30-9-2019, 14:53:31 =>  
+30-9-2019, 14:53:31 =>  
+30-9-2019, 14:53:31 => ------------------------------------------------------------------------------------
+30-9-2019, 14:53:31 => Reading *.mat file from: Large_array_active.mat
+30-9-2019, 14:53:34 => Read Zmn file version 5
+30-9-2019, 14:53:34 => Dim. of Zmn is m=5400 and n=5400
+30-9-2019, 14:53:34 => Zmn is stored in double precision
+30-9-2019, 14:53:34 => Read: 1 frequencies (number of Z-mats.)
+30-9-2019, 14:53:34 => Finished processing the *.mat file: Large_array_active.mat
+30-9-2019, 14:53:34 =>  
+30-9-2019, 14:53:34 => ------------------------------------------------------------------------------------
+30-9-2019, 14:53:34 => Reading *.str file from: ascii_Large_array_active.str
+30-9-2019, 14:53:34 => Read Xsol file version 4
+30-9-2019, 14:53:34 => No. of MoM basis = 5400 and no. of FEM basis = 0
+30-9-2019, 14:53:34 => Read: 1 solutions (number of Xsols.)
+30-9-2019, 14:53:34 => Finished processing the *.str file: ascii_Large_array_active.str
+30-9-2019, 14:53:34 =>  
+30-9-2019, 14:53:34 => ------------------------------------------------------------------------------------
+30-9-2019, 14:53:34 => Reading *.rhs file from: Large_array_active.rhs
+30-9-2019, 14:53:34 => Read: 1 excitations (number of Yrhs.)
+30-9-2019, 14:53:34 => Finished processing the *.rhs file: Large_array_active.rhs
+30-9-2019, 14:53:34 =>  
+30-9-2019, 14:53:34 => ------------------------------------------------------------------------------------
+30-9-2019, 14:53:34 => Initialising the configuration setup
+30-9-2019, 14:53:34 =>   Domain decomposition active
+30-9-2019, 14:53:34 => Done
+30-9-2019, 14:53:34 =>  
+30-9-2019, 14:53:34 => ------------------------------------------------------------------------------------
+30-9-2019, 14:53:34 => Reading additional FEKO data from *.out file
+30-9-2019, 14:53:34 =>   *.out file: Large_array_active.out
+30-9-2019, 14:54:7 => 
+  Number of frequencies: 1
+30-9-2019, 14:54:11 =>   Number of metallic triangles: 5600
+30-9-2019, 14:54:12 =>   Number of metallic edges (RWG basis functions): 5400
+30-9-2019, 14:54:12 =>   Number of MoM basis functions: 5400
+30-9-2019, 14:54:12 =>   Number of finite array elements: 200
+30-9-2019, 14:54:12 =>   Number of MoM basis functions per array element : 27
+30-9-2019, 14:54:12 =>   Number of domains: 200
+30-9-2019, 14:54:12 =>   Interconnectivity: Disconnected domains
+30-9-2019, 14:54:12 =>   Finished processing the *.out file: Large_array_active.out
+30-9-2019, 14:54:14 => 0.001503
+30-9-2019, 14:54:17 => 0.001489
+30-9-2019, 14:54:19 => 0.001489
+30-9-2019, 14:54:21 => 0.001489
+30-9-2019, 14:54:23 => 0.001489
+30-9-2019, 14:54:25 => 0.001477
+30-9-2019, 14:54:28 => 0.001476
+30-9-2019, 14:54:32 => 0.001475
+30-9-2019, 14:54:35 => 0.001475
+30-9-2019, 14:54:37 => 0.108055
+30-9-2019, 14:54:40 => 0.108055
+30-9-2019, 14:54:44 => 0.108055
+30-9-2019, 14:54:47 => 0.108055
+30-9-2019, 14:54:51 => 0.108055
+30-9-2019, 14:54:55 => 0.108055
+30-9-2019, 14:54:59 => 0.108055
+30-9-2019, 14:55:3 => 0.108055
+30-9-2019, 14:55:8 => 0.108055
+30-9-2019, 14:55:13 => 0.108055
+30-9-2019, 14:55:25 => 0.108055
+30-9-2019, 14:55:47 => 0.108055
+30-9-2019, 14:55:51 => 0.108055
+30-9-2019, 14:55:55 => 0.108055
+30-9-2019, 14:56:11 => Finished MBF generation in 2.182950 sec. (including MBF calculation)
+30-9-2019, 14:56:48 => Finished Matrix reduction in 37.156537 sec. (including MBF calculation)
+30-9-2019, 14:56:50 => 0.033539
+30-9-2019, 14:56:50 => Finished CBFMMultScat solver in 38.937315 sec. (including MBF calculation)
