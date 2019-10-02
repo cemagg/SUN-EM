@@ -1,0 +1,16 @@
+function [reducedMBF] = reduceCMAMBFs(Const, fullMBF)
+    % This function reduces or orthonormalizes the generated MBFs
+    % the options I've been working on are the "orth()"
+    %   Detailed explanation goes here
+    [U,S,V] = svd(fullMBF, 0);
+    %thr = 10000000000;
+
+    %if size(S,1)>1
+    %    numBases = sum(diag(S)./max(diag(S))>(1/thr),1);
+    %    reducedMBF = U(:, 1:numBases);
+    %else
+     %   reducedMBF = U(:, 1:1);
+    %end
+    reducedMBF = U; %orth(fullMBF);
+end
+

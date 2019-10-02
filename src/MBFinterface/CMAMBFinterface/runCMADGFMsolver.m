@@ -1,15 +1,11 @@
-function [Zact] = runCMADGFMsolver(Const, Solver_setup, zMatrices, xVectors)
+function [Zact] = runCMADGFMsolver(Const, Solver_setup, zMatrices)
 %RUNCMADGFMSOLVER Summary of this function goes here
 %   Detailed explanation goes here
     numArrayEls = Solver_setup.num_finite_array_elements;
     Ndgfm = Solver_setup.mom_basis_functions_per_array_element;
     Zact = complex(zeros(Ndgfm,Ndgfm));
     Ndgfm = Solver_setup.mom_basis_functions_per_array_element;
-    alphanm = complex(ones(Ndgfm, numArrayEls));
-    for m=1:numArrayEls
-        domain_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
-        alphanm(:,m) = (xVectors.Isol(domain_basis_functions,1));
-    end
+    
     for m=1:numArrayEls
         domain_m_basis_functions = Solver_setup.rwg_basis_functions_domains{m};
 
