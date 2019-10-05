@@ -1,13 +1,14 @@
 function [CMAMBF] = runCMAMBFgenerator(Const, Solver_setup, zMatrices, yVectors, xVectors)
-    Z = zMatrices.values(1:Solver_setup.mom_basis_functions_per_array_element , 1:Solver_setup.mom_basis_functions_per_array_element);
+    Znew = zMatrices.values(1:Solver_setup.mom_basis_functions_per_array_element , 1:Solver_setup.mom_basis_functions_per_array_element);
+    Z = runCMADGFMsolver(Const, Solver_setup, zMatrices, xVectors);
     V = yVectors.values(1:Solver_setup.mom_basis_functions_per_array_element);
-    iFek = runCMAMOMsolver(Z, V);%xVectors.Isol(1:Solver_setup.mom_basis_functions_per_array_element);
+    iFek = runCMAMOMsolver(Znew, V);
     R = -1.*real(Z);
     X = -1.*imag(Z);
     D = R\X;
     %[J, l] = eigs(D);
     %[J, l] =  eig(X,R,'chol');
-    [J, l] =  eigs(D, 5, 'SM');
+    [J, l] =  eigs(D, 6, 'SM');
     s = length(l);
     l = diag(l);
     NumArrayEls = Solver_setup.num_finite_array_elements;
@@ -28,6 +29,7 @@ function [CMAMBF] = runCMAMBFgenerator(Const, Solver_setup, zMatrices, yVectors,
         iTot = iTot + CMAMBF.sol(:, n);
     end
     sm = iFek - iTot;
+    CMAMBF.sm = sm;
     CMAMBF.sol(:, length(l)+1) = sm;
 
     redSolu = reduceCMAMBFs(Const, CMAMBF.sol);

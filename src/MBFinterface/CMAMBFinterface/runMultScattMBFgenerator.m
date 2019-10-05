@@ -13,7 +13,7 @@ macro.numPrimMBFs = zeros(numArrayEls,numSols); % Number of Prim. MBFs / solutio
 macro.numSecMBFs = zeros(numArrayEls,numSols); % Number of Sec.  MBFs / solution config.
 domain_indices = Solver_setup.rwg_basis_functions_domains{1}; 
 [L,U] = lu(zMatrices.values(domain_indices, domain_indices));
-
+tic
 for solNum = 1:numSols
     macro.numPrimMBFs(:, solNum) = 0;
     for m=1:numArrayEls
@@ -47,18 +47,24 @@ for solNum = 1:numSols
              end
          end
     end
+    time = toc;
+    message_fc(Const,sprintf('Finished MBF generation in %f sec. (including MBF calculation)',time));
     macro.totRedMBFs  = 0;
+    tic
     if(Const.useMBFreduction)
         for m=1:numArrayEls
             MBF = [macro.PrimIsol(:,1:macro.numPrimMBFs(m,solNum),m,solNum) macro.SecIsol(:,1:macro.numSecMBFs(m,solNum),m,solNum)];
-            redMBF = reduceCMAMBFs(Const, MBF);
+            redMBF = reduceGenMBFs(Const, MBF);
             macro.numRedMBFs(m,1) = size(redMBF,2);
             macro.RedIsol(:,1:size(redMBF,2),m,solNum) = redMBF;
             
         end
     end
+    time = toc;
+    message_fc(Const,sprintf('Finished Matrix reduction in %f sec. (including MBF calculation)',time));
     for n=1:numArrayEls
        macro.totRedMBFs = macro.totRedMBFs + macro.numRedMBFs(n,solNum);   
     end
+    
 end
 

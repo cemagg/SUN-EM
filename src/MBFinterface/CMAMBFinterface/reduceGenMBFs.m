@@ -1,8 +1,8 @@
-function [reducedMBF] = reduceCMAMBFs(Const, fullMBF)
+function [reducedMBF] = reduceGenMBFs(Const, fullMBF)
 %REDUCEMBFJACQUES Summary of this function goes here
 %   Detailed explanation goes here
 [U,S,V] = svd(fullMBF, 0);
-thr = 100000000;
+thr = 1000;
 
 if size(S,1)>1
     numBases = sum(diag(S)./max(diag(S))>(1/thr),1);
