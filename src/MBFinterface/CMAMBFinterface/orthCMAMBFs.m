@@ -1,4 +1,4 @@
-function [orthMBF] = orthCMAMBFs(Const, fullMBF)
+function [orthMBF] = orthCMAMBFs(fullMBF)
     %   Usage:
     %       redSolu = orthCMAMBFs(Const, CMAMBF.sol);
     %   Input arguments:
@@ -15,7 +15,10 @@ function [orthMBF] = orthCMAMBFs(Const, fullMBF)
     %       and the "svd()" function. When using the "svd()" function
     %       the U variable is used as the orth'd matrix. No reduction
     %       is being done, since CMA
+   
+
     [U,S,V] = svd(fullMBF, 0);
+    
     orthMBF = U; %orth(fullMBF);
     
 end

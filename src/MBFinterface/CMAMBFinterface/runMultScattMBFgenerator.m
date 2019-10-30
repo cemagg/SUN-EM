@@ -6,7 +6,7 @@ Nmom = Solver_setup.num_mom_basis_functions;
 numSols = xVectors.numSols;
 numArrayEls = Solver_setup.num_finite_array_elements;
 max_primaries_per_domain = 1;
-macro.RedIsol = complex(zeros(Nmom,numArrayEls,numArrayEls,numSols));
+macro.orthsol = complex(zeros(Nmom,numArrayEls,numArrayEls,numSols));
 macro.PrimIsol = complex(zeros(Nmom, 1, numArrayEls, numSols));
 macro.SecIsol = complex(zeros(Nmom,max_primaries_per_domain*(numArrayEls-1),numArrayEls,numSols));
 macro.numPrimMBFs = zeros(numArrayEls,numSols); % Number of Prim. MBFs / solution config.
@@ -56,7 +56,7 @@ for solNum = 1:numSols
             MBF = [macro.PrimIsol(:,1:macro.numPrimMBFs(m,solNum),m,solNum) macro.SecIsol(:,1:macro.numSecMBFs(m,solNum),m,solNum)];
             redMBF = reduceGenMBFs(Const, MBF);
             macro.numRedMBFs(m,1) = size(redMBF,2);
-            macro.RedIsol(:,1:size(redMBF,2),m,solNum) = redMBF;
+            macro.orthsol(:,1:size(redMBF,2),m,solNum) = redMBF;
             
         end
     end
