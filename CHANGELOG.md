@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.37 - 2020-05-13
+- Move examples added by Jacques Meyer for his skripsie (CMA-MBF) to the /examples directory.
+
 ## 1.36 - 2019-08-19
 - Added now another driver (DGFM only) for example-12 (for Stella Schleich's skripsie).
 
