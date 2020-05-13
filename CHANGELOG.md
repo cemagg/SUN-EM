@@ -6,6 +6,10 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.38 - 2020-05-13
+- Added now example-20 (pec_plate_array) and accompanying script, pec_plate_array_driver.m that
+  performs the iterative Jacobi calculation (IFBalg = 7).
+
 ## 1.37 - 2020-05-13
 - Move examples added by Jacques Meyer for his skripsie (CMA-MBF) to the /examples directory.
 

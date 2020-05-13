@@ -49,7 +49,7 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
 
     % Some initialisations
     Nmom = Solver_setup.num_mom_basis_functions;                   % Total number of basis functions for whole problem
-    numArrayElements = Solver_setup.num_finite_array_elements;          % The number of array elements
+    numArrayElements = Solver_setup.num_finite_array_elements;     % The number of array elements
 
     message_fc(Const,' ');
     message_fc(Const,'------------------------------------------------------------------------------------');
@@ -678,6 +678,8 @@ function [ifbmom] = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xV
                 end%if
             end%for
 
+            Ik
+            
         elseif (Const.IFBalg == 8)
             % Improving the accuracy of the starting vector one might obtain an improved
             % convergence rate using the DGFM
