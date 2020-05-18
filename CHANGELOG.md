@@ -6,6 +6,10 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.39 - 2020-05-18
+- Added now an additional solver script (essentially empty), runFPGAJacobisolver.m, that can be used
+  for the iterative Jacobi (FPGA supported) code.
+
 ## 1.38 - 2020-05-13
 - Added now example-20 (pec_plate_array) and accompanying script, pec_plate_array_driver.m that
   performs the iterative Jacobi calculation (IFBalg = 7).

@@ -49,7 +49,7 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
         Solution.cbfm = runCBFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs);
     end%if
 
-    % -- Jacobi solver
+    % -- Jacobi solver (only two iterations, as used by the i-DGFM)
     if (Const.runJacobisolver)
         Solution.jack = runJACKITsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs);
     end%if
@@ -57,6 +57,11 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     % -- IFB MoM solver (similar to Jacobi)
     if (Const.runIFBMoMsolver)
         Solution.ifbmom = runIFBMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
+    end%if
+    
+    % -- FPGA-based Iterative Jacobi solver (MEng of Caleb Mnisi - 2020)
+    if (Const.runFPGAJacobisolver)
+        Solution.fpgajacobi = runFPGAJacobisolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
     end%if
     
     % -- DGFM solver

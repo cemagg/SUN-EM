@@ -24,6 +24,9 @@ Const.runJacobisolver    = false;
 Const.runIFBMoMsolver    = true;
 Const.runDGFMsolver      = false;
 
+% Added to investigate FPGA-based Jacobi Solver
+Const.runFPGAJacobisolver = true;
+
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
 % --------------------------------------------------------------------------------------------------
