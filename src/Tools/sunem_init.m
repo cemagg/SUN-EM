@@ -93,7 +93,20 @@ function Const = sunem_init(Const, yVectors)
            Const.runIFBMoMsolver = false;
         end
     end
-
+    % ================================    
+    try
+        set = false;
+        if (Const.runFPGAJacobisolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.runFPGAJacobisolver = false;
+        end
+    end
+    
     % ================================    
     try
         set = false;
@@ -398,7 +411,7 @@ function Const = sunem_init(Const, yVectors)
     % =================================
     % Some file-format version numbers that we support
     % =================================    
-    Const.FEKO_efe_file_format = 4; % FEKO *.efe file format
+    Const.FEKO_efe_file_format = 6; % FEKO *.efe file format
     % TO-DO: Also check other files, e.g. *.str, *.hfe, *.ffe, *.snp, etc.    
 
     % Check now whether domain decomposition is active. This is signalled 
