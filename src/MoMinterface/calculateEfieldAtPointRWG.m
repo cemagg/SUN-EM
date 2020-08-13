@@ -49,7 +49,7 @@ function EfieldAtPointSpherical =  calculateEfieldAtPointRWG(Const, r, theta_deg
         % Wavelength
         lambda = Const.C0/Solver_setup.frequencies.samples(freq_index);
         k = 2*pi/lambda;
-        K = (k*Const.ETA_0/(4*pi));
+        K = Const.ETA_0/(4*pi);
         %K = 1.0;
 
         % The E-field at the point is calculated as the superposition of the individual 
@@ -117,13 +117,6 @@ function EfieldAtPointSpherical =  calculateEfieldAtPointRWG(Const, r, theta_deg
             EfieldAtPointCartesian(freq_index, 2) = EfieldAtPointCartesian(freq_index, 2) + EfieldCurrentRWGelementY;
             EfieldAtPointCartesian(freq_index, 3) = EfieldAtPointCartesian(freq_index, 3) + EfieldCurrentRWGelementZ;
         end
-
-        % Kdl - This is a constant 2*pi that has been added to get SUN-EM results the same as that of
-        % FEKO. TO-DO: DL, check why this is the case. Peak vs. RMS? Cannot be, as that is a factor 1/2
-        % or 1/sqrt(2).
-        Kdl = 2*pi;
-
-        EfieldAtPointCartesian = EfieldAtPointCartesian ./ Kdl;
 
         % transform the E-field vector, to one in Sperical Coordinates
         EfieldAtPointSpherical(freq_index,:) = transformCartesianVectorToSpherical(EfieldAtPointCartesian(freq_index,:), Px, Py, Pz);
