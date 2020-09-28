@@ -15,3 +15,11 @@ SimOutput.log
 *.mat
 *.fig
 *.efe
+*.pre
+*.dat
+*.0
+*.1
+*.2
+*.3
+*.ffe
+*.hfe
