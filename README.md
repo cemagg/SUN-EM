@@ -9,7 +9,7 @@ agreement) at Stellenbosch University, Stellenbosch, South Africa.
 
 * Author: Danie Ludick
 * E-mail: dludick@sun.ac.za
-* Copyright 2015 - 2019 (Danie Ludick)
+* Copyright 2015 - 2022 (Danie Ludick)
 
 # Usage #
 

@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.39 - 2022-08-04
+- Added example 23 for working on the fast frequency DGFM solver using interpolation.
+
 ## 1.39 - 2020-05-18
 - Added now an additional solver script (essentially empty), runFPGAJacobisolver.m, that can be used
   for the iterative Jacobi (FPGA supported) code.

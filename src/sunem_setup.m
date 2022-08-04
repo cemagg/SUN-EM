@@ -24,9 +24,9 @@ function [Const] = sunem_setup(Const)
     Const.MajorVersion = 1;  % Major version
     Const.MinorVersion = 39;  % Minor version
 
-    Const.Year = 2020;
-    Const.Month = 05;
-    Const.Day = 18;
+    Const.Year = 2022;
+    Const.Month = 08;
+    Const.Day = 04;
 
     % --------------------------------------------------------------------------------------------------
     % Set the Project path directories, and also add the tools, and interfaces to the Path
