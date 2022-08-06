@@ -35,7 +35,7 @@ Const.FEKOoutfilename          = 'bow_tie_array_MoM.out';
 % --------------------------------------------------------------------------------------------------
 % Define output files for transferring expansion coefficients back to FEKO data
 % --------------------------------------------------------------------------------------------------
-Const.SUNEMmomstrfilename      =  ''; %sunem_mom_bow_tie_array.str';
+Const.SUNEMmomstrfilename      =  ''; %'sunem_mom_bow_tie_array.str';
 Const.SUNEMdgfmstrfilename     =  '';%'sunem_dgfm_bow_tie_array.str';
 
 % --------------------------------------------------------------------------------------------------
