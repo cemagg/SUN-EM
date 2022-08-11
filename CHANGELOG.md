@@ -6,6 +6,9 @@ Note the following list of abbreviations:
 
 ===================================================================================================
 
+## 1.40 - 2022-08-11
+- Fixed the MoM solver for the number of solutions that were extracted for a multi-frequency example.
+
 ## 1.39 - 2022-08-04
 - Added example 23 for working on the fast frequency DGFM solver using interpolation.
 
