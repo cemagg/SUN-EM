@@ -39,10 +39,10 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
     mom  = [];
     mom.name = 'mom';
     Nmom = Solver_setup.num_mom_basis_functions;   % Total number of basis functions for whole problem
-    %numSols = xVectors.numSols;                   % The number of solutions configurations
-    mom.numSols = 1; %numSols;                     % For now, set to 1. (TO-DO: Update)
+    numSols = refIsol.numSols;                     % The number of solutions configurations
+    mom.numSols = numSols; %numSols;               % For now, set to 1. (TO-DO: Update)
     numFreq = Solver_setup.frequencies.freq_num;   % The number of frequency points to process
-    numRHSperFreq = mom.numSols / numFreq;         % The number of solutions per frequency point.
+    numRHSperFreq = 1; % mom.numSols / numFreq;    % The number of solutions per frequency point.
                                                    % For now, should be 1 (TO-DO: Update)
                                                    
     % Some info about the solution configurations
