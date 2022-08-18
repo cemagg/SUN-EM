@@ -111,3 +111,23 @@ hold off
 
 %Link the axes
 linkaxes([ax1,ax2],'x');
+
+%ax3 = nexttile;
+%Resistance = real(zMatrices.values(1,1,1:5));
+%Resistance=reshape(permute(Resistance,[5,4,3,2,1]),5,[]);
+%hold on;
+%plot(1:5,Resistance);
+
+%Resistance = real(zMatrices.values(1,10,1:5));
+%Resistance=reshape(permute(Resistance,[5,4,3,2,1]),5,[]);
+%hold on;
+%plot(1:5,Resistance);
+
+%Resistance = real(zMatrices.values(1,20,1:5));
+%Resistance=reshape(permute(Resistance,[5,4,3,2,1]),5,[]);
+%hold on;
+%plot(1:5,Resistance);
+
+%legend('m,n = 1,1','m,n = 1,10','m,n = 1,20');
+%title(ax3,'Input Resistance');
+%hold off
