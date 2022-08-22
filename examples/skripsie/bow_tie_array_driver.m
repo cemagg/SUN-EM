@@ -18,8 +18,8 @@ Const = sunem_initialise('bow_tie_array',false);
 % --------------------------------------------------------------------------------------------------
 
 % Choose the solvers that will be executed
-Const.runMoMsolver          = true;
-Const.runDGFMsolver         = false;
+Const.runMoMsolver          = false;
+Const.runDGFMsolver         = true;
 
 
 
