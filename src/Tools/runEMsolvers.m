@@ -35,9 +35,9 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     end%if
 
     % -- C++ MoM (TO-DO: Tameez, perhaps this is a better spot to call your entire MoM C++ solver)
-    % if (Const.runMoMsolver)        
+     %if (Const.runMoMsolver)        
     %     Solution.mom = runCPPMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
-    % end%if    
+   %  end%if    
  
     % -- CBFM
     if (Const.runCBFMsolver)

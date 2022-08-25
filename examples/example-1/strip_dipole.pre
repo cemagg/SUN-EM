@@ -7,20 +7,22 @@
 ******************************************
 #lam = 1
 #freq = #c0/#lam
+#freq_start = 0.67*#freq
+#freq_stop = 4.67*#freq
 
 ******************************************
 ** Element Variables                    **
 ******************************************
 #a = 1*#lam ** square edge length
 
-#L = 0.45*#lam
-#w = 0.02
+#L = 0.5*#lam
+#w = 0.001
 
 ******************************************
 ** Meshing                              **
 ******************************************
 ** Mesh size
-#t_edge = #lam/30  ** #lam/15 creates 15 basis-functions per element
+#t_edge = 0.12*#lam     ** #lam/15 creates 15 basis-functions per element
                    ** #lam/30 creates 28 basis-functions per element
 #s_rad = 4E-6
 #s_len = #lam/15

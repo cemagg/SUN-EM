@@ -78,7 +78,7 @@ ax1 = nexttile;
 xvalues = Solver_setup.frequencies;
 yvalues = log10(abs(zMatrices.values(1,1,1:5)));    % build 3D array of all of individuals to manipulate as one
 yvalues=reshape(permute(yvalues,[5,4,3,2,1]),5,[]); % rearrange by plane first, row & column and put in columns
-plot(xvalues.samples,yvalues);                      % plot each column against the y vector
+plot(xvalues.samples,yvalues);                      
 
 
 yvalues = log10(abs(zMatrices.values(1,10,1:5))); 
