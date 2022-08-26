@@ -56,23 +56,5 @@ Const.FEKOoutfilename          = 'strip_dipole.out';
 % --------------------------------------------------------------------------------------------------
 % Postprocess the results, e.g. calculate the Electric field
 % --------------------------------------------------------------------------------------------------
-ax1 = nexttile;
-yvalues = log10(abs(zMatrices.values(1,1,1))); % build 3D array of all of individuals to manipulate as one
-yvalues=reshape(permute(yvalues,[1]),1,[]);  % rearrange by plane first, row & column and put in columns
-plot(1,yvalues)                                    % plot each column against the y vector
 
-yvalues = log10(abs(zMatrices.values(1,10,1))); 
-yvalues=reshape(permute(yvalues,[1]),1,[]);
-hold on;
-plot(1,yvalues);
-
- 
-yvalues = log10(abs(zMatrices.values(1,20,1))); 
-yvalues=reshape(permute(yvalues,[1]),1,[]);
-hold on;
-plot(1,yvalues);
-
-legend('m,n = 1,1','m,n = 1,10','m,n = 1,20');
-title(ax1,'magnitude plots');
-hold off
 

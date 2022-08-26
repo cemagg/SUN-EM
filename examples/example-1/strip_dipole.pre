@@ -22,8 +22,9 @@
 ** Meshing                              **
 ******************************************
 ** Mesh size
-#t_edge = 0.12*#lam     ** #lam/15 creates 15 basis-functions per element
-                   ** #lam/30 creates 28 basis-functions per element
+#t_edge = 0.12*#lam ** #lam/15 creates 15 basis-functions per element
+                     ** #lam/30 creates 28 basis-functions per element
+                     ** 3*#lam/25 creates 19 basis-functions 
 #s_rad = 4E-6
 #s_len = #lam/15
 IP                            #s_rad    #t_edge   #s_len
@@ -60,7 +61,7 @@ EG   0    0    0                                                                
 PS: 0 : 1 : 1 : 0 : 0
 
 ** Frequency
-FR   1                        #freq
+FR: 1 : 0 :  :  :  : #freq_start :  : #freq_stop
 
 ** Data output
 DA: 1 : 0 : 1 : 0 : 0 : 0 : 0 : 0 : 0 : 0

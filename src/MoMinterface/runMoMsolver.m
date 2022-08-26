@@ -42,7 +42,7 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
     numSols = refIsol.numSols;                     % The number of solutions configurations
     mom.numSols = numSols;                         % For now, set to 1. (TO-DO: Update)
     numFreq = Solver_setup.frequencies.freq_num;   % The number of frequency points to process
-    numRHSperFreq = numSols/numFreq; %mom.numSols/numFreq;% The number of solutions per frequency point.
+    numRHSperFreq = 1;        %mom.numSols/numFreq;% The number of solutions per frequency point.
                                                    % For now, should be 1 (TO-DO: Update)
                                                    
     % Some info about the solution configurations
@@ -94,7 +94,7 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
             % and also where we will be storing these values again (in Xsol)
             index = solNum + (freq-1)*numRHSperFreq;
             % DJdbg --> remove
-            message_fc(Const,sprintf('  index: %d', index));
+            %message_fc(Const,sprintf('  index: %d', index));
 
             % Back-wards substitution
             b = L\yVectors.values(:,index);

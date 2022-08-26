@@ -122,7 +122,7 @@ function [xVectors] = readFEKOXvectorFromFile(Const, strfilename)
 
     % Now follow the numMoMbasis basis-functions
     xVectors.numSols = 0;
-    %xVectors.values = []; % Replace now with Isol to be consistent with other parts of code.
+    xVectors.values = []; % Replace now with Isol to be consistent with other parts of code.
     xVectors.Isol = []; % Replace now with Isol to be consistent with other parts of code.
     while ~feof(fid)
         xVectors.numSols = xVectors.numSols + 1;
