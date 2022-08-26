@@ -12,8 +12,8 @@
 *******************************
 #lam = 1
 #freq = #c0/#lam
-#freq_start = 0.8*#freq
-#freq_stop = 1.2*#freq
+#freq_start = 0.2*#freq  ** 0.8*#freq
+#freq_stop = 2.5*#freq   ** 1.2*#freq
 
 *******************************
 ** Element Variables         **
