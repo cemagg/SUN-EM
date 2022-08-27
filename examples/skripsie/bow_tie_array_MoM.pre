@@ -108,7 +108,7 @@ EG   0    0    0                                                                
 PS: 0 : 1 : 1 : 0 : 0
 
 ** Frequency
-FR: 5 : 0 :  :  :  : #freq_start :  : #freq_stop
+FR: 20 : 0 :  :  :  : #freq_start :  : #freq_stop
 
 ** Data output
 DA   0    0    0    0    0    0         0         0         0         0
