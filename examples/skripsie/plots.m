@@ -1,3 +1,15 @@
+%vq = (59958500:0.1:1349070000);
+%yvaluesqlin = interp1(xvalues,yvalues,1349070000,'linear');
+%yvaluesqspl = interp1(xvalues,yvalues,1349070000,'spline');
+%yvaluesqpch = interp1(xvalues,yvalues,1349070000,'pchip');
+
+
+%real_z1 = real(yvalues);
+%imag_z1 = imag(yvalues);
+%plot(real_z1,imag_z1,'-x');
+%xlabel('Real axis');
+%ylabel('Imaginary axis');
+
 
 %Top plot
 ax1 = nexttile;
@@ -21,11 +33,6 @@ plot(xvalues.samples,yvalues,'-x');
 legend('m,n = 1,1','m,n = 1,10','m,n = 1,20');
 title(ax1,'magnitude plots');
 hold off
-
-
-
-
-
 
 
 
