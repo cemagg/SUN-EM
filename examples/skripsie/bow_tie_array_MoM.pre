@@ -13,7 +13,7 @@
 #lam = 1
 #freq = #c0/#lam
 #freq_start = 0.2*#freq  ** 0.8*#freq
-#freq_stop = 2.5*#freq   ** 1.2*#freq
+#freq_stop =  4.5*#freq   ** 1.2*#freq
 
 *******************************
 ** Element Variables         **
@@ -108,10 +108,10 @@ EG   0    0    0                                                                
 PS: 0 : 1 : 1 : 0 : 0
 
 ** Frequency
-FR: 20 : 0 :  :  :  : #freq_start :  : #freq_stop
+FR: 85 : 0 :  :  :  : #freq_start :  : #freq_stop
 
 ** Data output
-DA   0    0    0    0    0    0         0         0         0         0
+DA: 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0
 
 ** Control preconditioning
 CG   -1        -1
