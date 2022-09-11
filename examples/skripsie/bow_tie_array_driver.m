@@ -76,16 +76,23 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 
 %Top plot
 ax1 = nexttile;
-xvalues = Solver_setup.frequencies;
-yvalues = abs(zMatrices.values(1,1,1:85));    % build 3D array of all of individuals to manipulate as one
+xvalues = Solver_setup.frequencies.samples;
+yvalues = zMatrices.values(1,200,1:85);    % build 3D array of all of individuals to manipulate as one
 yvalues = reshape(permute(yvalues,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
-plot(xvalues.samples,yvalues,'-x');   
 
-
-xlabel('Frequencies');
-ylabel('Magnitude');
-%title(ax1,'magnitude plot');
-
+real_z1 = real(yvalues);
+plot(xvalues,real_z1,'-x');
+xlabel('Frequency');
+ylabel('Real axis');
 legend('Samples');
+title(ax1,'magnitude plot');
 
-
+ax2 = nexttile;
+xvalues = Solver_setup.frequencies.samples;
+yvalues = zMatrices.values(1,200,1:85);    % build 3D array of all of individuals to manipulate as one
+yvalues = reshape(permute(yvalues,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
+imag_z1 = imag(yvalues);
+plot(xvalues,imag_z1,'-x');
+xlabel('Frequency');
+ylabel('Imaginary axis');
+legend('Samples');
