@@ -1,8 +1,8 @@
 ##File Type: Far field
-##File Format: 7
+##File Format: 6
 ##Source: bow_tie_antenna
-##Date: 2020-08-04 13:51:49  
-** File exported by Altair Feko - Solver (seq) Version 2019.3-660 from 2020-02-04
+##Date: 2022-08-31 15:37:49  
+** File exported by Altair Feko - Solver (seq) Version 2019.1-338 from 2019-06-07
 
 #Request Name: willieveldA
 #Frequency:   2.99792458E+008

@@ -77,22 +77,37 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %Top plot
 ax1 = nexttile;
 xvalues = Solver_setup.frequencies.samples;
-yvalues = zMatrices.values(1,200,1:85);    % build 3D array of all of individuals to manipulate as one
+yvalues = zMatrices.values(1,200,1:85);   % build 3D array of all of individuals to manipulate as one
 yvalues = reshape(permute(yvalues,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
 
 real_z1 = real(yvalues);
+
+new_z1 = yvalues/exp(-1i*2*pi*0.0013125);
+new_real1 = real(new_z1);
+hold on;
+plot(xvalues,new_real1,'-x');
 plot(xvalues,real_z1,'-x');
+hold off;
+
+
 xlabel('Frequency');
 ylabel('Real axis');
-legend('Samples');
-title(ax1,'magnitude plot');
+legend('new','old');
+title(ax1,'Real plot');
+hold off;
+
+
 
 ax2 = nexttile;
-xvalues = Solver_setup.frequencies.samples;
-yvalues = zMatrices.values(1,200,1:85);    % build 3D array of all of individuals to manipulate as one
-yvalues = reshape(permute(yvalues,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
 imag_z1 = imag(yvalues);
+%new_imag = imag_z1/(cos(2*pi*1) + 1i*sin(2*pi*1));
+
+hold on;
 plot(xvalues,imag_z1,'-x');
+%plot(xvalues,new_imag,'-x');
+hold off; 
+
 xlabel('Frequency');
 ylabel('Imaginary axis');
-legend('Samples');
+legend('Imaginary');
+title(ax2,'Imaginary plot');
