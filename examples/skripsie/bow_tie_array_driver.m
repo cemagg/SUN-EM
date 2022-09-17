@@ -79,35 +79,37 @@ ax1 = nexttile;
 xvalues = Solver_setup.frequencies.samples;
 yvalues = zMatrices.values(1,200,1:85);   % build 3D array of all of individuals to manipulate as one
 yvalues = reshape(permute(yvalues,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
-
 real_z1 = real(yvalues);
+imag_z1 = imag(yvalues);
 
-new_z1 = yvalues/exp(-1i*2*pi*0.0013125);
-new_real1 = real(new_z1);
+Edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(1,1);
+Edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(1,2);
+
+Edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(200,1);
+Edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(200,2);
+
+Rmn = sqrt((Edge_m_X - Edge_n_X)^2 + (Edge_m_Y - Edge_n_Y)^2);
+
+
+new_complex = yvalues/exp(-1i*2*pi*Rmn);
+new_real1 = real(new_complex);
+new_imag1 = imag(new_complex);
+
 hold on;
 plot(xvalues,new_real1,'-x');
 plot(xvalues,real_z1,'-x');
-hold off;
-
-
 xlabel('Frequency');
 ylabel('Real axis');
 legend('new','old');
 title(ax1,'Real plot');
 hold off;
 
-
-
 ax2 = nexttile;
-imag_z1 = imag(yvalues);
-%new_imag = imag_z1/(cos(2*pi*1) + 1i*sin(2*pi*1));
-
 hold on;
+plot(xvalues,new_imag1,'-x');
 plot(xvalues,imag_z1,'-x');
-%plot(xvalues,new_imag,'-x');
-hold off; 
-
 xlabel('Frequency');
 ylabel('Imaginary axis');
-legend('Imaginary');
+legend('new', 'old');
 title(ax2,'Imaginary plot');
+hold off; 
