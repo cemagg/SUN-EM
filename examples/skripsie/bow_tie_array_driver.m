@@ -82,34 +82,45 @@ yvalues = reshape(permute(yvalues,[5,4,3,2,1]),85,[]); % rearrange by plane firs
 real_z1 = real(yvalues);
 imag_z1 = imag(yvalues);
 
-Edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(1,1);
-Edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(1,2);
+edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(1,1);
+edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(1,2);
 
-Edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(200,1);
-Edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(200,2);
+edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(200,1);
+edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(200,2);
 
-Rmn = sqrt((Edge_m_X - Edge_n_X)^2 + (Edge_m_Y - Edge_n_Y)^2);
+Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
 
 new_complex = yvalues/exp(-1i*2*pi*Rmn);
 new_real1 = real(new_complex);
 new_imag1 = imag(new_complex);
 
+
+xq = (100131000:200:1350270000);
+%Interp1 = spline(xvalues,new_real1,xq);
+Interp2 = spline(xvalues,new_imag1,xq);
+Interp1 = interp1(xvalues,new_real1,1350270000,'spline');
+
+%Interp1 = spline(xvalues,new_real1,xq);
+%Interp2 = spline(xvalues,new_imag1,xq);
+
+
+
 hold on;
-plot(xvalues,new_real1,'-x');
+plot(xvalues,new_real1,'-x',xq,Interp1);
 plot(xvalues,real_z1,'-x');
-xlabel('Frequency');
-ylabel('Real axis');
-legend('new','old');
+xlabel('FREQUENCY');
+ylabel('RESISTANCE (OHM)');
+legend('New','old');
 title(ax1,'Real plot');
 hold off;
 
 ax2 = nexttile;
 hold on;
-plot(xvalues,new_imag1,'-x');
+plot(xvalues,new_imag1,'-x',xq,Interp2);
 plot(xvalues,imag_z1,'-x');
-xlabel('Frequency');
-ylabel('Imaginary axis');
+xlabel('FREQUENCY');
+ylabel('REACTANCE (OHMS)');
 legend('new', 'old');
 title(ax2,'Imaginary plot');
 hold off; 
