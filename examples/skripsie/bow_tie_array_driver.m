@@ -76,12 +76,13 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 
 %Top plot
 ax1 = nexttile;
-xvalues = Solver_setup.frequencies.samples;
-yvalues = zMatrices.values(1,10,1:85);   % build 3D array of all of individuals to manipulate as one
-yvalues = reshape(permute(yvalues,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
-real_z1 = real(yvalues);
-imag_z1 = imag(yvalues);
+frequency = Solver_setup.frequencies.samples;
+matrix_Z = zMatrices.values(1,10,1:85);   % build 3D array of all of individuals to manipulate as one
+matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
+real_z1 = real(matrix_Z);
+imag_z1 = imag(matrix_Z);
 
+%
 edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(1,1);
 edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(1,2);
 
@@ -91,24 +92,24 @@ edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(10,2);
 Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
 
-%new_complex = yvalues/exp(-1i*2*pi*Rmn);
-%new_real1 = real(new_complex);
-%new_imag1 = imag(new_complex);
+%new_matrixZ = matrix_Z/exp(-1i*2*pi*Rmn);
+%new_real1 = real(new_matrixZ);
+%new_imag1 = imag(new_matrixZ);
 
 
 xq = (100131000:200:1350270000);
-Interp1 = spline(xvalues,real_z1,xq);
-Interp2 = spline(xvalues,imag_z1,xq);
+Interp1 = spline(frequency,real_z1,xq);
+Interp2 = spline(frequency,imag_z1,xq);
 
 
-%Interp1 = spline(xvalues,new_real1,xq);
-%Interp2 = spline(xvalues,new_imag1,xq);
+%Interp1 = spline(frequency,new_real1,xq);
+%Interp2 = spline(frequency,new_imag1,xq);
 
 
 
 hold on;
-%plot(xvalues,new_real1,'-x',xq,Interp1);
-plot(xvalues,real_z1,'-x',xq,Interp1);
+%plot(frequency,new_real1,'-x',xq,Interp1);
+plot(frequency,real_z1,'-x',xq,Interp1);
 xlabel('FREQUENCY');
 ylabel('RESISTANCE (OHM)');
 legend('New','old');
@@ -117,8 +118,8 @@ hold off;
 
 ax2 = nexttile;
 hold on;
-%plot(xvalues,new_imag1,'-x',xq,Interp2);
-plot(xvalues,imag_z1,'-x',xq,Interp2);
+%plot(frequency,new_imag1,'-x',xq,Interp2);
+plot(frequency,imag_z1,'-x',xq,Interp2);
 xlabel('FREQUENCY');
 ylabel('REACTANCE (OHMS)');
 legend('new', 'old');
