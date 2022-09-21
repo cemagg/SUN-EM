@@ -95,33 +95,38 @@ Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 new_matrixZ = matrix_Z/exp(-1i*2*pi*Rmn);
 new_real1 = real(new_matrixZ);
 new_imag1 = imag(new_matrixZ);
-
-xq = (100131000:200:1350270000);
-Interp1 = spline(frequency,new_real1,xq);
-Interp2 = spline(frequency,new_imag1,xq);
 hold on;
 
-%plot(frequency,new_real1,'-x',xq,Interp1);
-%plot(frequency,real_z1,'-x',xq,Interp1);
 plot(frequency,new_real1,'-x');
 plot(frequency,real_z1,'-x');
 
+%Apply interpolation
+%xq = (100131000:200:1350270000);
+%Interp1 = spline(frequency,new_real1,xq);
+%Interp2 = spline(frequency,new_imag1,xq);
+%plot(frequency,new_real1,'-x',xq,Interp1);
+%plot(frequency,real_z1,'-x',xq,Interp1);
+
+
+
 xlabel('FREQUENCY');
 ylabel('RESISTANCE (OHM)');
-legend('New','old');
+legend('Improved','old');
 title(ax1,'Real plot');
 hold off;
 
 ax2 = nexttile;
 hold on;
 
-%plot(frequency,new_imag1,'-x',xq,Interp2);
-%plot(frequency,imag_z1,'-x',xq,Interp2);
 plot(frequency,new_imag1,'-x');
 plot(frequency,imag_z1,'-x');
 
+%Apply interpolation
+%plot(frequency,new_imag1,'-x',xq,Interp2);
+%plot(frequency,imag_z1,'-x',xq,Interp2);
+
 xlabel('FREQUENCY');
 ylabel('REACTANCE (OHMS)');
-legend('new', 'old');
+legend('Improved', 'old');
 title(ax2,'Imaginary plot');
 hold off; 
