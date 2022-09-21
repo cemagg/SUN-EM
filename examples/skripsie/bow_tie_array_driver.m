@@ -76,6 +76,7 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 
 %Top plot
 ax1 = nexttile;
+<<<<<<< HEAD
 frequency = Solver_setup.frequencies.samples;
 matrix_Z = zMatrices.values(1,10,1:85);   % build 3D array of all of individuals to manipulate as one
 matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
@@ -88,10 +89,24 @@ edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(1,2);
 
 edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(10,1);
 edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(10,2);
+=======
+xvalues = Solver_setup.frequencies.samples;
+yvalues = zMatrices.values(1,200,1:85);   % build 3D array of all of individuals to manipulate as one
+yvalues = reshape(permute(yvalues,[5,4,3,2,1]),85,[]); % rearrange by plane first, row & column and put in columns
+real_z1 = real(yvalues);
+imag_z1 = imag(yvalues);
+
+edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(1,1);
+edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(1,2);
+
+edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(200,1);
+edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(200,2);
+>>>>>>> 8bbe886cf2a52e7ef1bd422ab9a4842d51772dfa
 
 Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
 
+<<<<<<< HEAD
 %new_matrixZ = matrix_Z/exp(-1i*2*pi*Rmn);
 %new_real1 = real(new_matrixZ);
 %new_imag1 = imag(new_matrixZ);
@@ -104,12 +119,31 @@ Interp2 = spline(frequency,imag_z1,xq);
 
 %Interp1 = spline(frequency,new_real1,xq);
 %Interp2 = spline(frequency,new_imag1,xq);
+=======
+new_complex = yvalues/exp(-1i*2*pi*Rmn);
+new_real1 = real(new_complex);
+new_imag1 = imag(new_complex);
+
+
+xq = (100131000:200:1350270000);
+%Interp1 = spline(xvalues,new_real1,xq);
+Interp2 = spline(xvalues,new_imag1,xq);
+Interp1 = interp1(xvalues,new_real1,1350270000,'spline');
+
+%Interp1 = spline(xvalues,new_real1,xq);
+%Interp2 = spline(xvalues,new_imag1,xq);
+>>>>>>> 8bbe886cf2a52e7ef1bd422ab9a4842d51772dfa
 
 
 
 hold on;
+<<<<<<< HEAD
 %plot(frequency,new_real1,'-x',xq,Interp1);
 plot(frequency,real_z1,'-x',xq,Interp1);
+=======
+plot(xvalues,new_real1,'-x',xq,Interp1);
+plot(xvalues,real_z1,'-x');
+>>>>>>> 8bbe886cf2a52e7ef1bd422ab9a4842d51772dfa
 xlabel('FREQUENCY');
 ylabel('RESISTANCE (OHM)');
 legend('New','old');
@@ -118,8 +152,13 @@ hold off;
 
 ax2 = nexttile;
 hold on;
+<<<<<<< HEAD
 %plot(frequency,new_imag1,'-x',xq,Interp2);
 plot(frequency,imag_z1,'-x',xq,Interp2);
+=======
+plot(xvalues,new_imag1,'-x',xq,Interp2);
+plot(xvalues,imag_z1,'-x');
+>>>>>>> 8bbe886cf2a52e7ef1bd422ab9a4842d51772dfa
 xlabel('FREQUENCY');
 ylabel('REACTANCE (OHMS)');
 legend('new', 'old');
