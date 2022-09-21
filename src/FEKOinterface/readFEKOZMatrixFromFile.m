@@ -1,4 +1,4 @@
-function [zMatrices] = readFEKOZMatrixFromFile(Const, mat_file_name)
+   function [zMatrices] = readFEKOZMatrixFromFile(Const, mat_file_name)
     %readFEKOZMatrixFromFile
     %   Usage:
     %       [zMatrices] = readFEKOZMatrixFromFile(Const)
