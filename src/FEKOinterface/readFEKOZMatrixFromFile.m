@@ -207,7 +207,7 @@
             end
         catch
             % In this case an error has probably occurred.
-            if freqIndex == 1
+             if freqIndex == 1
                 message_fc(Const,'No matrix data read');
                 error (['No matrix data read']);
             end
