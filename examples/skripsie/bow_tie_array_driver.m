@@ -114,9 +114,9 @@ for m = 1:6
     
       %Apply interpolation
       fq = (100131000:200:1350270000);            %step size of 200
-      Interp1 = spline(frequency,new_real1,fq);
-      Interp2 = spline(frequency,new_imag1,fq);
-      plot(ax1,frequency,new_real1,'xr',fq,Interp1,'-b');
+      vq = interp1(frequency,new_real1,fq,"makima");
+      vr = interp1(frequency,new_imag1,fq,"makima");
+      plot(ax1,frequency,new_real1,'xr',fq,vq,'-b');
       %plot(ax1,frequency,real_z1,fq,Interp2,'-xb');
       %legend('Original','Improved sample points','spline');
     
@@ -134,7 +134,7 @@ for m = 1:6
 
 
       %Apply interpolation
-      plot(ax2,frequency,new_imag1,'xr',fq,Interp2,'-b');
+      plot(ax2,frequency,new_imag1,'xr',fq,vr,'-b');
       %plot(frequency,imag_z1,'-x',fq,Interp2);
      
       xlabel('FREQUENCY');
