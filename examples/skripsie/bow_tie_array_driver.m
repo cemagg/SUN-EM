@@ -81,25 +81,28 @@ f = figure;
 ax2 = axes(f);
 hold(ax2,'on');
 
-for m = 1:6
- for n = 1:6
-     if m == n
+for m = 1:10
+ for n = 1:10
+   if m == n
     
- % ax1 = nexttile;
-    frequency = Solver_setup.frequencies.samples;
-    matrix_Z = zMatrices.values(m,n,1:Solution.mom.numSols);   % build 3D array of all of individuals to manipulate as one
-    matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),Solution.mom.numSols,[]); % rearrange by plane first, row & column and put in columns
-    real_z1 = real(matrix_Z);
-    imag_z1 = imag(matrix_Z);
-    lambda = physconst('LightSpeed')./frequency;
+      
+      frequency = Solver_setup.frequencies.samples;
+      frequency_step_size = 2;
+      newFrequency = Solver_setup.frequencies.samples(1:50);
+      NewnumSols = length(newFrequency);
+    
+      matrix_Z = zMatrices.values(m,n,1:NewnumSols);   % build 3D array of all of individuals to manipulate as one
+      matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % rearrange by plane first, row & column and put in columns
+      real_z1 = real(matrix_Z);
+      imag_z1 = imag(matrix_Z);
+      lambda = physconst('LightSpeed')./newFrequency;
 
-  % 
-    edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
-    edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
 
-    edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
+      % Improved Zmn Solution.mom.numSols
+      edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
+      edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
+      edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
       edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
-     
       Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
     
     
@@ -108,43 +111,38 @@ for m = 1:6
       new_imag1 = imag(new_matrixZ);
       hold on;
     
-      %plot(ax1,frequency,real_z1,'-xb');
-      %plot(ax1,frequency,new_real1,'-xr');
-
-    
+      % before interpolating the real points
+      plot(ax1,newFrequency,real_z1,'-x');
+  
       %Apply interpolation
       fq = (100131000:200:1350270000);            %step size of 200
-      vq = interp1(frequency,new_real1,fq,"makima");
-      vr = interp1(frequency,new_imag1,fq,"makima");
-      plot(ax1,frequency,new_real1,'xr',fq,vq,'-b');
-      %plot(ax1,frequency,real_z1,fq,Interp2,'-xb');
-      %legend('Original','Improved sample points','spline');
-    
-     
-    
-      xlabel('FREQUENCY');
-      ylabel('RESISTANCE (OHM)');
-      legend(ax1,'Improved sample points');
+      vq = interp1(newFrequency,new_real1,fq,"spline");
+      vr = interp1(newFrequency,new_imag1,fq,"spline");
+      plot(ax1,newFrequency,new_real1,fq,vq,'-');
+      
+      xlabel(ax1,'FREQUENCY');
+      ylabel(ax1,'RESISTANCE (OHM)');
       title(ax1,'Real plot');
     
-    
-      %ax2 = nexttile;
-      %plot(ax2,frequency,imag_z1,'-xb');
-      %plot(ax2,frequency,new_imag1,'-xb');
+
+     % before interpolating the imaginary points
+      plot(ax2,newFrequency,imag_z1,'-x');
 
 
       %Apply interpolation
-      plot(ax2,frequency,new_imag1,'xr',fq,vr,'-b');
-      %plot(frequency,imag_z1,'-x',fq,Interp2);
-     
-      xlabel('FREQUENCY');
-      ylabel('REACTANCE (OHMS)');
-      legend(ax2,'Improved sample points');
+      plot(ax2,newFrequency,new_imag1,fq,vr,'-');
+      
+      xlabel(ax2,'FREQUENCY');
+      ylabel(ax2,'REACTANCE (OHMS)');
       title(ax2,'Imaginary plot');
-     end
+      legends{m,n} = sprintf('m,n = %d,%d', m,n);
   end
+ end
+ %legends{m,n} = sprintf('m,n = %d,%d', m,n);
 end
-legend show
-hold(ax1,'off');
+%legends{m,n} = sprintf('m,n = %d,%d', m,n);
 
-hold(ax2,'off');
+     legend( ax1,legends );
+     legend( ax2,legends );
+     hold(ax1,'off');
+     hold(ax2,'off');
