@@ -13,6 +13,7 @@
 % Debug: True/False
 Const = sunem_initialise('bow_tie_array',false);
 
+
 % --------------------------------------------------------------------------------------------------
 % Program flow settings
 % --------------------------------------------------------------------------------------------------
@@ -20,7 +21,6 @@ Const = sunem_initialise('bow_tie_array',false);
 % Choose the solvers that will be executed
 Const.runMoMsolver          = true;
 Const.runDGFMsolver         = false;
-
 
 
 % --------------------------------------------------------------------------------------------------
@@ -35,7 +35,6 @@ Const.FEKOoutfilename          = 'bow_tie_array_MoM.out';
 %Const.FEKOstrfilename          = 'bow_tie_array_DGFM.str';
 %Const.FEKOrhsfilename          = 'bow_tie_array_DGFM.rhs';
 %Const.FEKOoutfilename          = 'bow_tie_array_DGFM.out';
-
 
 
 % --------------------------------------------------------------------------------------------------
@@ -81,30 +80,30 @@ f = figure;
 ax2 = axes(f);
 hold(ax2,'on');
 
-for m = 1:10
- for n = 1:10
-   if m == n
+   m = 1;
+   n= 500;
     
-      
       frequency = Solver_setup.frequencies.samples;
-      frequency_step_size = 2;
-      newFrequency = Solver_setup.frequencies.samples(1:50);
+      fstep = 5;
+      max = Solution.mom.numSols;
+      
+      newFrequency = frequency(1:fstep:max);
       NewnumSols = length(newFrequency);
-    
-      matrix_Z = zMatrices.values(m,n,1:NewnumSols);   % build 3D array of all of individuals to manipulate as one
+
+      matrix_Z = zMatrices.values(m,n,1:fstep:max);   % build 3D array of all of individuals to manipulate as one
       matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % rearrange by plane first, row & column and put in columns
       real_z1 = real(matrix_Z);
       imag_z1 = imag(matrix_Z);
       lambda = physconst('LightSpeed')./newFrequency;
-
+      
 
       % Improved Zmn Solution.mom.numSols
       edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
       edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
+
       edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
       edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
       Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
-    
     
       new_matrixZ = matrix_Z./exp(-1i*((2*pi)./lambda')*Rmn);
       new_real1 = real(new_matrixZ);
@@ -112,37 +111,33 @@ for m = 1:10
       hold on;
     
       % before interpolating the real points
-      plot(ax1,newFrequency,real_z1,'-x');
+      plot(ax1,newFrequency,new_real1,'-x');
   
       %Apply interpolation
-      fq = (100131000:200:1350270000);            %step size of 200
+      fq = (frequency(1):12627000:1350270000);            %step size of 200
       vq = interp1(newFrequency,new_real1,fq,"spline");
       vr = interp1(newFrequency,new_imag1,fq,"spline");
-      plot(ax1,newFrequency,new_real1,fq,vq,'-');
-      
+      plot(ax1,newFrequency,new_real1,fq,vq,'-b');   
+
       xlabel(ax1,'FREQUENCY');
       ylabel(ax1,'RESISTANCE (OHM)');
       title(ax1,'Real plot');
-    
-
-     % before interpolating the imaginary points
-      plot(ax2,newFrequency,imag_z1,'-x');
-
+     
+      %before interpolating the imaginary points
+      plot(ax2,newFrequency,new_imag1,'-x');
 
       %Apply interpolation
-      plot(ax2,newFrequency,new_imag1,fq,vr,'-');
+      plot(ax2,newFrequency,new_imag1,fq,vr,'-b');  %(Spline interp1)
       
       xlabel(ax2,'FREQUENCY');
       ylabel(ax2,'REACTANCE (OHMS)');
       title(ax2,'Imaginary plot');
       legends{m,n} = sprintf('m,n = %d,%d', m,n);
-  end
- end
- %legends{m,n} = sprintf('m,n = %d,%d', m,n);
-end
-%legends{m,n} = sprintf('m,n = %d,%d', m,n);
+     
+      legend( ax1,legends );
+      legend( ax2,legends );
+      hold(ax1,'off');
+      hold(ax2,'off');
 
-     legend( ax1,legends );
-     legend( ax2,legends );
-     hold(ax1,'off');
-     hold(ax2,'off');
+
+      Zinterp = vq(1:2:max) + 1i*(vr(1:2:max));
