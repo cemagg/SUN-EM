@@ -80,64 +80,87 @@ f = figure;
 ax2 = axes(f);
 hold(ax2,'on');
 
-   m = 1;
-   n= 500;
-    
+f = figure;
+ax3 = axes(f);
+hold(ax3,'on');
+
+
+ for  m = 1:20
+  for  n= 301:320
+    %if  
       frequency = Solver_setup.frequencies.samples;
-      fstep = 5;
+      fstep = 2; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
+      stepSize = frequency(2) - frequency(1);   %interval between adjacent 'selected' frequencies
+      freqStart = frequency(1);
+      freqEnd = frequency(Solution.mom.numSols);
       max = Solution.mom.numSols;
-      
-      newFrequency = frequency(1:fstep:max);
+      maxRmn = 3.978866829890139;
+
+      newFrequency = frequency(1:fstep:max);   %fewer frequncy samples points
       NewnumSols = length(newFrequency);
 
-      matrix_Z = zMatrices.values(m,n,1:fstep:max);   % build 3D array of all of individuals to manipulate as one
-      matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % rearrange by plane first, row & column and put in columns
-      real_z1 = real(matrix_Z);
-      imag_z1 = imag(matrix_Z);
       lambda = physconst('LightSpeed')./newFrequency;
-      
-
-      % Improved Zmn Solution.mom.numSols
       edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
       edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
 
       edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
       edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
       Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
-    
-      new_matrixZ = matrix_Z./exp(-1i*((2*pi)./lambda')*Rmn);
-      new_real1 = real(new_matrixZ);
-      new_imag1 = imag(new_matrixZ);
-      hold on;
-    
-      % before interpolating the real points
-      plot(ax1,newFrequency,new_real1,'-x');
-  
-      %Apply interpolation
-      fq = (frequency(1):12627000:1350270000);            %step size of 200
-      vq = interp1(newFrequency,new_real1,fq,"spline");
-      vr = interp1(newFrequency,new_imag1,fq,"spline");
-      plot(ax1,newFrequency,new_real1,fq,vq,'-b');   
 
-      xlabel(ax1,'FREQUENCY');
-      ylabel(ax1,'RESISTANCE (OHM)');
-      title(ax1,'Real plot');
-     
-      %before interpolating the imaginary points
-      plot(ax2,newFrequency,new_imag1,'-x');
-
-      %Apply interpolation
-      plot(ax2,newFrequency,new_imag1,fq,vr,'-b');  %(Spline interp1)
+       if Rmn >= (0.5*lambda)
+    
+          newFrequency = frequency(1:fstep:max);
+          NewnumSols = length(newFrequency);
+    
+          matrix_Z = zMatrices.values(m,n,1:fstep:max);   % build 3D array of all of individuals to manipulate as one
+          matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % rearrange by plane first, row & column and put in columns
+          real_z1 = real(matrix_Z);
+          imag_z1 = imag(matrix_Z);
+    
+          % Improved Zmn Solution.mom.numSols
+          new_matrixZ = matrix_Z./exp(-1i*((2*pi)./lambda')*Rmn);
+    
+          new_real1 = real(new_matrixZ);
+          new_imag1 = imag(new_matrixZ);
+          hold on;
+        
+          % before interpolating the real points
+          plot(ax1,newFrequency,new_real1,'-x');
       
-      xlabel(ax2,'FREQUENCY');
-      ylabel(ax2,'REACTANCE (OHMS)');
-      title(ax2,'Imaginary plot');
-      legends{m,n} = sprintf('m,n = %d,%d', m,n);
-     
-      legend( ax1,legends );
-      legend( ax2,legends );
-      hold(ax1,'off');
-      hold(ax2,'off');
+          %Apply interpolation
+          fq = (freqStart:stepSize:freqEnd);        
+          vq = interp1(newFrequency,new_real1,fq,"spline");
+          vr = interp1(newFrequency,new_imag1,fq,"spline");
+          plot(ax1,newFrequency,new_real1,fq,vq,'-b');   
+    
+          xlabel(ax1,'FREQUENCY');
+          ylabel(ax1,'RESISTANCE (OHM)');
+          title(ax1,'Real plot');
+         
+          %before interpolating the imaginary points
+          plot(ax2,newFrequency,new_imag1,'-x');
+    
+          %Apply interpolation
+          plot(ax2,newFrequency,new_imag1,fq,vr,'-b');  %(Spline interp1)
+          
+          xlabel(ax2,'FREQUENCY');
+          ylabel(ax2,'REACTANCE (OHMS)');
+          title(ax2,'Imaginary plot');
+    
+          plot(ax3,new_real1,new_imag1,'-x');
+          %legends{m,n} = sprintf('m,n = %d,%d', m,n);
+         
+          %legend( ax1,legends );
+          %legend( ax2,legends );
+          %hold(ax1,'off');
+          %hold(ax2,'off');
+    
+         %Find error norm percentage between Zinterp and original 
+         Zinterp1 = reshape((vq(1:fstep:max) + 1i*(vr(1:fstep:max))),[],1);
+         error = (norm(new_matrixZ - Zinterp1)/(norm(new_matrixZ)))* 100;
+      end
+  end
+end
 
 
-      Zinterp = vq(1:2:max) + 1i*(vr(1:2:max));
+
