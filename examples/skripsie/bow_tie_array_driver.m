@@ -80,13 +80,13 @@ f = figure;
 ax2 = axes(f);
 hold(ax2,'on');
 
-f = figure;
-ax3 = axes(f);
-hold(ax3,'on');
+%f = figure;
+%ax3 = axes(f);
+%hold(ax3,'on');
 
 
- for  m = 1:20
-  for  n= 301:320
+ for  m = 1:5
+  for  n= 1:5
     %if  
       frequency = Solver_setup.frequencies.samples;
       fstep = 2; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
@@ -107,10 +107,7 @@ hold(ax3,'on');
       edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
       Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
-       if Rmn >= (0.5*lambda)
-    
-          newFrequency = frequency(1:fstep:max);
-          NewnumSols = length(newFrequency);
+       %if Rmn >= (0.5*lambda)
     
           matrix_Z = zMatrices.values(m,n,1:fstep:max);   % build 3D array of all of individuals to manipulate as one
           matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % rearrange by plane first, row & column and put in columns
@@ -147,7 +144,7 @@ hold(ax3,'on');
           ylabel(ax2,'REACTANCE (OHMS)');
           title(ax2,'Imaginary plot');
     
-          plot(ax3,new_real1,new_imag1,'-x');
+          %plot(ax3,new_real1,new_imag1,'-x');
           %legends{m,n} = sprintf('m,n = %d,%d', m,n);
          
           %legend( ax1,legends );
@@ -158,9 +155,10 @@ hold(ax3,'on');
          %Find error norm percentage between Zinterp and original 
          Zinterp1 = reshape((vq(1:fstep:max) + 1i*(vr(1:fstep:max))),[],1);
          error = (norm(new_matrixZ - Zinterp1)/(norm(new_matrixZ)))* 100;
-      end
+      %end
   end
 end
 
+%[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 
 
