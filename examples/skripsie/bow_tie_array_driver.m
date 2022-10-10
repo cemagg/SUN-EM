@@ -1,4 +1,4 @@
-% Author: Danie Ludick (dludick@sun.ac.za)
+ % Author: Danie Ludick (dludick@sun.ac.za)
 % Project: Bowtie array simulation using MoM and DGFM
 %
 % Note: Each project directory / example directory needs to have a sunem_initialise.m
@@ -73,23 +73,28 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %Solution.mom has all the solver settings
 
 
-f = figure;
-ax1 = axes(f);
-hold(ax1,'on');
-
-f = figure;
-ax2 = axes(f);
-hold(ax2,'on');
-%f = figure;
-%ax3 = axes(f);
-%hold(ax3,'on');
+    f = figure;
+    ax1 = axes(f);
+    hold(ax1,'on');
+    
+    f = figure;
+    ax2 = axes(f);
+    hold(ax2,'on');
+    %f = figure;
+    %ax3 = axes(f);
+    %hold(ax3,'on');
 
     Zmn = [];
- for  m = 1:10
-  for  n= 1:10
-     
-    if   m ~= n 
+    Zmnlist = [];
+ %   Zmn = reshape(Zmn,[10,10]);
+    
+% for freq = 1:max 
+
+  for  m = 1:10
+   for  n= 1:10
+
       frequency = Solver_setup.frequencies.samples;
+      freqNum = length(Solver_setup.frequencies.samples);
       fstep = 2; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
       stepSize = frequency(2) - frequency(1);   %interval between adjacent 'selected' frequencies
       freqStart = frequency(1);
@@ -99,8 +104,6 @@ hold(ax2,'on');
       maxRmn = 3.978866829890139;
       newFrequency = frequency(1:fstep:max);   %fewer frequncy samples points
       NewnumSols = length(newFrequency);
-
-      lambda = physconst('LightSpeed')./newFrequency;
 
       edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
       edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
@@ -156,20 +159,29 @@ hold(ax2,'on');
     
          %Find error norm percentage between Zinterp and original 
          Zinterp1 = reshape((vq(1:fstep:max) + 1i*(vr(1:fstep:max))),[],1); %reshape column to matrix
-         Zinterp2(:,:,1) = Zinterp1.*exp(-1i*((2*pi)./lambda')*Rmn);             %normalise
+         Zinterp2 = Zinterp1.*exp(-1i*((2*pi)./lambda')*Rmn);             %normalise
          errorNormPercentage = (norm(matrix_Z - Zinterp1)/(norm(new_matrixZ)))* 100;
-
-         
-         
+       
 
          % now add field called zInterp
-          for k = m
+         for l = m
+          for k = n
               Zmn = [Zmn; (vq + 1i*(vr))];
              [zMatrices(:).zInterp] = Zmn;
           end
-    end
+         end   
+%    end
+  %end
   end
-end
+  end
+
+       for f = 1:99
+         Zmn = reshape((Zmn(1:100,f)),[10,10]);
+         Zmnlist = [Zmnlist; Zmn];
+        
+         [zMatrices(:).zInterpValues] = Zmnlist;
+    end
+
 
 
 %[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
