@@ -72,6 +72,7 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 
 %Solution.mom has all the solver settings
 
+
 f = figure;
 ax1 = axes(f);
 hold(ax1,'on');
@@ -79,38 +80,39 @@ hold(ax1,'on');
 f = figure;
 ax2 = axes(f);
 hold(ax2,'on');
-
 %f = figure;
 %ax3 = axes(f);
 %hold(ax3,'on');
 
-
- for  m = 1:5
-  for  n= 1:5
-    %if  
+    Zmn = [];
+ for  m = 1:10
+  for  n= 1:10
+     
+    if   m ~= n 
       frequency = Solver_setup.frequencies.samples;
       fstep = 2; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
       stepSize = frequency(2) - frequency(1);   %interval between adjacent 'selected' frequencies
       freqStart = frequency(1);
       freqEnd = frequency(Solution.mom.numSols);
+
       max = Solution.mom.numSols;
       maxRmn = 3.978866829890139;
-
       newFrequency = frequency(1:fstep:max);   %fewer frequncy samples points
       NewnumSols = length(newFrequency);
 
       lambda = physconst('LightSpeed')./newFrequency;
+
       edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
       edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
 
       edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
       edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
-      Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
+      Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
        %if Rmn >= (0.5*lambda)
     
           matrix_Z = zMatrices.values(m,n,1:fstep:max);   % build 3D array of all of individuals to manipulate as one
-          matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % rearrange by plane first, row & column and put in columns
+          matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % reshape vector to matrix
           real_z1 = real(matrix_Z);
           imag_z1 = imag(matrix_Z);
     
@@ -122,7 +124,7 @@ hold(ax2,'on');
           hold on;
         
           % before interpolating the real points
-          plot(ax1,newFrequency,new_real1,'-x');
+          %plot(ax1,newFrequency,new_real1,'-x');
       
           %Apply interpolation
           fq = (freqStart:stepSize:freqEnd);        
@@ -135,7 +137,7 @@ hold(ax2,'on');
           title(ax1,'Real plot');
          
           %before interpolating the imaginary points
-          plot(ax2,newFrequency,new_imag1,'-x');
+          %plot(ax2,newFrequency,new_imag1,'-x');
     
           %Apply interpolation
           plot(ax2,newFrequency,new_imag1,fq,vr,'-b');  %(Spline interp1)
@@ -153,11 +155,22 @@ hold(ax2,'on');
           %hold(ax2,'off');
     
          %Find error norm percentage between Zinterp and original 
-         Zinterp1 = reshape((vq(1:fstep:max) + 1i*(vr(1:fstep:max))),[],1);
-         error = (norm(new_matrixZ - Zinterp1)/(norm(new_matrixZ)))* 100;
-      %end
+         Zinterp1 = reshape((vq(1:fstep:max) + 1i*(vr(1:fstep:max))),[],1); %reshape column to matrix
+         Zinterp2(:,:,1) = Zinterp1.*exp(-1i*((2*pi)./lambda')*Rmn);             %normalise
+         errorNormPercentage = (norm(matrix_Z - Zinterp1)/(norm(new_matrixZ)))* 100;
+
+         
+         
+
+         % now add field called zInterp
+          for k = m
+              Zmn = [Zmn; (vq + 1i*(vr))];
+             [zMatrices(:).zInterp] = Zmn;
+          end
+    end
   end
 end
+
 
 %[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 

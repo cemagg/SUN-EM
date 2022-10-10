@@ -32,7 +32,3 @@ function [Zmn,U,V] = calcZmn(Const, zMatrices, freq, m, n, observBFs, sourceBFs)
     Zmn = extractZmnfromFEKOmatfile(Const, zMatrices, freq, observBFs, sourceBFs);
 
     % TO-DO: Add here more algorithms as we develop them.
-    
-    % TO-DO: Once the ACA is reintroduced, calculate U and V
-    U = [];
-    V = [];
