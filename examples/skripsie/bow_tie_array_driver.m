@@ -68,11 +68,11 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % (Note: We either pass our own (internal) matrices, or those read from FEKO). For this particular
 % array configuration, we are not yet supporting radiating elements. But as we are consistent with the
 % FEKO mesh, we can just use the FEKO RHS vector.
-%[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
+[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 
 %Solution.mom has all the solver settings
 
-% 
+
 %     f = figure;
 %     ax1 = axes(f);
 %     hold(ax1,'on');
@@ -80,22 +80,23 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %     f = figure;
 %     ax2 = axes(f);
 %     hold(ax2,'on');
-    %f = figure;
-    %ax3 = axes(f);
-    %hold(ax3,'on');
+%     f = figure;
+%     ax3 = axes(f);
+%     hold(ax3,'on');
 
-    Zmnn = [];
+    zInterpolated = [];
     Zmnlist = [];
- %   Zmn = reshape(Zmn,[10,10]);
+    error = [];
     
 % for freq = 1:max 
- for  m = 1:100
-  for  n= 1:100
-   % if m~= n 
+mBasis = 10;
+nBasis = 10;
+ for  m = 1:mBasis
+  for  n= 1:nBasis
 
       frequency = Solver_setup.frequencies.samples;
       freqNum = length(Solver_setup.frequencies.samples);
-      fstep = 2; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
+      fstep = 5; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
       stepSize = frequency(2) - frequency(1);   %interval between adjacent 'selected' frequencies
       freqStart = frequency(1);
       freqEnd = frequency(Solution.mom.numSols);
@@ -120,55 +121,57 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
           real_z1 = real(matrix_Z);
           imag_z1 = imag(matrix_Z);
     
-          % Improved Zmn Solution.mom.numSols
+          %Improved Zmn Solution.mom.numSols
           new_matrixZ = matrix_Z./exp(-1i*((2*pi)./lambda')*Rmn);
     
           new_real1 = real(new_matrixZ);
           new_imag1 = imag(new_matrixZ);
-        %  hold on;
+         %hold on;
         
           % before interpolating the real points
           %plot(ax1,newFrequency,new_real1,'-x');
       
           %Apply interpolation
           fq = (freqStart:stepSize:freqEnd);        
-          vq = interp1(newFrequency,new_real1,fq,"spline");
-          vr = interp1(newFrequency,new_imag1,fq,"spline");
-          %plot(ax1,newFrequency,new_real1,fq,vq,'-b');   
-    
+          xq = interp1(newFrequency,new_real1,fq,"linear");
+          yq = interp1(newFrequency,new_imag1,fq,"linear");
+%           plot(ax1,newFrequency,new_real1,fq,xq,'-b');     % Plot the sample data and interpolated data
+%     
 %           xlabel(ax1,'FREQUENCY');
 %           ylabel(ax1,'RESISTANCE (OHM)');
 %           title(ax1,'Real plot');
-         
-          %before interpolating the imaginary points
-          %plot(ax2,newFrequency,new_imag1,'-x');
-    
-          %Apply interpolation
-          %plot(ax2,newFrequency,new_imag1,fq,vr,'-b');  %(Spline interp1)
-          
+%          
+%           before interpolating the imaginary points
+%           plot(ax2,newFrequency,new_imag1,'-x');
+%     
+%           Apply interpolation
+%           plot(ax2,newFrequency,new_imag1,fq,yq,'-b');  %(Spline interp1)
+%           
 %           xlabel(ax2,'FREQUENCY');
 %           ylabel(ax2,'REACTANCE (OHMS)');
 %           title(ax2,'Imaginary plot');
-    
-          %plot(ax3,new_real1,new_imag1,'-x');
-          %legends{m,n} = sprintf('m,n = %d,%d', m,n);
-         
-          %legend( ax1,legends );
-          %legend( ax2,legends );
-          %hold(ax1,'off');
-          %hold(ax2,'off');
+%     
+%           plot(ax3,new_real1,new_imag1,'-x');
+%           legends{m,n} = sprintf('m,n = %d,%d', m,n);
+%          
+%           legend( ax1,legends );
+%           legend( ax2,legends );
+%           hold(ax1,'off');
+%           hold(ax2,'off');
     
          %Find error norm percentage between Zinterp and original 
-         Zinterp1 = reshape((vq(1:fstep:max) + 1i*(vr(1:fstep:max))),[],1); %reshape vector to matrix
-         Zinterp2 = Zinterp1.*exp(-1i*((2*pi)./lambda')*Rmn);             %normalise
-         errorNormPercentage = (norm(matrix_Z - Zinterp1)/(norm(new_matrixZ)))* 100;
-       
+         Zinterp1 = reshape((xq(1:fstep:max) + 1i*(yq(1:fstep:max))),[],1); %reshape vector to matrix
+         Zinterp2 = Zinterp1.*exp(-1i*((2*pi)./lambda')*Rmn);               %normalise
+         errorNormPercentage = (norm(matrix_Z - Zinterp1)/(norm(new_matrixZ)))* 100; 
 
-         % now add field called zInterp
+         error = [error; errorNormPercentage];
+
+         %now add field called zInterp
+         %store in a the matrice struct the interpolated values (interpolated complex at selected and intermediate frequencies)
          for l = m
           for k = n
-             Zmnn = [Zmnn; (vq + 1i*(vr))];
-             [zMatrices(:).zInterp] = Zmnn;
+             zInterpolated = [zInterpolated; (xq + 1i*(yq))];    %interpolated data
+             [zMatrices(:).zInterp] = zInterpolated;
           end
          end 
 
@@ -178,8 +181,8 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
  end
    
       for f = 1:99
-         
-          Zmn = reshape((Zmnn(:,f)),[100,100]);
+          %store the elements in Zmn (2D) in a struct
+          Zmn = reshape((zInterpolated(:,f)),[mBasis,nBasis]);  %interpolated data
          Zmnlist = [Zmnlist; Zmn];
 
          [zMatrices(:).zInterpValues] = Zmn;
@@ -188,19 +191,19 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
        end
 
 
+%storing the data in 3-D (2x2 matrix)xfrequency
+row = 1;    
+for i = 1:99   %1:numFreq
 
-row = 1;
-for i = 1:99
-
-    for j = 1:100
-        for k = 1:100
+    for j = 1:mBasis   
+        for k = 1:nBasis
             InterpolatedValues(j,k,i) = Zmnlist(row,k);
-            [zMatrices(:).zInterpValues] = InterpolatedValues;
+            [zMatrices(:).zInterpValues] = InterpolatedValues;    %store interpolated data in a struct
 
         end 
         row = row+1;
     end
 end
-[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
+%[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 
 
