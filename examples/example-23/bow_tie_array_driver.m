@@ -44,17 +44,23 @@ Const.SUNEMdgfmstrfilename     = '';
 % --------------------------------------------------------------------------------------------------
 % Read the MoM matrix equation from the file
 % --------------------------------------------------------------------------------------------------
-[Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
+[Const, zMatricesFEKO, yVectorsFEKO, xVectorsFEKO] = extractFEKOMoMmatrixEq(Const);
 
 % --------------------------------------------------------------------------------------------------
 % Parse the setup files to extract the frequency sweep, the geometry and basis function setup 
 % --------------------------------------------------------------------------------------------------
 % TO-DO: At a later stage we can also add other meshing / geometry
 % preprocessxing, e.g. Gmsh or GiD. For now the solver setup is read from FEKO.
-[Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
+[Const, Solver_setup] = parseFEKOoutfile(Const, yVectorsFEKO);
+
+% Calculate now an interpolated version of the impedance matrix over a
+% frequency range. We do not implement the MoM, but rather use FEKO's
+% solutions at some points to represent the calculated (i.e. exact values)
+zMatricesINTERP = calcInterpolatedZmatrices(Const, Solver_setup, zMatricesFEKO);
 
 % --------------------------------------------------------------------------------------------------
 % Run the EM solver
 % --------------------------------------------------------------------------------------------------
-[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
+[SolutionFEKO] = runEMsolvers(Const, Solver_setup, zMatricesFEKO, yVectorsFEKO, xVectorsFEKO);
 
+[SolutionINTERP] = runEMsolvers(Const, Solver_setup, zMatricesINTERP, yVectorsFEKO, xVectorsFEKO);
