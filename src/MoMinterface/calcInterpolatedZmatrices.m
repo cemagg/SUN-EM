@@ -30,18 +30,20 @@ function [zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMat
     
     for m = 1:totRWGbasisFunctions
         for n = 1:totRWGbasisFunctions
-    
-            % Extract the ALL values of 
-            zMatricesValuesMN = zMatricesFEKO.values(m,n,1:totFreqSamples);
             
-            zMatricesValuesMNCalculated = zMatricesValuesMN(1:step:freqSample)
-            
-            % The following is probably a separate function that performs
-            % the spline interpolation .. ?
-            zMatricesValuesMNInterpolated = InterpolateZmn(zMatricesValuesMN(1:step:freqSample)
-            
-            % Make sure you set your return values again correct
-            zMatricesINTERP.values(m,n,1:totFreqSamples) = zMatricesValuesMNInterpolated
+            % Do not do this for self-interaction matrices
+            if (m ~= n)
+                % Extract the ALL values of 
+                zMatricesValuesMN = zMatricesFEKO.values(m,n,1:totFreqSamples);
+
+                zMatricesValuesMNCalculated = zMatricesValuesMN(1:step:freqSample)
+
+                % The following is probably a separate function that performs
+                % the spline interpolation .. ?
+                zMatricesValuesMNInterpolated = InterpolateZmn(zMatricesValuesMN(1:step:freqSample)
+
+                % Make sure you set your return values again correct
+                zMatricesINTERP.values(m,n,1:totFreqSamples) = zMatricesValuesMNInterpolated
             
         end
             
