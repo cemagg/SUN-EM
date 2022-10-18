@@ -54,6 +54,11 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % Read the MoM matrix equation from the file
 % --------------------------------------------------------------------------------------------------
  [Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
+
+% [zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices);
+
+
+ %interpolate here 
  
 % --------------------------------------------------------------------------------------------------
 % Parse the setup files to extract the frequency sweep, the geometry and basis function setup 
@@ -62,6 +67,13 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % preprocessxing, e.g. Gmsh or GiD. For now the solver setup is read from FEKO.
 [Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
 
+
+% Calculate now an interpolated version of the impedance matrix over a
+% frequency range. We do not implement the MoM, but rather use FEKO's
+% solutions at some points to represent the calculated (i.e. exact values)
+[zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices);
+
+
 % --------------------------------------------------------------------------------------------------
 % Run the EM solver 
 % --------------------------------------------------------------------------------------------------
@@ -69,6 +81,8 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % array configuration, we are not yet supporting radiating elements. But as we are consistent with the
 % FEKO mesh, we can just use the FEKO RHS vector.
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
+
+%[SolutionINTERP] = runEMsolvers(Const, Solver_setup, zMatricesINTERP, yVectorsFEKO, xVectorsFEKO);
 
 %Solution.mom has all the solver settings
 
@@ -84,126 +98,170 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %     ax3 = axes(f);
 %     hold(ax3,'on');
 
-    zInterpolated = [];
-    Zmnlist = [];
-    error = [];
-    
-% for freq = 1:max 
-mBasis = 10;
-nBasis = 10;
- for  m = 1:mBasis
-  for  n= 1:nBasis
 
-      frequency = Solver_setup.frequencies.samples;
-      freqNum = length(Solver_setup.frequencies.samples);
-      fstep = 5; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
-      stepSize = frequency(2) - frequency(1);   %interval between adjacent 'selected' frequencies
-      freqStart = frequency(1);
-      freqEnd = frequency(Solution.mom.numSols);
-
-      max = Solution.mom.numSols;
-      maxRmn = 3.978866829890139;
-      newFrequency = frequency(1:fstep:max);   %fewer frequncy samples points
-      NewnumSols = length(newFrequency);
-      lambda = physconst('LightSpeed')./newFrequency;
-
-      edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
-      edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
-
-      edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
-      edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
-
-      Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
-       %if Rmn >= (0.5*lambda)
-    
-          matrix_Z = zMatrices.values(m,n,1:fstep:max);   % build 3D array of all of individuals to manipulate as one
-          matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % reshape vector to matrix
-          real_z1 = real(matrix_Z);
-          imag_z1 = imag(matrix_Z);
-    
-          %Improved Zmn Solution.mom.numSols
-          new_matrixZ = matrix_Z./exp(-1i*((2*pi)./lambda')*Rmn);
-    
-          new_real1 = real(new_matrixZ);
-          new_imag1 = imag(new_matrixZ);
-         %hold on;
-        
-          % before interpolating the real points
-          %plot(ax1,newFrequency,new_real1,'-x');
-      
-          %Apply interpolation
-          fq = (freqStart:stepSize:freqEnd);        
-          xq = interp1(newFrequency,new_real1,fq,"linear");
-          yq = interp1(newFrequency,new_imag1,fq,"linear");
-%           plot(ax1,newFrequency,new_real1,fq,xq,'-b');     % Plot the sample data and interpolated data
+%     zInterpolated = [];
+%     Zmnlist = [];
+%     error = [];
+%     zMatricesINTER = [];
+% 
+% 
+% 
+% % for freq = 1:numFreq 
+% RWGmBasis = 10;
+% RWGnBasis = 10;
+% 
+% 
+%  for  m = 1:RWGmBasis
+%   for  n= 1:RWGnBasis
 %     
-%           xlabel(ax1,'FREQUENCY');
-%           ylabel(ax1,'RESISTANCE (OHM)');
-%           title(ax1,'Real plot');
-%          
-%           before interpolating the imaginary points
-%           plot(ax2,newFrequency,new_imag1,'-x');
+% %if m ~= n
+%       frequency = Solver_setup.frequencies.samples;
+%       numFreq = Solver_setup.frequencies.freq_num;
+%       fstep = 2; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
+%       stepSize = frequency(2) - frequency(1);   %interval between adjacent 'selected' frequencies
+%       freqStart = frequency(1);
+%       freqEnd = frequency(numFreq);
+% 
+%           matrix_Z = zMatrices.values(m,n,1:numFreq);   % build 3D array of all of individuals to manipulate as one
+%           matrix_Z = reshape(permute(matrix_Z,[3,2,1]),numFreq,[]); % reshape vector to matrix
+%           row = 1;
+% for l = m
+%     for k = n
+%      zMatricesINTER = [zMatricesINTER; matrix_Z(1:100)];
+% 
+%     end 
+%     row = row+1;
+% end 
+%   end
+%  end
+% 
 %     
-%           Apply interpolation
-%           plot(ax2,newFrequency,new_imag1,fq,yq,'-b');  %(Spline interp1)
+% % for freq = 1:numFreq 
+% mBasis = 10;
+% nBasis = 10;
+%  for  m = 1:mBasis
+%   for  n= 1:nBasis
+% %if m ~= n
+%       frequency = Solver_setup.frequencies.samples;
+%       numFreq = Solver_setup.frequencies.freq_num;
+%       fstep = 2; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
+%       stepSize = frequency(2) - frequency(1);   %interval between adjacent 'selected' frequencies
+%       freqStart = frequency(1);
+%       freqEnd = frequency(100);
+% 
+%       maxRmn = 3.978866829890139;
+%       newFrequency = frequency(1:fstep:numFreq);   %fewer frequncy samples points
+%       NewnumSols = length(newFrequency);
+%       lambda = physconst('LightSpeed')./newFrequency;
+% 
+%       edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
+%       edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
+% 
+%       edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
+%       edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
+% 
+%       Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
+%        %if Rmn >= (0.5*lambda)
+%     
+%           matrix_Z = zMatrices.values(m,n,1:fstep:numFreq);   % build 3D array of all of individuals to manipulate as one
+%           matrix_Z = reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[]); % reshape vector to matrix
+%           real_z1 = real(matrix_Z);
+%           imag_z1 = imag(matrix_Z);
+% 
+%           %zMatricesINTERP = [zMatricesINTERP; reshape(permute(matrix_Z,[5,4,3,2,1]),NewnumSols,[])];
+% 
 %           
-%           xlabel(ax2,'FREQUENCY');
-%           ylabel(ax2,'REACTANCE (OHMS)');
-%           title(ax2,'Imaginary plot');
 %     
-%           plot(ax3,new_real1,new_imag1,'-x');
-%           legends{m,n} = sprintf('m,n = %d,%d', m,n);
-%          
-%           legend( ax1,legends );
-%           legend( ax2,legends );
-%           hold(ax1,'off');
-%           hold(ax2,'off');
-    
-         %Find error norm percentage between Zinterp and original 
-         Zinterp1 = reshape((xq(1:fstep:max) + 1i*(yq(1:fstep:max))),[],1); %reshape vector to matrix
-         Zinterp2 = Zinterp1.*exp(-1i*((2*pi)./lambda')*Rmn);               %normalise
-         errorNormPercentage = (norm(matrix_Z - Zinterp1)/(norm(new_matrixZ)))* 100; 
+%           %Improved Zmn Solution.mom.numSols
+%           new_matrixZ = matrix_Z./exp(-1i*((2*pi)./lambda')*Rmn);
+%     
+%           new_real1 = real(new_matrixZ);
+%           new_imag1 = imag(new_matrixZ);
+%          %hold on;
+%         
+%           % before interpolating the real points
+%           %plot(ax1,newFrequency,new_real1,'-x');
+%       
+%           %Apply interpolation
+%           fq = (freqStart:stepSize:freqEnd);        
+%           xq = interp1(newFrequency,new_real1,fq,"spline");
+%           yq = interp1(newFrequency,new_imag1,fq,"spline");
+% %           plot(ax1,newFrequency,new_real1,fq,xq,'-b');     % Plot the sample data and interpolated data
+% %     
+% %           xlabel(ax1,'FREQUENCY');
+% %           ylabel(ax1,'RESISTANCE (OHM)');
+% %           title(ax1,'Real plot');
+% %          
+% %           before interpolating the imaginary points
+% %           plot(ax2,newFrequency,new_imag1,'-x');
+% %     
+% %           Apply interpolation
+% %           plot(ax2,newFrequency,new_imag1,fq,yq,'-b');  %(Spline interp1)
+% %           
+% %           xlabel(ax2,'FREQUENCY');
+% %           ylabel(ax2,'REACTANCE (OHMS)');
+% %           title(ax2,'Imaginary plot');
+% %     
+% %           plot(ax3,new_real1,new_imag1,'-x');
+% %           legends{m,n} = sprintf('m,n = %d,%d', m,n);
+% %          
+% %           legend( ax1,legends );
+% %           legend( ax2,legends );
+% %           hold(ax1,'off');
+% %           hold(ax2,'off');
+%     
+%          %Find error norm percentage between Zinterp and original 
+%          Zinterp1 = reshape((xq(1:fstep:numFreq) + 1i*(yq(1:fstep:numFreq))),[],1); %reshape vector to matrix
+%          Zinterp2 = Zinterp1.*exp(-1i*((2*pi)./lambda')*Rmn);               %normalise
+%          errorNormPercentage = (norm(matrix_Z - Zinterp1)/(norm(new_matrixZ)))* 100; 
+% 
+%          error = [error; errorNormPercentage];
+% 
+%          %now add field called zInterp
+%          %store in a the matrice struct the interpolated values (interpolated complex at selected and intermediate frequencies)
+%          for l = m
+%           for k = n
+%              zInterpolated = [zInterpolated; (xq + 1i*(yq))];    %interpolated data
+%              [zMatrices(:).zInterp] = zInterpolated;
+%           end
+%          end 
+% 
+%    %end
+% %end %end m ~= n
+%   end %end n
+%  end %end m
+%    
+%       for f = 1:99
+%          %store the elements in Zmn (2D) in a struct
+%          %zMatricesINTERP = reshape((matrix_Z(:,f)),[mBasis,nBasis]);
+%          Zmn = reshape((zInterpolated(:,f)),[mBasis,nBasis]);  %interpolated data
+%          Zmnlist = [Zmnlist; Zmn];
+%       %   zMatricesINTERP = [ zMatricesINTERP;  zMatricesINTERP];
+% 
+%          [zMatrices(:).zInterpValues] = Zmn;
+%          [zMatrices(:).zInterpValues] = Zmnlist;
+% 
+%        end
+% 
+% 
+% %storing the data in 3-D (2x2 matrix)xfrequency
+% row = 1;    
+% for i = 1:99   %1:numFreq
+%     for j = 1:mBasis   
+%         for k = 1:nBasis
+%             InterpolatedValues(j,k,i) = Zmnlist(row,k);
+%             [zMatrices(:).zInterpValues] = InterpolatedValues;    %store interpolated data in a struct
+% 
+%         end 
+%         row = row+1;
+%     end
+% end
+% 
+% 
+% zMat.mBasis = 510;
+% zMat.nBasis = 510;
+% zMat.zInterpValues = InterpolatedValues;
+% zMat.numFreq = length(fq);
+% zMat.title = 'Interpolated samples';
 
-         error = [error; errorNormPercentage];
-
-         %now add field called zInterp
-         %store in a the matrice struct the interpolated values (interpolated complex at selected and intermediate frequencies)
-         for l = m
-          for k = n
-             zInterpolated = [zInterpolated; (xq + 1i*(yq))];    %interpolated data
-             [zMatrices(:).zInterp] = zInterpolated;
-          end
-         end 
-
-   %end
-  %end
- end
- end
-   
-      for f = 1:99
-          %store the elements in Zmn (2D) in a struct
-          Zmn = reshape((zInterpolated(:,f)),[mBasis,nBasis]);  %interpolated data
-         Zmnlist = [Zmnlist; Zmn];
-
-         [zMatrices(:).zInterpValues] = Zmn;
-         [zMatrices(:).zInterpValues] = Zmnlist;
-
-       end
-
-
-%storing the data in 3-D (2x2 matrix)xfrequency
-row = 1;    
-for i = 1:99   %1:numFreq
-
-    for j = 1:mBasis   
-        for k = 1:nBasis
-            InterpolatedValues(j,k,i) = Zmnlist(row,k);
-            [zMatrices(:).zInterpValues] = InterpolatedValues;    %store interpolated data in a struct
-
-        end 
-        row = row+1;
-    end
-end
 %[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
-
-

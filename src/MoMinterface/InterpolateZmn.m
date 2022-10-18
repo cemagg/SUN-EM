@@ -1,5 +1,4 @@
 function [Interpolate_Zmn] = InterpolateZmn(Const, Solver_setup, zMatricesINTERP)
-%InterpolateZmn(Const, Solver_setup, yVectors, Solution.dgfm);
     %
     %   Input Arguments:
     %       Const
@@ -22,6 +21,7 @@ function [Interpolate_Zmn] = InterpolateZmn(Const, Solver_setup, zMatricesINTERP
 
     narginchk(3,3);
 
+     %zMatricesINTERP;
       frequency = Solver_setup.frequencies.samples;
       freqStart = frequency(1);
       freqEnd = frequency(100);
@@ -31,35 +31,79 @@ function [Interpolate_Zmn] = InterpolateZmn(Const, Solver_setup, zMatricesINTERP
       RWGmBasis = Const.numMoMbasis;
       RWGnBasis = Const.numMoMbasis;
       FrequencySamples = [];
-   
-   for m = 1:RWGmBasis   
-     for n = 1:RWGnBasis
-         if m ~= n
-              for freq = 1:fstep:numFreq
-              FrequencySample = frequency(freq);
-              FrequencySamples = [FrequencySamples; FrequencySample];
-              end
+      zMatricesINTERPreal = zeros(510, 50, 510); 
+      zMatricesINTERPimaginary = zeros(510, 50, 510);
+      inerpolatedreal = [];
+      interpolatedImaginary = [];
+      Interpolate_Zmn = [];
+      interpolatedreal = [];
+      interpolatedImaginary = []; 
+            
+%  
 
-          zMatricesINTERP = zMatricesINTERP(m,n,1:2:numFreq);   % build 3D array of all of individuals to manipulate as one
-          zMatricesINTERP = reshape(permute(zMatricesINTERP,[3,2,1]),50,[]); % reshape vector to matrix
-          real = real(zMatricesINTERP);
-          imaginary = imag(zMatricesINTERP);
 
-          fq = (freqStart:stepSize:freqEnd);        
-          xq = interp1(FrequencySamples,real,fq,"spline");
-          yq = interp1(FrequencySamples,imaginary,fq,"spline");
+%  for freq = 2:fstep:numFreq
+  FrequencySamples = [FrequencySamples; frequency(2:fstep:numFreq)];
+   for m = 1:RWGmBasis 
+    for n = 1:RWGnBasis
+         col = 0;
+      if m ~= n
+        for freq = 2:fstep:numFreq
+            col = col+1;
+         %FrequencySamples = [FrequencySamples; frequency(freq)];
+         %FrequencysampleUnique(n) = Frequencysamples + linspace(0, 1, length(FrequencySamples))*10E-3
+         zMatriceCalculatedReal = real(zMatricesINTERP(m,n,freq));
+         zMatricesINTERPreal(n,col,m) = zMatriceCalculatedReal;
+         zMatriceCalculatedImaginary = imag(zMatricesINTERP(m,n,freq));
+         zMatricesINTERPimaginary(n,col,m) = zMatriceCalculatedImaginary;
 
-         Interpolate_Zmn = (xq+1i*yq); %reshape vector to matrix
-         Interpolate_Zmn = Interpolate_Zmn.*exp(-1i*((2*pi)./lambda')*Rmn);               %normalise
-         errorNormPercentage = (norm(zMatricesINTERP - Interpolate_Zmn)/(norm(zMatricesINTERP)))* 100; 
-
-         error = [error; errorNormPercentage];
-
-      
-        end 
-        %zMatricesCalculated(m,n,freq) = [zMatricesCalculated(m,n,freq); zMatricesINTERP(m,n,freq)];
-    end
+       end 
+     end
+   % row = row+1;
+   end
   end
 
+for m = 1:RWGmBasis
+    for n = 1:RWGnBasis
+        if m ~= n 
+      % FrequencySamples = [FrequencySamples; frequency(2:fstep:numFreq)];
+      %Apply interpolation
+      fq = (freqStart:stepSize:freqEnd);
+      a = zMatricesINTERPreal(n,:,m);
+      xq = interp1(FrequencySamples,a,fq,"linear");
+      interpolatedreal = [interpolatedreal; xq];
+      %xq = [];
+      b = zMatricesINTERPimaginary(n,:,m);
+      yq = interp1(FrequencySamples,b,fq,"linear");
+      interpolatedImaginary = [interpolatedImaginary; yq];
+      %yq = [];
+        end
+    end
+end
+ m = 1;
+
+
+
+
+% 
+% 
+%    for f = 1:99
+%          %store the elements in Zmn (2D) in a struct
+%          Zmn = reshape((zInterpolatedsamples(:,f)),[RWGmBasis,RWGnBasis]);  %interpolated data
+%          Zmnlist = [Zmnlist; Zmn];
+%    end
+% 
+% 
+% %storing the data in 3-D (2x2 matrix)xfrequency
+% row = 1;    
+% for i = 1:99   %1:numFreq
+%     for j = 1:RWGmBasis   
+%         for k = 1:RWGnBasis
+%             InterpolatedValues(j,k,i) = Zmnlist(row,k);
+% 
+%         end 
+%         row = row+1;
+%     end
+% end
 
 

@@ -1,4 +1,4 @@
-function [zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices)
+  function [zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices)
     %runEMsolvers
     %   Usage:
     %       [zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatricesFEKO)
@@ -52,39 +52,32 @@ end
 
 
 
-% % 
-for freq = 1: numFreq
+
+
+% % Improve the matrices[Zmn] for selected frequencies
+for freq = 2:fstep:numFreq
     for m = 1:RWGmBasis   
         for n = 1:RWGnBasis
             if m ~= n
-      FrequencySample = frequency(freq);
-      lambda = physconst('LightSpeed')./FrequencySample;
+                FrequencySample = frequency(freq);
+                lambda = physconst('LightSpeed')./FrequencySample;
 
-      edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
-      edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
+                edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
+                edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
 
-      edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
-      edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
+                edge_n_X = Solver_setup.rwg_basis_functions_shared_edge_centre(n,1);
+                edge_n_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(n,2);
 
-      Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
+                Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
-      zMatricesINTERP(m,n,freq) = zMatricesINTERP(m,n,freq)./exp(-1i*((2*pi)./lambda')*Rmn);
+                zMatricesINTERP(m,n,freq) = zMatricesINTERP(m,n,freq)./exp(-1i*((2*pi)./lambda')*Rmn);
            end
         end 
-        %zMatricesCalculated = [zMatricesCalculated; zMatricesINTERP];
     end
 end
 
-zMatricesInterpolated = (InterpolateZmn(Const, Solver_setup, zMatricesINTERP));
 
-
-
-
-
-
-
-
-
+zMatricesInterpolated = InterpolateZmn(Const, Solver_setup, zMatricesINTERP);
 
 
 
