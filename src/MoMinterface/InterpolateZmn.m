@@ -1,4 +1,4 @@
-function [Interpolate_Zmn] = InterpolateZmn(Const, Solver_setup, zMatricesINTERP)
+function [Interpolated_Zmn] = InterpolateZmn(Const, Solver_setup, zMatricesINTERP)
     %
     %   Input Arguments:
     %       Const
@@ -9,7 +9,7 @@ function [Interpolate_Zmn] = InterpolateZmn(Const, Solver_setup, zMatricesINTERP
     %           The Yrhs-vector data
     %
     %   Output Arguments:
-    %       Interpolate_Zmn
+    %       Interpolated_Zmn
     %           Structs containing Zmn calculated after interpolation and timing data
     %
     %   Description:
@@ -22,27 +22,31 @@ function [Interpolate_Zmn] = InterpolateZmn(Const, Solver_setup, zMatricesINTERP
     narginchk(3,3);
    
      % Initialise the return values
-     zMatricesINTERPp = [];
-      zMatricesINTERPp.name = zMatricesINTERPp;
-%      numSols = 1;
-%      Interpolate_Zmn.numSols = numSols;
+      Interpolated_Zmn = [];
+      Interpolated_Zmn.name = Interpolated_Zmn;
+      Interpolated_Zmn.Interpolate_Zmn = [];
+      Interpolated_Zmn.interpTime = [];
      
       FrequencySamples = [];
       zMatricesINTERPreal = zeros(510, 50, 510);  
       zMatricesINTERPimaginary = zeros(510, 50, 510);
       %interpolatedreal = zeros(510, 100);
       %interpolatedImaginary = zeros(510, 100);
-      interpolatedreal = [];
-      interpolatedImaginary = [];
-     Interpolate_Zmn = [];
+      %interpolatedreal = [];
+      %interpolatedImaginary = [];
+
+      %Interpolate_Zmn = zMatricesINTERP;
+      Interpolate_Zmn = zeros(510, 510, 100);
+   
+%
 
 
 
 
       frequency = Solver_setup.frequencies.samples;
-      freqStart = frequency(1);
-      freqEnd = frequency(100);
       stepSize = frequency(2) - frequency(1);
+      freqStart = frequency(1);
+      freqEnd = frequency(100) + stepSize;
       numFreq = Solver_setup.frequencies.freq_num;
       fstep = 2;
       RWGmBasis = Const.numMoMbasis;
@@ -71,26 +75,28 @@ function [Interpolate_Zmn] = InterpolateZmn(Const, Solver_setup, zMatricesINTERP
    end
    end
 
-     %Apply interpolation
- for m = 1:RWGmBasis
-    for n = 1:RWGnBasis
+   %Apply interpolation
+ for m = 1:5
+    for n = 1:5
        % tic
        % tic
         if m ~= n 
-      fq = (freqStart:stepSize:freqEnd);
-      a = zMatricesINTERPreal(n,:,m);
-      xq = interp1(FrequencySamples,a,fq,"spline");
-      interpolatedreal = [interpolatedreal; xq];
-      b = zMatricesINTERPimaginary(n,:,m);
-      yq = interp1(FrequencySamples,b,fq,"spline");
-      interpolatedImaginary = [interpolatedImaginary; yq];
-      %zMatricesINTERPp.intepolationTime(n) = toc;
+            fq = (freqStart:stepSize:freqEnd);
+            a = zMatricesINTERPreal(n,:,m);
+            xq = interp1(FrequencySamples,a,fq,"spline");
+            % interpolatedreal = [interpolatedreal; xq];
+            b = zMatricesINTERPimaginary(n,:,m);
+            yq = interp1(FrequencySamples,b,fq,"spline");
+            % interpolatedImaginary = [interpolatedImaginary; yq];
+
+            %add to get Zmn = xq + j*yq
+            Interpolate_Zmn(n,m,:) = xq + 1i*yq;
+            %zMatricesINTERPp.intepolationTime(n) = toc;
         end
     end
 end
 
-     %Interpolatd elements (510x510)-(Diagonals)= 259590 X 99 
-     Interpolate_Zmn.values = interpolatedreal(1:fstep:numFreq) + 1i*(interpolatedImaginary(1:fstep:numFreq));
+%relError(index) = calculateErrorNormPercentage();
 
 
 

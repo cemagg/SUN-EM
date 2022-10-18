@@ -27,7 +27,6 @@
 
     zMatricesINTERP  = zMatrices.values;
 
-    % The code below is just an example:
 
     %zMatricesINTERP = [];
     frequency = Solver_setup.frequencies.samples;
@@ -36,10 +35,11 @@
      % for freq = 1:numFreq 
     RWGmBasis = Const.numMoMbasis;
     RWGnBasis = Const.numMoMbasis;
-    fstep = 2;
+    fstep = 4;
  
 
-
+%empty the matrices and leave the diagonals, retain selected frequencies,
+%50% retained
 for freq = 1:fstep:numFreq
     for m = 1:RWGmBasis   
         for n = 1:RWGnBasis
@@ -59,6 +59,7 @@ for freq = 2:fstep:numFreq
     for m = 1:RWGmBasis   
         for n = 1:RWGnBasis
             if m ~= n
+                
                 FrequencySample = frequency(freq);
                 lambda = physconst('LightSpeed')./FrequencySample;
 
@@ -76,8 +77,7 @@ for freq = 2:fstep:numFreq
     end
 end
 
-
-zMatricesInterpolated = InterpolateZmn(Const, Solver_setup, zMatricesINTERP);
+Interpolated_Zmn = InterpolateZmn(Const, Solver_setup, zMatricesINTERP);
 
 
 
