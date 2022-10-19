@@ -71,7 +71,7 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % Calculate now an interpolated version of the impedance matrix over a
 % frequency range. We do not implement the MoM, but rather use FEKO's
 % solutions at some points to represent the calculated (i.e. exact values)
-[zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices);
+[Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices);
 
 
 % --------------------------------------------------------------------------------------------------
@@ -80,9 +80,9 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % (Note: We either pass our own (internal) matrices, or those read from FEKO). For this particular
 % array configuration, we are not yet supporting radiating elements. But as we are consistent with the
 % FEKO mesh, we can just use the FEKO RHS vector.
+%[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
+%zMatrices = Interpolated_Data;
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
-
-%[SolutionINTERP] = runEMsolvers(Const, Solver_setup, zMatricesINTERP, yVectorsFEKO, xVectorsFEKO);
 
 %Solution.mom has all the solver settings
 

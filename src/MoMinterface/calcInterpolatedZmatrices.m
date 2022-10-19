@@ -1,7 +1,7 @@
-  function [zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices)
+function [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices)
     %runEMsolvers
     %   Usage:
-    %       [zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatricesFEKO)
+    %       [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zMatricesFEKO)
     %
     %   Input Arguments:
     %       Const
@@ -11,7 +11,7 @@
     %       zMatrices
     %           The Z-matrices data (all the values from e.g. FEKO)
     %   Output Arguments:
-    %      zMatricesINTERP
+    %      Interpolated_Data
     %           The Z-matrices data (that includes both the calculated
     %           values from e.g. FEKO, as well as interpolated values
     %
@@ -24,18 +24,19 @@
 
     % Initialise the return value to be the same as that of FEKO (to get
     % the general structure correctly setup.
-
+    Interpolated_Data = []; 
     zMatricesINTERP  = zMatrices.values;
 
 
     %zMatricesINTERP = [];
+
     frequency = Solver_setup.frequencies.samples;
     numFreq = Solver_setup.frequencies.freq_num;
 
      % for freq = 1:numFreq 
-    RWGmBasis = Const.numMoMbasis;
-    RWGnBasis = Const.numMoMbasis;
-    fstep = 4;
+    RWGmBasis = 200; %Const.numMoMbasis;
+    RWGnBasis = 200; %Const.numMoMbasis;
+    fstep = 2;
  
 
 %empty the matrices and leave the diagonals, retain selected frequencies,
@@ -44,7 +45,7 @@ for freq = 1:fstep:numFreq
     for m = 1:RWGmBasis   
         for n = 1:RWGnBasis
             if m ~= n
-            zMatricesINTERP(m,n,freq) = 0;
+            zMatricesINTERP(n,m,freq) = 0;
            end
         end 
     end
@@ -71,13 +72,13 @@ for freq = 2:fstep:numFreq
 
                 Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
-                zMatricesINTERP(m,n,freq) = zMatricesINTERP(m,n,freq)./exp(-1i*((2*pi)./lambda')*Rmn);
+                zMatricesINTERP(n,m,freq) = zMatricesINTERP(n,m,freq)./exp(-1i*((2*pi)./lambda')*Rmn);
            end
         end 
     end
 end
 
-Interpolated_Zmn = InterpolateZmn(Const, Solver_setup, zMatricesINTERP);
+Interpolated_Data.Interpolate_Zmn = InterpolateZmn(Const, Solver_setup, zMatricesINTERP, zMatrices);
 
 
 
