@@ -25,6 +25,8 @@ function [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zM
     % Initialise the return value to be the same as that of FEKO (to get
     % the general structure correctly setup.
     Interpolated_Data = []; 
+
+
     zMatricesINTERP  = zMatrices.values;
 
 
@@ -34,35 +36,32 @@ function [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zM
     numFreq = Solver_setup.frequencies.freq_num;
 
      % for freq = 1:numFreq 
-    RWGmBasis = 200; %Const.numMoMbasis;
-    RWGnBasis = 200; %Const.numMoMbasis;
+    RWGmBasis = Solver_setup.num_mom_basis_functions; %Solver_setup.num_mom_basis_functions;
+    RWGnBasis = Solver_setup.num_mom_basis_functions; %Solver_setup.num_mom_basis_functions;
     fstep = 2;
  
 
 %empty the matrices and leave the diagonals, retain selected frequencies,
 %50% retained
-for freq = 1:fstep:numFreq
-    for m = 1:RWGmBasis   
-        for n = 1:RWGnBasis
-            if m ~= n
-            zMatricesINTERP(n,m,freq) = 0;
-           end
-        end 
-    end
-end
-
-
-
-
+% for freq = 1:fstep:numFreq
+%     for m = 1:RWGmBasis   
+%         for n = 1:RWGnBasis
+%             if m ~= n
+%                zMatricesINTERP(n,m,freq) = 0;
+%            end
+%         end 
+%     end
+% end
+% % 
 
 % % Improve the matrices[Zmn] for selected frequencies
-for freq = 2:fstep:numFreq
+for freq = 1:fstep:numFreq
     for m = 1:RWGmBasis   
         for n = 1:RWGnBasis
             if m ~= n
                 
                 FrequencySample = frequency(freq);
-                lambda = physconst('LightSpeed')./FrequencySample;
+                lambda = physconst('LightSpeed')/FrequencySample;
 
                 edge_m_X = Solver_setup.rwg_basis_functions_shared_edge_centre(m,1);
                 edge_m_Y = Solver_setup.rwg_basis_functions_shared_edge_centre(m,2);
@@ -72,13 +71,13 @@ for freq = 2:fstep:numFreq
 
                 Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
-                zMatricesINTERP(n,m,freq) = zMatricesINTERP(n,m,freq)./exp(-1i*((2*pi)./lambda')*Rmn);
+                zMatricesINTERP(n,m,freq) = zMatricesINTERP(n,m,freq)/exp(-1i*((2*pi)/lambda')*Rmn);
            end
         end 
     end
 end
 
-Interpolated_Data.Interpolate_Zmn = InterpolateZmn(Const, Solver_setup, zMatricesINTERP, zMatrices);
+Interpolated_Data = InterpolateZmn(Const, Solver_setup, zMatricesINTERP, zMatrices);
 
 
 

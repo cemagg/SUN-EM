@@ -1,4 +1,4 @@
- % Author: Danie Ludick (dludick@sun.ac.za)
+% Author: Danie Ludick (dludick@sun.ac.za)
 % Project: Bowtie array simulation using MoM and DGFM
 %
 % Note: Each project directory / example directory needs to have a sunem_initialise.m
@@ -55,11 +55,6 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % --------------------------------------------------------------------------------------------------
  [Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
 
-% [zMatricesINTERP] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices);
-
-
- %interpolate here 
- 
 % --------------------------------------------------------------------------------------------------
 % Parse the setup files to extract the frequency sweep, the geometry and basis function setup 
 % --------------------------------------------------------------------------------------------------
@@ -80,11 +75,17 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % (Note: We either pass our own (internal) matrices, or those read from FEKO). For this particular
 % array configuration, we are not yet supporting radiating elements. But as we are consistent with the
 % FEKO mesh, we can just use the FEKO RHS vector.
-%[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
-%zMatrices = Interpolated_Data;
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
+%zMatrices = Interpolated_Data;
+%[SolutionINTERP] = runEMsolvers(Const, Solver_setup, Interpolated_Data, zMatrices, yVectors, xVectors);
 
 %Solution.mom has all the solver settings
+
+
+
+
+
+
 
 
 %     f = figure;
@@ -97,8 +98,8 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %     f = figure;
 %     ax3 = axes(f);
 %     hold(ax3,'on');
-
-
+% 
+% 
 %     zInterpolated = [];
 %     Zmnlist = [];
 %     error = [];
@@ -186,29 +187,29 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %           fq = (freqStart:stepSize:freqEnd);        
 %           xq = interp1(newFrequency,new_real1,fq,"spline");
 %           yq = interp1(newFrequency,new_imag1,fq,"spline");
-% %           plot(ax1,newFrequency,new_real1,fq,xq,'-b');     % Plot the sample data and interpolated data
-% %     
-% %           xlabel(ax1,'FREQUENCY');
-% %           ylabel(ax1,'RESISTANCE (OHM)');
-% %           title(ax1,'Real plot');
-% %          
-% %           before interpolating the imaginary points
-% %           plot(ax2,newFrequency,new_imag1,'-x');
-% %     
-% %           Apply interpolation
-% %           plot(ax2,newFrequency,new_imag1,fq,yq,'-b');  %(Spline interp1)
-% %           
-% %           xlabel(ax2,'FREQUENCY');
-% %           ylabel(ax2,'REACTANCE (OHMS)');
-% %           title(ax2,'Imaginary plot');
-% %     
-% %           plot(ax3,new_real1,new_imag1,'-x');
-% %           legends{m,n} = sprintf('m,n = %d,%d', m,n);
-% %          
-% %           legend( ax1,legends );
-% %           legend( ax2,legends );
-% %           hold(ax1,'off');
-% %           hold(ax2,'off');
+%           plot(ax1,newFrequency,new_real1,fq,xq,'-b');     % Plot the sample data and interpolated data
+%     
+%           xlabel(ax1,'FREQUENCY');
+%           ylabel(ax1,'RESISTANCE (OHM)');
+%           title(ax1,'Real plot');
+%          
+%           %before interpolating the imaginary points
+%           plot(ax2,newFrequency,new_imag1,'-x');
+%     
+%          % Apply interpolation
+%           plot(ax2,newFrequency,new_imag1,fq,yq,'-b');  %(Spline interp1)
+%           
+%           xlabel(ax2,'FREQUENCY');
+%           ylabel(ax2,'REACTANCE (OHMS)');
+%           title(ax2,'Imaginary plot');
+%     
+%           plot(ax3,new_real1,new_imag1,'-x');
+%           legends{m,n} = sprintf('m,n = %d,%d', m,n);
+%          
+%           legend( ax1,legends );
+%           legend( ax2,legends );
+%           hold(ax1,'off');
+%           hold(ax2,'off');
 %     
 %          %Find error norm percentage between Zinterp and original 
 %          Zinterp1 = reshape((xq(1:fstep:numFreq) + 1i*(yq(1:fstep:numFreq))),[],1); %reshape vector to matrix
