@@ -32,3 +32,5 @@ function [Zmn,U,V] = calcZmn(Const, zMatrices, freq, m, n, observBFs, sourceBFs)
     Zmn = extractZmnfromFEKOmatfile(Const, zMatrices, freq, observBFs, sourceBFs);
 
     % TO-DO: Add here more algorithms as we develop them.
+    U = [];
+    V = [];

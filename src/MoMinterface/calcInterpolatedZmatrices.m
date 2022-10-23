@@ -27,7 +27,7 @@ function [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zM
     Interpolated_Data = []; 
 
 
-    zMatricesINTERP  = zMatrices.values;
+    zMatricesFEKOcalulated  = zMatrices.values;
 
 
     %zMatricesINTERP = [];
@@ -36,8 +36,8 @@ function [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zM
     numFreq = Solver_setup.frequencies.freq_num;
 
      % for freq = 1:numFreq 
-    RWGmBasis = Solver_setup.num_mom_basis_functions; %Solver_setup.num_mom_basis_functions;
-    RWGnBasis = Solver_setup.num_mom_basis_functions; %Solver_setup.num_mom_basis_functions;
+    RWGmBasis = Solver_setup.num_mom_basis_functions;
+    RWGnBasis = Solver_setup.num_mom_basis_functions;
     fstep = 2;
  
 
@@ -71,48 +71,26 @@ for freq = 1:fstep:numFreq
 
                 Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
-                zMatricesINTERP(n,m,freq) = zMatricesINTERP(n,m,freq)/exp(-1i*((2*pi)/lambda')*Rmn);
+                zMatricesFEKOcalulated(n,m,freq) = zMatricesFEKOcalulated(n,m,freq)/exp(-1i*((2*pi)/lambda')*Rmn);
            end
         end 
     end
 end
 
-Interpolated_Data = InterpolateZmn(Const, Solver_setup, zMatricesINTERP, zMatrices);
+Interpolated_Data = InterpolateZmn(Const, Solver_setup, zMatricesFEKOcalulated, zMatrices);
 
 
 
 %  zMatricesFEKOcalulatedd = [];
-
-%     
-% % Zmn = zMatrices.values(1,200,1:5);
-% for  m = 1:RWGmBasis
-%   for  n= 1:RWGnBasis
-%         
-%     if m ~= n
-% 
-%           frequency = Solver_setup.frequencies.samples;
-%           numFreq = Solver_setup.frequencies.freq_num;
-%           FewFreqsamples = frequency(1:fstep:numFreq);
-%           lambda = physconst('LightSpeed')./FewFreqsamples;
-%           
-%           zMatricesFEKO = zMatrices.values(m,n,1:fstep:numFreq);   % build 3D array of all of individuals to manipulate as one
-%           zMatricesFEKO = reshape(permute(zMatricesFEKO,[3,2,1]),50,[]); % reshape vector to matrix
-% 
-%           zMatricesINTERP = [zMatricesINTERP; zMatricesFEKO];
 % 
 %          %Calculated zMatrices at selected frequencies
 %          %50 evenly spaced frequencies
 % 
 %         % zMatricesFEKOcalulated = zMatrices.values(m,n,1:fstep:numFreq);
 %          %zMatricesFEKOcalulatedd = [zMatricesFEKOcalulatedd; zMatricesFEKOcalulated];
-%          
-%          
 %          %call the function for interpolation
 %     end
 %    end 
 % end
 % 
 % %zMatricesInterpolated = (InterpolateZmn(Const, Solver_setup, zMatricesINTERP));
-% 
-% %Zmom = (calcZmn(Const, zMatrices, freq, 1, 1, ObservRWGs, SourceRWGs));
-% 
