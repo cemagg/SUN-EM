@@ -69,7 +69,7 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVecto
 
     % We need to run the DGFM (or i-DGFM) for each frequency point.
     numFreq = Solver_setup.frequencies.freq_num;  % The number of frequency points to process
-    numRHSperFreq = numSols / numFreq;            % The number of solutions per frequency point
+    numRHSperFreq = 1;                            % The number of solutions per frequency point
                                            
     % Some info about the solution configurations
     message_fc(Const,sprintf('  numSols : %d', numSols));
