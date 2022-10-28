@@ -66,7 +66,7 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % Calculate now an interpolated version of the impedance matrix over a
 % frequency range. We do not implement the MoM, but rather use FEKO's
 % solutions at some points to represent the calculated (i.e. exact values)
-[Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices);
+%[Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices);
 
 
 % --------------------------------------------------------------------------------------------------
@@ -77,27 +77,27 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % FEKO mesh, we can just use the FEKO RHS vector.
 %[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 %zMatrices = Interpolated_Data;
-[SolutionINTERP] = runEMsolvers(Const, Solver_setup, Interpolated_Data, zMatrices, yVectors, xVectors);
+%[SolutionINTERP] = runEMsolvers(Const, Solver_setup, Interpolated_Data, zMatrices, yVectors, xVectors);
 
 %Solution.mom has all the solver settings
-% 
-% 
-%     f = figure;
-%     ax1 = axes(f);
-%     hold(ax1,'on');
-%     
-%     f = figure;
-%     ax2 = axes(f);
-%     hold(ax2,'on');
+
+
+    f = figure;
+    ax1 = axes(f);
+    hold(ax1,'on');
+    
+    f = figure;
+    ax2 = axes(f);
+    hold(ax2,'on');
 % % % 
-% % % 
-% % %     
-% for freq = 1:numFreq 
-%  for  m = 1
-%    for  n= 50:100:200
-%     if m ~= n
-%        frequency = Solver_setup.frequencies.samples;
-%        numFreq = Solver_setup.frequencies.freq_num;
+% % %   
+
+ for  m = 1
+   for  n= 50:100:200
+    if m ~= n
+      for freq = 1:100
+       frequency = Solver_setup.frequencies.samples;
+       numFreq = Solver_setup.frequencies.freq_num;
 %       fstep = 2; %physconst('LightSpeed')/(2*maxRmn)/2;    %18,84MHz
 %       stepSize = frequency(2) - frequency(1);   %interval between adjacent 'selected' frequencies
 %       freqStart = frequency(1);
@@ -117,8 +117,10 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %       Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 % % % % %        %if Rmn >= (0.5*lambda)
 % % % %     
-%        matrix_Z = zMatrices.values(m,n,1:numFreq);   % build 3D array of all of individuals to manipulate as one
-%        matrix_Z = reshape(permute(matrix_Z,[3,2,1]),numFreq,[]); % reshape vector to matrix
+       matrix_Z = zMatrices.values(m,n,1:numFreq);   % build 3D array of all of individuals to manipulate as one
+       matrix_Z = reshape(permute(matrix_Z,[3,2,1]),numFreq,[]); % reshape vector to matrix
+       phase = angle(matrix_Z);
+       magnitude = abs(matrix_Z);
 %       % real_z1 = real(matrix_Z);
 %        %imag_z1 = imag(matrix_Z);
 % % % 
@@ -131,19 +133,24 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %        new_imag1 = imag(new_matrixZ);
 %        hold on;
 % %         
-% %           % before interpolating the real points
-% %           ax1 = nexttile;
-% %           plot(ax1,frequency,real_z1,'-x');
-% %           hold on
-% %           plot(ax1,frequency,new_real1,'-x');
-% %           hold on
-% %           
-% %           ax2 = nexttile;
-% %           plot(ax2,frequency,imag_z1,'-x');
-% %           hold on
-% %           plot(ax2,frequency,new_imag1,'-x');
-% %           hold on
-% % 
+          % before interpolating the real points
+
+          plot(ax1,frequency,magnitude,'-x');
+          hold on
+%           plot(ax1,frequency,new_real1,'-x');
+%           hold on
+          
+          xlabel(ax1,'FREQUENCY (Hz)');
+          ylabel(ax1,'RESISTANCE (Ohm)');
+          title(ax1,'Real part');
+
+
+
+          plot(ax2,frequency,(phase.*(180/pi)),'-x');
+          hold on
+%           plot(ax2,frequency,new_imag1,'-x');
+%           hold on
+
 % % 
 % % 
 % % %           %Apply interpolation
@@ -155,10 +162,10 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 %           xlabel(ax1,'FREQUENCY (Hz)');
 %           ylabel(ax1,'RESISTANCE (Ohm)');
 %           title(ax1,'Real part');
-% 
-%           xlabel(ax2,'FREQUENCY (Hz)');
-%           ylabel(ax2,'REACTANCE (Ohm)');
-%           title(ax2,'Imaginary part');
+
+          xlabel(ax2,'FREQUENCY (Hz)');
+          ylabel(ax2,'REACTANCE (Ohm)');
+          title(ax2,'Imaginary part');
 % % % %          
 % %           %before interpolating the imaginary points
 % %           plot(ax2,newFrequency,new_imag1,'-x');
@@ -191,10 +198,10 @@ Const.SUNEMdgfmstrfilename     =  ''; %'sunem_dgfm_bow_tie_array.str';
 % % %           end
 % % %          end 
 % % 
-%    end
-%     end %end m ~= n
-%   end %end n
-%  end %end m
+     end
+    end %end m ~= n
+  end %end n
+ end %end m
 % % %    
 % % %       for f = 1:99
 % % %          %store the elements in Zmn (2D) in a struct

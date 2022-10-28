@@ -1,4 +1,4 @@
-function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectorsFEKO, xVectorsFEKO, mbfs, ngf)
+function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectorsFEKO, xVectorsFEKO, zMatricesFEKO, mbfs, ngf)
     %runDGFMsolver
     %   Usage:
     %       [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs, ngf)
@@ -37,7 +37,7 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
     %       "Efficient Analysis of Large Aperiodic Antenna Arrays Using the Domain Green's Function
     %        Method," IEEE Trans. Antennas and Propagation, vol. 62, no. 4, pp. 1-11, 2014.
 
-    narginchk(7,7);
+    narginchk(8,8);
     
     message_fc(Const,' ');
     message_fc(Const,'------------------------------------------------------------------------------------');
@@ -225,7 +225,8 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
                     % (use therefore the full MoM submatrix)
                     useACAtmp = Const.useACA;
                     Const.useACA = 0;
-                    [Zact] = Interpolated_Data.values(1:Nmom, 1:Nmom, freq);
+                    [Zact, Uact, Vact] = calcZmn(Const,zMatricesFEKO,freq,m,m,domain_m_basis_functions,...
+                                domain_m_basis_functions);
                     Const.useACA = useACAtmp;
 
 
@@ -260,8 +261,9 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
                             % See issue FEKDDM-2.1: The coupling matrix can now
                             % be extracted using the ACA (call a generic getZmn routine)
                             %Zmn = zMatrices.values(domain_bot_m:domain_top_m,domain_bot_n:domain_top_n);
-                            [Zmn, Umn, Vmn] = calcZmn(Const,Interpolated_Data,freq,m,n,domain_m_basis_functions,...
-                                domain_n_basis_functions);
+                            [Zmn] = Interpolated_Data.values(domain_m_basis_functions, domain_m_basis_functions, freq);
+%                             calcZmn(Const,Interpolated_Data,freq,m,n,domain_m_basis_functions,...
+%                                 domain_n_basis_functions);
                             if ((Const.DGFMweightVectorCalcScheme == 0) || (Const.DGFMweightVectorCalcScheme == 1) ...
                                 || (Const.DGFMweightVectorCalcScheme == 5))
                                 % alpha_nm is a scalar
@@ -332,7 +334,7 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
                             Varr = yVectorsFEKO.values(domain_m_basis_functions,index) - Vstat;
                         else
                         % Only array environment - no coupling from static domain
-                            Varr = yVectorsFEKO.Isol(domain_m_basis_functions,index);
+                            Varr = yVectorsFEKO.values(domain_m_basis_functions,index);
                         end
                         dgfm.Isol(domain_m_basis_functions,index) = Zact \ Varr;
                         
