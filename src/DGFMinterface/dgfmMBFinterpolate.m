@@ -1,4 +1,4 @@
-function [dgfm_interpolate] = dgfmMBFinterpolate(Const, Solver_setup, yVectors, dgfm, mbfs)
+ function [dgfm_interpolate] = dgfmMBFinterpolate(Const, Solver_setup, yVectors, dgfm, mbfs)
     %runDGFMsolver
     %   Usage:
     %       [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs, ngf)
@@ -131,3 +131,6 @@ function [dgfm_interpolate] = dgfmMBFinterpolate(Const, Solver_setup, yVectors, 
         % single frequency
         Zact = dgfm.Zact(domain_basis_functions,domain_basis_functions,1);
     end%for
+
+
+    

@@ -1,4 +1,4 @@
-function [Zmn] = extractZmnfromFEKOmatfile(Const, zMatrices, freq, observBFs, sourceBFs)
+function [Zmn] = extractZmnfromFEKOmatfile(Const, zMatricesFEKO, freq, observBFs, sourceBFs)
     %buildMoMblock
     %   Usage:
     %       [Zmn] = extractZmnfromFEKOmatfile(Const, zMatrices, observBFs, sourceBFs)
@@ -35,14 +35,14 @@ function [Zmn] = extractZmnfromFEKOmatfile(Const, zMatrices, freq, observBFs, so
 
     if (Const.fastBuildMoMblock)
         % Fast algorithm -- Extract the matrix elements using a vectorised operation
-        Zmn = zMatrices.values(observBFs, sourceBFs, freq);
+         Zmn = zMatricesFEKO.values(observBFs, sourceBFs, freq);
     else
         % Slow algorithm -- Extract the matrix elements one-by-one (causes a delay)
         Zmn = complex(zeros(length(observBFs),length(sourceBFs)));
         % We need to implement a loop here (i.e. element per element)
         for m=1:length(observBFs)
             for n=1:length(sourceBFs)
-                Zmn(m,n) = zMatrices.values(observBFs(m), sourceBFs(n), freq);
+                Zmn(m,n) = zMatricesFEKO.values(observBFs(m), sourceBFs(n), freq);
                 % Removed the following as the delay resulted in too long
                 % runtimes (Not needed as the element-by-element access here is
                 % slow enough):
@@ -51,3 +51,4 @@ function [Zmn] = extractZmnfromFEKOmatfile(Const, zMatrices, freq, observBFs, so
             end%for
         end%for
     end%if
+

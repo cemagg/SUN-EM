@@ -1,4 +1,5 @@
-function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
+%function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
+function [mom] = runMoMsolver(Const, Solver_setup, Interpolated_Data, yVectors, refIsol)
     %runMoMsolver
     %   Usage:
     %       [mom] = runMoMsolver(Const)
@@ -11,6 +12,8 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
     %       zMatrices
     %           The Z-matrices data. This can be from FEKO (extracted from the *.mat file, or internally
     %           calculated).
+    %       Interpolated_Data
+    %       The Z-matrices data, internally calcul          ated(Usin interpolation)
     %       yVectors
     %           The Yrhs-vector data
     %       refIsol
@@ -30,7 +33,6 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
     %   Email: dludick@sun.ac.za
 
     narginchk(5,5);
-
     message_fc(Const,' ');
     message_fc(Const,'------------------------------------------------------------------------------------');
     message_fc(Const,sprintf('Running MoM solver'));
@@ -77,7 +79,12 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
         SourceRWGs = [1:Nmom];
         % Note: Since 2017-06-25, we are also passing a freq. variable here to
         % indicate for which frequency point we are extracting the matrix
-        Zmom = (calcZmn(Const, zMatrices, freq, 1, 1, ObservRWGs, SourceRWGs));
+       
+        %Zmom = (calcZmn(Const, zMatrices, freq, 1, 1, ObservRWGs, SourceRWGs));
+
+        %Zmom with interpolated values
+        Zmom = Interpolated_Data.values(ObservRWGs, SourceRWGs, freq);
+       
 
         % End timing (calculating the impedance matrix)
         mom.setupTime(freq) = toc;
@@ -86,7 +93,6 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
         tic
         % LU-decomposition of the Z-matrix
         [L,U] = lu(Zmom);
-
         % Loop over the RHs vectors (numSols) and calculate each of the currents.
         for solNum=solStart:solEnd
 
@@ -126,7 +132,7 @@ function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
     % that was stored in xVectors.values (for each frequency iteration (and each solution within the frequency iteration)
     % Calculate also space for the relative error here
     mom.relError = zeros(1,mom.numSols);
-    for freq=1:numFreq
+    for freq=1:100
         for solNum=1:numRHSperFreq
             index = solNum + (freq-1)*numRHSperFreq;
             mom.relError(index) = calculateErrorNormPercentage(refIsol.Isol(:,index), mom.Isol(:,index));

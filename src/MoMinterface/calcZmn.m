@@ -1,4 +1,4 @@
-function [Zmn,U,V] = calcZmn(Const, zMatrices, freq, m, n, observBFs, sourceBFs)
+function [Zmn,U,V] = calcZmn(Const, zMatricesFEKO, freq, m, n, observBFs, sourceBFs)
     %calcZmn
     %   Usage:
     %       [zMatrices] = calcZmn(Const, zMatrices, m, n, observBFs, sourceBFs)
@@ -29,7 +29,9 @@ function [Zmn,U,V] = calcZmn(Const, zMatrices, freq, m, n, observBFs, sourceBFs)
 
     error(nargchk(7,7,nargin));
 
-    Zmn = extractZmnfromFEKOmatfile(Const, zMatrices, freq, observBFs, sourceBFs);
+    %Zmn = Interpolated_Data.Interpolate_ZmnValues(ObservRWGs, SourceRWGs, freq);
+
+    Zmn = extractZmnfromFEKOmatfile(Const, zMatricesFEKO, freq, observBFs, sourceBFs);
 
     % TO-DO: Add here more algorithms as we develop them.
     U = [];

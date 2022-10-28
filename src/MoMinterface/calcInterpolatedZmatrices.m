@@ -1,4 +1,4 @@
-function [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zMatrices)
+function [Interpolated_Data, U, V] = calcInterpolatedZmatrices(Const, Solver_setup, zMatricesFEKO)
     %runEMsolvers
     %   Usage:
     %       [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zMatricesFEKO)
@@ -27,7 +27,7 @@ function [Interpolated_Data] = calcInterpolatedZmatrices(Const, Solver_setup, zM
     Interpolated_Data = []; 
 
 
-    zMatricesFEKOcalulated  = zMatrices.values;
+    zMatricesFEKOcalulated  = zMatricesFEKO.values;
 
 
     %zMatricesINTERP = [];
@@ -71,13 +71,16 @@ for freq = 1:fstep:numFreq
 
                 Rmn = sqrt((edge_m_X - edge_n_X)^2 + (edge_m_Y - edge_n_Y)^2);
 
-                zMatricesFEKOcalulated(n,m,freq) = zMatricesFEKOcalulated(n,m,freq)/exp(-1i*((2*pi)/lambda')*Rmn);
+               zMatricesFEKOcalulated(n,m,freq) = zMatricesFEKOcalulated(n,m,freq)/exp(-1i*((2*pi)/lambda')*Rmn);
+              zMatricesFEKOcalulated(n,m,freq) = zMatricesFEKOcalulated(n,m,freq);
            end
         end 
     end
 end
 
-Interpolated_Data = InterpolateZmn(Const, Solver_setup, zMatricesFEKOcalulated, zMatrices);
+Interpolated_Data = InterpolateZmn(Const, Solver_setup, zMatricesFEKOcalulated, zMatricesFEKO);
+    U = [];
+    V = [];
 
 
 

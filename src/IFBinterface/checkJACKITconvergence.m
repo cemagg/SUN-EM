@@ -1,4 +1,4 @@
-function [converged] = checkJACKITconvergence(Const, zMatrices)
+function [converged] = checkJACKITconvergence(Const, zMatricesFEKO)
     %runJACKITsolver v0.1
     %   Date: 02.08.2013
     %   Usage:
@@ -77,10 +77,10 @@ function [converged] = checkJACKITconvergence(Const, zMatrices)
     Zoff = complex(zeros(Ndom,Ndom));
     for m=1:numArrayEls        
         % Extract first the self-interaction / diagonal matrix here (Zon)
-        Zon = zMatrices.values((m-1)*Ndom+1:m*Ndom,(m-1)*Ndom+1:m*Ndom);
+        Zon = zMatricesFEKO.values((m-1)*Ndom+1:m*Ndom,(m-1)*Ndom+1:m*Ndom);
         for n=1:numArrayEls
             % Extract the coupling matrix, Zoff
-            Zoff = zMatrices.values((m-1)*Ndom+1:m*Ndom,(n-1)*Ndom+1:n*Ndom);
+            Zoff = zMatricesFEKO.values((m-1)*Ndom+1:m*Ndom,(n-1)*Ndom+1:n*Ndom);
 
             % Calculate the principle eigenvalue of (Zon)^(-1) x Zoff
             OPTS.display = 0;

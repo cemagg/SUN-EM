@@ -59,7 +59,7 @@ function [weightVectors, jackDGFM] = calcDGFMweightVectors(Const, Solver_setup, 
 
     % We need to run the DGFM (or i-DGFM) for each frequency point.
     numFreq = Solver_setup.frequencies.freq_num;   % The number of frequency points to process
-    numRHSperFreq = numSols / numFreq;            % The number of solutions per frequency point
+    numRHSperFreq = 1; % numSols / numFreq;            % The number of solutions per frequency point
 
     % Some info about the solution configurations. Already printed out in
     % runDGFMsolver.m
