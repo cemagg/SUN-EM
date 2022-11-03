@@ -9,8 +9,8 @@
 *******************************
 #lam = 1
 #freq = #c0/#lam
-#freq_start = 0.8*#freq
-#freq_stop = 1.2*#freq
+#freq_start = 0.33*#freq
+#freq_stop = 3.5*#freq
 
 *******************************
 ** Element Variables         **
@@ -75,8 +75,8 @@ BQ   E    F    G    H
 *******************************
 
 ** Array dimensions
-#arr_N = 1       ** Number of elements along X-axis
-#arr_M = 3       ** Number of elements along Y-axis
+#arr_N = 3       ** Number of elements along X-axis
+#arr_M = 1       ** Number of elements along Y-axis
 
 ** offsetts/spacings
 #arr_Noff = #lam        ** Offset of elements along X-axis
@@ -105,7 +105,7 @@ EG   0    0    0                                                                
 PS: 0 : 1 : 1 : 0 : 0
 
 ** Frequency
-FR: 100 : 0 :  :  :  : 0.8*#freq :  : 1.2*#freq
+FR: 100 : 0 :  :  :  : 0.8*#freq :  : #freq_stop
 
 ** Data output
 DA   0    0    0    0    0    0         0         0         0         0

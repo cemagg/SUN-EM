@@ -1,5 +1,5 @@
-%function [mom] = runMoMsolver(Const, Solver_setup, zMatrices, yVectors, refIsol)
-function [mom] = runMoMsolver(Const, Solver_setup, Interpolated_Data, yVectors, refIsol)
+function [mom] = runMoMsolver(Const, Solver_setup, zMatricesFEKO, yVectorsFEKO, refIsol)
+%function [mom] = runMoMsolver(Const, Solver_setup, Interpolated_Data, yVectorsFEKO, refIsol)
     %runMoMsolver
     %   Usage:
     %       [mom] = runMoMsolver(Const)
@@ -80,10 +80,10 @@ function [mom] = runMoMsolver(Const, Solver_setup, Interpolated_Data, yVectors, 
         % Note: Since 2017-06-25, we are also passing a freq. variable here to
         % indicate for which frequency point we are extracting the matrix
        
-        %Zmom = (calcZmn(Const, zMatrices, freq, 1, 1, ObservRWGs, SourceRWGs));
+        Zmom = (calcZmn(Const, zMatricesFEKO, freq, 1, 1, ObservRWGs, SourceRWGs));
 
         %Zmom with interpolated values
-        Zmom = Interpolated_Data.values(ObservRWGs, SourceRWGs, freq);
+        %Zmom = Interpolated_Data.values(ObservRWGs, SourceRWGs, freq);
        
 
         % End timing (calculating the impedance matrix)
@@ -103,7 +103,7 @@ function [mom] = runMoMsolver(Const, Solver_setup, Interpolated_Data, yVectors, 
             %message_fc(Const,sprintf('  index: %d', index));
 
             % Back-wards substitution
-            b = L\yVectors.values(:,index);
+            b = L\yVectorsFEKO.values(:,index);
             mom.Isol(:,index) = U\b;
         end%for
 
@@ -140,6 +140,10 @@ function [mom] = runMoMsolver(Const, Solver_setup, Interpolated_Data, yVectors, 
                 numRHSperFreq, freq, numFreq, mom.relError(index)));
         end
     end
+    yyaxis left
+    plot((1:numFreq),mom.relError);
+    ylabel('MoM error norm(%)');
+    hold on;
     
     % Write the MoM solution to a ASCII str file, so that it can be read
     % again by FEKO (for plotting in POSTFEKO) - only if requested (i.e. if the filename is defined)

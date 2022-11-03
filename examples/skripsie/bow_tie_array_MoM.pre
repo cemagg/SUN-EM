@@ -13,7 +13,7 @@
 #lam = 1
 #freq = #c0/#lam
 #freq_start = 0.334*#freq  ** 0.8*#freq
-#freq_stop=6.680*#freq  ** 1.2*#freq
+#freq_stop= 6.680*#freq  ** 1.2*#freq
 
 *******************************
 ** Element Variables         **
@@ -82,8 +82,8 @@ BQ   E    F    G    H
 #arr_M = 1       ** Number of elements along Y-axis
 
 ** offsetts/spacings
-#arr_Noff = #L **0.4*#lam        ** Offset of elements along X-axis
-#arr_Moff = 1.25*#L **0.4*#lam        ** Offset of elements along Y-axis
+#arr_Noff = 0.4*#lam        ** Offset of elements along X-axis
+#arr_Moff = 0.5*#lam        ** Offset of elements along Y-axis
 
 ** Some preparation so that we can identify the base elementa
 CB: 1 : s1

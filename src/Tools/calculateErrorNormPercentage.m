@@ -29,4 +29,4 @@ function errorNormPercentage = calculateErrorNormPercentage(refData, data)
         referenceSum  = referenceSum  + (abs( refData(n) ))^2;
     end
 
-    errorNormPercentage = (sqrt(differenceSum) / sqrt(referenceSum)) * 100;
+    errorNormPercentage = (sqrt(differenceSum) / sqrt(referenceSum)) * 100 ;

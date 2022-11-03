@@ -1,4 +1,5 @@
-function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectorsFEKO, xVectorsFEKO, zMatricesFEKO, mbfs, ngf)
+function [dgfm] = runDGFMsolver(Const, Solver_setup, zMatricesFEKO, yVectorsFEKO, xVectorsFEKO, mbfs, ngf)
+%[dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectorsFEKO, xVectorsFEKO, zMatricesFEKO, mbfs, ngf)
     %runDGFMsolver
     %   Usage:
     %       [dgfm] = runDGFMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors, mbfs, ngf)
@@ -37,7 +38,7 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
     %       "Efficient Analysis of Large Aperiodic Antenna Arrays Using the Domain Green's Function
     %        Method," IEEE Trans. Antennas and Propagation, vol. 62, no. 4, pp. 1-11, 2014.
 
-    narginchk(8,8);
+    narginchk(7,7);
     
     message_fc(Const,' ');
     message_fc(Const,'------------------------------------------------------------------------------------');
@@ -84,7 +85,7 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
 
     % Calculate the DGFM weighting vectors (note, this is done OUTSIDE the frequency + sol. configuration \
     % loop)
-    [dgfm.weightVectors, jackDGFM] = calcDGFMweightVectors(Const, Solver_setup, Interpolated_Data, yVectorsFEKO, xVectorsFEKO, mbfs);
+    [dgfm.weightVectors, jackDGFM] = calcDGFMweightVectors(Const, Solver_setup, zMatricesFEKO, yVectorsFEKO, xVectorsFEKO, mbfs);
 
     % If we are going to do interpolation afterwards, then we are not going
     % to calculate a full-wave DGFM solution (+ MBF extraction) for each of
@@ -151,11 +152,11 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
         % for frequency solutions)
         % TO-DO: Danie, check here the effect on frequency domain solutions.
         if (Const.runNGFenDGFMsolver)
-            Zsd = Interpolated_Data.values(1:Nngf,Nngf+1:Nmom, freq);
+            Zsd = zMatricesFEKO.values(1:Nngf,Nngf+1:Nmom, freq);
             % Back-wards substitution using the NGF already factor L and U components
             b = ngf.L(:,:,freq)\Zsd;
             Zsd_glob = (ngf.U(:,:,freq)\b);
-            Zds_glob = Interpolated_Data.values(Nngf+1:Nmom,1:Nngf, freq);
+            Zds_glob = zMatricesFEKO.values(Nngf+1:Nmom,1:Nngf, freq);
             %Zcorr = Zms*Zsd_glob(:,(m-1)*Ndgfm+1:m*Ndgfm);
             %Zcorr = Zds_glob*Zsd_glob; % <-- size(Narr, Narr)
         end
@@ -215,7 +216,7 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
                         % static domain and the array element being analysed
                         % TO-DO: Check here the effect of a frequency loop.
                         %Zms = zMatrices.values(domain_bot_m:domain_top_m,1:Nngf, freq);
-                        Zms = Interpolated_Data.values(domain_m_basis_functions,1:Nngf, freq);
+                        Zms = zMatricesFEKO.values(domain_m_basis_functions,1:Nngf, freq);
                     end
                     % TO-DO: - Assumed here is 1-to-1 mapping, i.e. Const.arrayMappingVector
                     %          not yet used (would be needed as we consider mixed basis
@@ -258,12 +259,13 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
                             %domain_top_n = Const.arrayElBasisFunctRange(n,2);
                             domain_n_basis_functions = Solver_setup.rwg_basis_functions_domains{n};
 
+%Interpolated_Data.values(domain_m_basis_functions, domain_m_basis_functions, freq);
+
                             % See issue FEKDDM-2.1: The coupling matrix can now
                             % be extracted using the ACA (call a generic getZmn routine)
                             %Zmn = zMatrices.values(domain_bot_m:domain_top_m,domain_bot_n:domain_top_n);
-                            [Zmn] = Interpolated_Data.values(domain_m_basis_functions, domain_m_basis_functions, freq);
-%                             calcZmn(Const,Interpolated_Data,freq,m,n,domain_m_basis_functions,...
-%                                 domain_n_basis_functions);
+                            [Zmn] = calcZmn(Const,zMatricesFEKO,freq,m,n,domain_m_basis_functions,...
+                                domain_n_basis_functions);
                             if ((Const.DGFMweightVectorCalcScheme == 0) || (Const.DGFMweightVectorCalcScheme == 1) ...
                                 || (Const.DGFMweightVectorCalcScheme == 5))
                                 % alpha_nm is a scalar
@@ -408,7 +410,7 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
                 if (Const.runNGFenDGFMsolver)
                     % See issue FEKDDM-6.1: For the NGF-enhanced DGFM, we need to add the correction/coupling
                     % term from the static interaction matrix here
-                        Zds = Interpolated_Data.values(Nngf+1:Nmom,1:Nngf);
+                        Zds = zMatricesFEKO.values(Nngf+1:Nmom,1:Nngf);
                         dgfm.Zact = dgfm.Zact - Zds*Zsd_glob;
                     % See issue FEKDDM-6.1: For the NGF-enhanced DGFM we add also a
                     % coupling here from the excitation that is defined in the static domain here
@@ -485,3 +487,13 @@ function [dgfm] = runDGFMsolver(Const, Solver_setup, Interpolated_Data, yVectors
                 freq, numFreq, dgfm.relError(index)));
         end
     end%for freq = 1:numFreq
+
+title('Error Norm Percentages')
+yyaxis right
+ylabel('DGFM error norm(%)');
+xlabel('Frequency points');
+plot((1:numFreq),dgfm.relError);
+hold off;
+
+
+    x = 11;
